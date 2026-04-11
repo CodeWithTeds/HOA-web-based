@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { CheckCircle2, Bell, Users, Home, Calendar } from 'lucide-react';
+import { CheckCircle2, Play, Users, Home, Calendar } from 'lucide-react';
 
 export default function Hero() {
     return (
@@ -16,7 +16,7 @@ export default function Hero() {
 
                         <h1 className="text-6xl font-black tracking-tighter text-[#0A2540] lg:text-8xl leading-[0.9] mb-12">
                             HOA <br />
-                            <span className="text-blue-600/20">Management</span>
+                            <span className="text-blue-600">Management</span>
                         </h1>
 
                         {/* Feature Card Left: HOA Related */}
@@ -69,7 +69,7 @@ export default function Hero() {
                                 Get Started
                             </Link>
                             <button className="group flex items-center gap-2 text-[17px] font-bold text-[#0A2540]">
-                                View Demo <div className="h-8 w-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors"><Bell className="h-4 w-4 text-blue-600" /></div>
+                                Watch Video <div className="h-8 w-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors"><Play className="h-4 w-4 text-blue-600 fill-current" /></div>
                             </button>
                         </div>
 

@@ -14,7 +14,6 @@ export default function Navbar() {
                     <Link href="#" className="text-[13px] font-medium text-[#1D1D1F]/70 hover:text-blue-600 transition-colors">Overview</Link>
                     <Link href="#" className="text-[13px] font-medium text-[#1D1D1F]/70 hover:text-blue-600 transition-colors">Features</Link>
                     <Link href="#" className="text-[13px] font-medium text-[#1D1D1F]/70 hover:text-blue-600 transition-colors">Transparency</Link>
-                    <Link href="#" className="text-[13px] font-medium text-[#1D1D1F]/70 hover:text-blue-600 transition-colors">Pricing</Link>
                 </div>
 
                 {/* Action Buttons */}
