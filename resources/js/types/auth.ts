@@ -1,7 +1,14 @@
+export enum UserRole {
+    ADMIN = 'admin',
+    STAFF = 'staff',
+    HOMEOWNER = 'homeowner',
+}
+
 export type User = {
     id: number;
     name: string;
     email: string;
+    role: UserRole;
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;

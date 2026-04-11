@@ -10,7 +10,9 @@ Route::inertia('/', 'landing', [
 Route::inertia('/landing', 'landing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::inertia('dashboard', 'dashboard', ['portalType' => 'homeowner'])->name('dashboard');
+    Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
+    Route::inertia('staff/dashboard', 'dashboard', ['portalType' => 'staff'])->name('staff.dashboard');
 });
 
 require __DIR__ . '/settings.php';
