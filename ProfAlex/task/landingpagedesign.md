@@ -1,4 +1,4 @@
-remove the bg to the phone
+
 DESIGN GUIDELINES (APPLE / MACBOOK INSPIRED UI)
 
 Design Style:
