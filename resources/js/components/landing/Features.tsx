@@ -10,14 +10,14 @@ export default function Features() {
                         <span className="text-blue-600">Modern Living.</span>
                     </h2>
                     <p className="max-w-2xl text-xl text-[#86868B] font-medium leading-relaxed">
-                        Experience a suite of tools built with precision and elegance, 
+                        Experience a suite of tools built with precision and elegance,
                         tailored to make community management effortless.
                     </p>
                 </div>
 
                 {/* Bento Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 auto-rows-[280px]">
-                    
+
                     {/* Card 1: Facility Booking (Apple Style) */}
                     <div className="md:col-span-3 lg:col-span-4 bg-gradient-to-br from-[#0A2540] to-[#1D1D1F] rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl">
                         <div className="relative z-10 h-full flex flex-col justify-between">
@@ -43,7 +43,7 @@ export default function Features() {
                             <h3 className="text-2xl font-bold text-[#0A2540] mb-2 text-center">Mobile First</h3>
                             <p className="text-[#86868B] text-sm text-center mb-8">Access your community anywhere.</p>
                         </div>
-                        
+
                         {/* iPhone Frame */}
                         <div className="absolute bottom-[-100px] left-1/2 -translate-x-1/2 w-[220px] h-[400px] bg-white rounded-[3rem] border-[8px] border-gray-900 shadow-2xl relative overflow-hidden group-hover:translate-y-[-20px] transition-transform duration-500">
                             {/* Notch */}
@@ -90,7 +90,7 @@ export default function Features() {
                                 <MessageSquare className="h-8 w-8 text-blue-600 mb-6" />
                                 <h3 className="text-3xl font-bold text-[#0A2540] mb-4">Direct Messaging</h3>
                                 <p className="text-[#86868B] text-lg leading-relaxed">
-                                    Communicate with HOA staff and neighbors instantly. 
+                                    Communicate with HOA staff and neighbors instantly.
                                     Professional, recorded, and secure chat threads for official community matters.
                                 </p>
                             </div>
@@ -113,8 +113,8 @@ export default function Features() {
                         </div>
                     </div>
 
-                     {/* Card 5: Security (Small) */}
-                     <div className="md:col-span-2 lg:col-span-4 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
+                    {/* Card 5: Security (Small) */}
+                    <div className="md:col-span-2 lg:col-span-4 bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
                         <Shield className="h-10 w-10 text-blue-600 mb-6" />
                         <h3 className="text-2xl font-bold text-[#0A2540] mb-3">Enterprise Security</h3>
                         <p className="text-[#86868B] text-[15px] leading-relaxed">

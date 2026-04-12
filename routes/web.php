@@ -11,7 +11,7 @@ Route::inertia('/landing', 'landing');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard', ['portalType' => 'homeowner'])->name('dashboard');
-    
+
     Route::middleware('role:admin')->group(function () {
         Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
     });

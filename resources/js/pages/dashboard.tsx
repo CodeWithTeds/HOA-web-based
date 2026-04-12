@@ -1,13 +1,26 @@
 import { Head, usePage } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { HomeownerDashboard } from '@/components/homeowner-dashboard';
+import { UserRole } from '@/types';
 
 export default function Dashboard() {
     const { auth } = usePage<any>().props;
     const { user } = auth || {};
     
-    let roleTitle = 'Homeowner';
-    if (user?.role === 'admin') roleTitle = 'Admin';
-    if (user?.role === 'staff') roleTitle = 'Staff';
+    const role = user?.role as string | undefined;
+
+    if (role === 'homeowner' || role === UserRole.HOMEOWNER) {
+        return (
+            <>
+                <Head title="Resident Portal" />
+                <HomeownerDashboard />
+            </>
+        );
+    }
+
+    let roleTitle = 'Dashboard';
+    if (role === 'admin' || role === UserRole.ADMIN) roleTitle = 'Admin';
+    if (role === 'staff' || role === UserRole.STAFF) roleTitle = 'Staff';
 
     return (
         <>
@@ -15,10 +28,10 @@ export default function Dashboard() {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6 bg-white dark:bg-black text-neutral-900 dark:text-neutral-100 font-sans">
                 <div className="flex flex-col gap-2 tracking-tight">
                     <h1 className="text-4xl font-semibold tracking-[-0.02em] text-neutral-900 dark:text-white">
-                        Welcome back, {roleTitle}
+                        Welcome back, {user?.name || roleTitle}
                     </h1>
                     <p className="text-lg text-neutral-500 dark:text-neutral-400 font-medium">
-                        Here's an overview of your community portal.
+                        Here's an overview of your management portal.
                     </p>
                 </div>
 
