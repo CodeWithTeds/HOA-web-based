@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Repositories\TaskRepository;
 use App\Repositories\TaskRepositoryInterface;
+use App\Repositories\Staff\EloquentStaffRepository;
+use App\Repositories\Staff\StaffRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -15,6 +17,7 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(TaskRepositoryInterface::class, TaskRepository::class);
+        $this->app->singleton(StaffRepositoryInterface::class, EloquentStaffRepository::class);
     }
 
     /**

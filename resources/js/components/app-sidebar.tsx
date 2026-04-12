@@ -76,15 +76,16 @@ export function AppSidebar() {
 
     if (role === UserRole.ADMIN) {
         mainNavItems.push(
-            { title: 'User Management',        href: '/admin/users',         icon: Users },
-            { title: 'Resident Management',    href: '/admin/residents',     icon: Home },
-            { title: 'Billing and Collection', href: '/admin/billing',       icon: CreditCard },
-            { title: 'Reports and Analytics',  href: '/admin/reports',       icon: BarChart3 },
-            { title: 'Facility Management',    href: '/admin/facilities',    icon: Settings2 },
-            { title: 'Announcements',          href: '/admin/announcements', icon: Megaphone },
-            { title: 'Complaints Management',  href: '/admin/complaints',    icon: AlertCircle },
-            { title: 'Chat Support',           href: '/admin/chat',          icon: MessageSquare },
-            { title: 'System Settings',        href: '/admin/settings',      icon: ShieldCheck },
+            { title: 'User Management',        href: '#',         icon: Users },
+            { title: 'Staff Management',       href: '/admin/staff',         icon: BookUser },
+            { title: 'Resident Management',    href: '#',     icon: Home },
+            { title: 'Billing and Collection', href: '#',       icon: CreditCard },
+            { title: 'Reports and Analytics',  href: '#',       icon: BarChart3 },
+            { title: 'Facility Management',    href: '#',    icon: Settings2 },
+            { title: 'Announcements',          href: '#', icon: Megaphone },
+            { title: 'Complaints Management',  href: '#',    icon: AlertCircle },
+            { title: 'Chat Support',           href: '#',          icon: MessageSquare },
+            { title: 'System Settings',        href: '#',      icon: ShieldCheck },
         );
     }
 
