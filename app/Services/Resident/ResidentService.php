@@ -26,4 +26,51 @@ class ResidentService
     {
         return $this->residentRepository->getPaginated($filters, 25);
     }
+
+    /**
+     * Store a new resident.
+     *
+     * @param array $data
+     * @return \App\Models\Resident
+     */
+    public function storeResident(array $data)
+    {
+        return $this->residentRepository->create($data);
+    }
+
+    /**
+     * Find a resident by ID or model.
+     *
+     * @param mixed $resident
+     * @return \App\Models\Resident
+     */
+    public function findResident(mixed $resident)
+    {
+        return is_object($resident) ? $resident : $this->residentRepository->find($resident);
+    }
+
+    /**
+     * Update an existing resident.
+     *
+     * @param mixed $resident
+     * @param array $data
+     * @return bool
+     */
+    public function updateResident(mixed $resident, array $data): bool
+    {
+        $residentModel = $this->findResident($resident);
+        return $this->residentRepository->update($residentModel, $data);
+    }
+
+    /**
+     * Delete a resident.
+     *
+     * @param mixed $resident
+     * @return bool
+     */
+    public function deleteResident(mixed $resident): bool
+    {
+        $residentModel = $this->findResident($resident);
+        return $this->residentRepository->delete($residentModel);
+    }
 }
