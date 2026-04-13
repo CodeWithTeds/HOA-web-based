@@ -6,6 +6,8 @@ use App\Repositories\TaskRepository;
 use App\Repositories\TaskRepositoryInterface;
 use App\Repositories\Staff\EloquentStaffRepository;
 use App\Repositories\Staff\StaffRepositoryInterface;
+use App\Repositories\Resident\ResidentRepositoryInterface;
+use App\Repositories\Resident\EloquentResidentRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -18,6 +20,7 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TaskRepositoryInterface::class, TaskRepository::class);
         $this->app->singleton(StaffRepositoryInterface::class, EloquentStaffRepository::class);
+        $this->app->singleton(ResidentRepositoryInterface::class, EloquentResidentRepository::class);
     }
 
     /**

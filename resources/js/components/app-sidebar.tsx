@@ -77,7 +77,7 @@ export function AppSidebar() {
     if (role === UserRole.ADMIN) {
         mainNavItems.push(
             { title: 'User Management', href: '/admin/user', icon: BookUser },
-            { title: 'Resident Management', href: '#', icon: Home },
+            { title: 'Resident Management', href: '/admin/residents', icon: Home },
             { title: 'Billing and Collection', href: '#', icon: CreditCard },
             { title: 'Reports and Analytics', href: '#', icon: BarChart3 },
             { title: 'Facility Management', href: '#', icon: Settings2 },

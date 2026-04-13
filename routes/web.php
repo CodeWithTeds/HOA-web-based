@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\ResidentController;
 
 Route::inertia('/', 'landing', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -15,6 +16,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
+        
+        // Residents
+        Route::get('admin/residents', [ResidentController::class, 'index'])->name('admin.residents.index');
+        
         Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
         Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
         Route::post('admin/user', [StaffController::class, 'store'])->name('admin.user.store');

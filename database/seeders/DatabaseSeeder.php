@@ -30,5 +30,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'homeowner@example.com',
             'role' => \App\Enums\UserRole::HOMEOWNER->value,
         ]);
+
+        $this->call([
+            ResidentSeeder::class,
+        ]);
     }
 }
