@@ -6,21 +6,20 @@ import {
     Phone,
     Shield,
     Calendar,
+    Building,
     User,
     CheckCircle,
-    Save,
-    Pencil,
-    Building,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
+import { PhotoUpload } from '@/components/photo-upload';
 import { useState } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
-export default function StaffEdit({ staff }: { staff: any }) {
+export default function StaffCreate() {
     const [alert, setAlert] = useState<{
         show: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
@@ -28,20 +27,21 @@ export default function StaffEdit({ staff }: { staff: any }) {
         message?: string;
     }>({ show: false, type: 'success', title: '' });
 
-    const { data, setData, put, processing, errors, clearErrors } = useForm({
-        firstName: staff.first_name || '',
-        lastName: staff.last_name || '',
-        email: staff.email || '',
-        phone: staff.phone || '',
-        role: staff.role || 'hoa personnel',
-        department: staff.department || '',
-        status: staff.status || 'ACTIVE',
-        hireDate: staff.hire_date ? new Date(staff.hire_date).toISOString().split('T')[0] : '',
+    const { data, setData, post, processing, errors, clearErrors } = useForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: 'hoa personnel',
+        department: '',
+        status: 'ACTIVE',
+        hireDate: new Date().toISOString().split('T')[0],
+        photo: null as File | null,
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(`/admin/staff/${staff.id}`, {
+        post('/admin/user', {
             onError: () => {
                 setAlert({
                     show: true,
@@ -55,7 +55,7 @@ export default function StaffEdit({ staff }: { staff: any }) {
 
     return (
         <>
-            <Head title="Edit Staff Member" />
+            <Head title="Register Staff" />
             <SweetAlert
                 type={alert.type}
                 title={alert.title}
@@ -72,19 +72,19 @@ export default function StaffEdit({ staff }: { staff: any }) {
                 <div className="shrink-0 relative overflow-hidden px-10 pt-10 pb-8 border-b border-neutral-100 dark:border-neutral-800/60">
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-5">
-                            <div className="flex items-center justify-center size-14 rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20">
-                                <Pencil className="size-7 text-white" strokeWidth={2} />
+                            <div className="flex items-center justify-center size-14 rounded-2xl bg-blue-600 shadow-xl shadow-blue-500/20">
+                                <UserPlus className="size-7 text-white" strokeWidth={2} />
                             </div>
                             <div>
                                 <h1 className="text-[28px] font-extrabold tracking-[-0.03em] text-[#0A2540] dark:text-white">
-                                    Edit Staff Profile
+                                    Register Staff Profile
                                 </h1>
-                                <p className="text-[15px] text-neutral-600 dark:text-neutral-300 font-medium mt-0.5">
-                                    Update information for <span className="font-bold text-[#0A2540] dark:text-white">{staff.first_name} {staff.last_name}</span>.
+                                <p className="text-[15px] text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
+                                    Provision a new staff account into the management platform.
                                 </p>
                             </div>
                         </div>
-                        <Link href="/admin/staff">
+                        <Link href="/admin/user">
                             <Button variant="ghost" className="h-11 gap-2 rounded-xl text-[14px] font-bold text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                 <ArrowLeft className="size-4" /> Back to Directory
                             </Button>
@@ -105,21 +105,11 @@ export default function StaffEdit({ staff }: { staff: any }) {
                             </div>
                             
                             <div className="md:col-span-2">
-                                <div className="mb-8 flex items-center gap-6">
-                                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 border border-neutral-200 dark:bg-neutral-900/50 dark:border-neutral-800 overflow-hidden">
-                                        {staff.profile_picture ? (
-                                            <img src={staff.profile_picture} alt="Profile" className="h-full w-full object-cover" />
-                                        ) : (
-                                            <User className="size-8 text-neutral-400" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <Button type="button" variant="outline" className="h-9 mb-1.5 text-[13px] font-bold">
-                                            Upload Photo
-                                        </Button>
-                                        <p className="text-[12px] text-neutral-500">JPG, GIF or PNG. 1MB max.</p>
-                                    </div>
-                                </div>
+                                <PhotoUpload 
+                                    value={data.photo}
+                                    onChange={(file) => setData('photo', file)}
+                                    error={errors.photo}
+                                />
 
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-6">
                                     {/* First Name */}
@@ -281,7 +271,7 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                 Fields marked with <span className="text-red-400 font-bold">*</span> are required
                             </p>
                             <div className="flex items-center gap-4">
-                                <Link href="/admin/staff">
+                                <Link href="/admin/user">
                                     <Button type="button" variant="ghost" className="h-12 rounded-xl px-8 text-[15px] font-bold text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                         Cancel
                                     </Button>
@@ -294,12 +284,12 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                     {processing ? (
                                         <span className="flex items-center gap-2.5">
                                             <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Saving Changes…
+                                            Registering…
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-2">
-                                            <Save className="size-5" />
-                                            Save Changes
+                                            <UserPlus className="size-4.5" />
+                                            Confirm Registration
                                         </span>
                                     )}
                                 </Button>
@@ -312,10 +302,10 @@ export default function StaffEdit({ staff }: { staff: any }) {
     );
 }
 
-StaffEdit.layout = {
+StaffCreate.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Staff Management', href: '/admin/staff' },
-        { title: 'Edit Staff', href: '#' },
+        { title: 'Staff Management', href: '/admin/user' },
+        { title: 'Register Staff', href: '/admin/user/create' },
     ],
 };

@@ -20,7 +20,7 @@ class StaffController extends Controller
     public function index(): Response
     {
         $staff = $this->staffService->getPaginatedStaff(10);
-        return Inertia::render('admin/staff/index', ['staff' => $staff]);
+        return Inertia::render('admin/user/index', ['staff' => $staff]);
     }
 
     /**
@@ -28,7 +28,7 @@ class StaffController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('admin/staff/create');
+        return Inertia::render('admin/user/create');
     }
 
     /**
@@ -38,7 +38,7 @@ class StaffController extends Controller
     {
         $this->staffService->createStaff($request->validated());
 
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member registered successfully.');
+        return redirect()->route('admin.user.index')->with('success', 'Staff member registered successfully.');
     }
 
     /**
@@ -47,7 +47,7 @@ class StaffController extends Controller
     public function show(string $id): Response
     {
         $staff = $this->staffService->getStaffById($id);
-        return Inertia::render('admin/staff/show', ['staff' => $staff]);
+        return Inertia::render('admin/user/show', ['staff' => $staff]);
     }
 
     /**
@@ -56,7 +56,7 @@ class StaffController extends Controller
     public function edit(string $id): Response
     {
         $staff = $this->staffService->getStaffById($id);
-        return Inertia::render('admin/staff/edit', ['staff' => $staff]);
+        return Inertia::render('admin/user/edit', ['staff' => $staff]);
     }
 
     /**
@@ -65,7 +65,7 @@ class StaffController extends Controller
     public function update(\App\Http\Requests\Admin\UpdateStaffRequest $request, string $id): \Illuminate\Http\RedirectResponse
     {
         $this->staffService->updateStaff($id, $request->validated());
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member updated successfully.');
+        return redirect()->route('admin.user.index')->with('success', 'Staff member updated successfully.');
     }
 
     /**
@@ -83,6 +83,6 @@ class StaffController extends Controller
     public function destroy(string $id): \Illuminate\Http\RedirectResponse
     {
         $this->staffService->deleteStaff($id);
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member removed successfully.');
+        return redirect()->route('admin.user.index')->with('success', 'Staff member removed successfully.');
     }
 }

@@ -76,47 +76,46 @@ export function AppSidebar() {
 
     if (role === UserRole.ADMIN) {
         mainNavItems.push(
-            { title: 'User Management',        href: '#',         icon: Users },
-            { title: 'Staff Management',       href: '/admin/staff',         icon: BookUser },
-            { title: 'Resident Management',    href: '#',     icon: Home },
-            { title: 'Billing and Collection', href: '#',       icon: CreditCard },
-            { title: 'Reports and Analytics',  href: '#',       icon: BarChart3 },
-            { title: 'Facility Management',    href: '#',    icon: Settings2 },
-            { title: 'Announcements',          href: '#', icon: Megaphone },
-            { title: 'Complaints Management',  href: '#',    icon: AlertCircle },
-            { title: 'Chat Support',           href: '#',          icon: MessageSquare },
-            { title: 'System Settings',        href: '#',      icon: ShieldCheck },
+            { title: 'User Management', href: '/admin/user', icon: BookUser },
+            { title: 'Resident Management', href: '#', icon: Home },
+            { title: 'Billing and Collection', href: '#', icon: CreditCard },
+            { title: 'Reports and Analytics', href: '#', icon: BarChart3 },
+            { title: 'Facility Management', href: '#', icon: Settings2 },
+            { title: 'Announcements', href: '#', icon: Megaphone },
+            { title: 'Complaints Management', href: '#', icon: AlertCircle },
+            { title: 'Chat Support', href: '#', icon: MessageSquare },
+            { title: 'System Settings', href: '#', icon: ShieldCheck },
         );
     }
 
     if (role === UserRole.STAFF) {
         mainNavItems.push(
-            { title: 'Resident Management',   href: '/staff/residents',     icon: BookUser },
-            { title: 'Billing and Payments',  href: '/staff/billing',       icon: CreditCard },
-            { title: 'Facility Reservations', href: '/staff/facilities',    icon: CalendarCheck },
-            { title: 'Complaints',            href: '/staff/complaints',    icon: AlertCircle },
-            { title: 'Chat Support',          href: '/staff/chat',          icon: MessageSquare },
-            { title: 'Reports',               href: '/staff/reports',       icon: BarChart3 },
-            { title: 'Announcements',         href: '/staff/announcements', icon: Megaphone },
-            { title: 'Logout',                href: '/logout',              icon: LogOut },
+            { title: 'Resident Management', href: '/staff/residents', icon: BookUser },
+            { title: 'Billing and Payments', href: '/staff/billing', icon: CreditCard },
+            { title: 'Facility Reservations', href: '/staff/facilities', icon: CalendarCheck },
+            { title: 'Complaints', href: '/staff/complaints', icon: AlertCircle },
+            { title: 'Chat Support', href: '/staff/chat', icon: MessageSquare },
+            { title: 'Reports', href: '/staff/reports', icon: BarChart3 },
+            { title: 'Announcements', href: '/staff/announcements', icon: Megaphone },
+            { title: 'Logout', href: '/logout', icon: LogOut },
         );
     }
 
     if (role === UserRole.HOMEOWNER) {
         mainNavItems.push(
-            { title: 'My Bills',              href: '/billing',             icon: Receipt },
-            { title: 'Facility Booking',      href: '/facilities',          icon: CalendarCheck },
-            { title: 'Complaints',            href: '/complaints',          icon: AlertCircle },
-            { title: 'Announcements',         href: '/announcements',       icon: Megaphone },
-            { title: 'Documents',             href: '/documents',           icon: FileText },
-            { title: 'Chat Support',          href: '/chat',                icon: MessageSquare },
-            { title: 'Logout',                href: '/logout',              icon: LogOut },
+            { title: 'My Bills', href: '/billing', icon: Receipt },
+            { title: 'Facility Booking', href: '/facilities', icon: CalendarCheck },
+            { title: 'Complaints', href: '/complaints', icon: AlertCircle },
+            { title: 'Announcements', href: '/announcements', icon: Megaphone },
+            { title: 'Documents', href: '/documents', icon: FileText },
+            { title: 'Chat Support', href: '/chat', icon: MessageSquare },
+            { title: 'Logout', href: '/logout', icon: LogOut },
         );
     }
 
     // ── Role-specific appearance ───────────────────────────────────────────────
 
-    const isStaff     = role === UserRole.STAFF;
+    const isStaff = role === UserRole.STAFF;
     const isHomeowner = role === UserRole.HOMEOWNER;
 
     const sidebarStyle = isStaff
@@ -133,8 +132,8 @@ export function AppSidebar() {
         : 'text-blue-600';
 
     const brandNameClass = 'text-white';
-    const brandSubClass  = 'text-white/60';
-    const footerClass    = 'p-4 mt-auto border-t border-white/10 bg-black/5';
+    const brandSubClass = 'text-white/60';
+    const footerClass = 'p-4 mt-auto border-t border-white/10 bg-black/5';
 
     const logoBoxClass = 'h-11 w-11 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 group-hover:scale-110 transition-all duration-500';
 

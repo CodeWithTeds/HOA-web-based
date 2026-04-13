@@ -5,6 +5,8 @@ namespace App\Services\Staff;
 use App\Models\Staff;
 use App\Repositories\Staff\StaffRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class StaffService
 {
@@ -19,9 +21,15 @@ class StaffService
 
     public function createStaff(array $data): Staff
     {
+        // Handle photo upload if present
+        $photoPath = null;
+        if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {
+            $photoPath = $this->handlePhotoUpload($data['photo']);
+        }
+
         // Map camelCase DTO/Request fields to snake_case database columns
         $attributes = [
-            'profile_picture' => $data['profilePicture'] ?? null,
+            'profile_picture' => $photoPath,
             'first_name' => $data['firstName'],
             'last_name' => $data['lastName'],
             'email' => $data['email'],
@@ -52,7 +60,6 @@ class StaffService
         $staff = $this->getStaffById($id);
 
         $attributes = [
-            'profile_picture' => $data['profilePicture'] ?? null,
             'first_name' => $data['firstName'],
             'last_name' => $data['lastName'],
             'email' => $data['email'],
@@ -62,6 +69,15 @@ class StaffService
             'status' => $data['status'],
             'hire_date' => $data['hireDate'],
         ];
+
+        // Handle photo upload if present
+        if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {
+            // Delete old photo if it exists
+            if ($staff->profile_picture) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $staff->profile_picture));
+            }
+            $attributes['profile_picture'] = $this->handlePhotoUpload($data['photo']);
+        }
 
         $updated = $this->staffRepository->update($staff, $attributes);
 
@@ -93,6 +109,11 @@ class StaffService
     {
         $staff = $this->getStaffById($id);
         
+        // Delete photo if it exists
+        if ($staff->profile_picture) {
+            Storage::disk('public')->delete(str_replace('/storage/', '', $staff->profile_picture));
+        }
+
         $deleted = $this->staffRepository->delete($staff);
         
         if (!$deleted) {
@@ -101,5 +122,14 @@ class StaffService
         }
         
         return true;
+    }
+
+    /**
+     * Handle photo upload and return public URL.
+     */
+    protected function handlePhotoUpload(UploadedFile $file): string
+    {
+        $path = $file->store('staff/avatars', 'public');
+        return Storage::url($path);
     }
 }

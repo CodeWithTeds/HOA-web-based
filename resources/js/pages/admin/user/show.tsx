@@ -42,7 +42,7 @@ export default function StaffShow({ staff }: { staff: any }) {
                                 </p>
                             </div>
                         </div>
-                        <Link href="/admin/staff">
+                        <Link href="/admin/user">
                             <Button variant="ghost" className="h-11 gap-2 rounded-xl text-[14px] font-bold text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                 <ArrowLeft className="size-4" /> Back to Directory
                             </Button>
@@ -202,7 +202,7 @@ export default function StaffShow({ staff }: { staff: any }) {
                         <p className="text-[13px] text-neutral-400 font-medium">
                             Read-only profile view
                         </p>
-                        <Link href="/admin/staff">
+                        <Link href="/admin/user">
                             <Button type="button" variant="outline" className="h-12 rounded-xl px-10 text-[15px] font-bold text-neutral-700 dark:text-neutral-300 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                 Return to Directory
                             </Button>
@@ -217,7 +217,7 @@ export default function StaffShow({ staff }: { staff: any }) {
 StaffShow.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Staff Management', href: '/admin/staff' },
+        { title: 'Staff Management', href: '/admin/user' },
         { title: 'View Staff', href: '#' },
     ],
 };

@@ -11,11 +11,11 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
+    resolve: (name: string) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,
-            import.meta.glob('./pages/**/*.tsx'),
-        ),
+            import.meta.glob('./pages/**/*.tsx')
+        ) as any,
     layout: (name) => {
         switch (true) {
             case name === 'welcome' || name === 'landing':

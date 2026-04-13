@@ -109,7 +109,7 @@ export default function StaffIndex({ staff }: { staff: any }) {
                             </div>
                         </div>
 
-                        <Link href="/admin/staff/create">
+                        <Link href="/admin/user/create">
                             <Button className="h-11 gap-2.5 rounded-xl bg-[#0A2540] hover:bg-[#0d2f4f] dark:bg-white dark:text-[#0A2540] dark:hover:bg-neutral-200 text-white font-bold px-6 shadow-lg shadow-black/10 transition-all active:scale-[0.97]">
                                 <UserPlus className="size-[18px]" strokeWidth={2.5} /> Add Staff Member
                             </Button>
@@ -233,23 +233,23 @@ export default function StaffIndex({ staff }: { staff: any }) {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl border-neutral-200 dark:border-neutral-800" style={{ fontFamily: fontStack }}>
-                                                    <Link href={`/admin/staff/${item.id}`}>
+                                                    <Link href={`/admin/user/${item.id}`}>
                                                         <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
                                                             <Eye className="size-4 text-neutral-400" /> View Profile
                                                         </DropdownMenuItem>
                                                     </Link>
-                                                    <Link href={`/admin/staff/${item.id}/edit`}>
+                                                    <Link href={`/admin/user/${item.id}/edit`}>
                                                         <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
                                                             <Pencil className="size-4 text-neutral-400" /> Edit Details
                                                         </DropdownMenuItem>
                                                     </Link>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem onClick={() => router.patch(`/admin/staff/${item.id}/status`)} className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-amber-600 focus:text-amber-600">
+                                                    <DropdownMenuItem onClick={() => router.patch(`/admin/user/${item.id}/status`)} className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-amber-600 focus:text-amber-600">
                                                         <Ban className="size-4" /> {item.status === 'ACTIVE' ? 'Suspend Access' : 'Restore Access'}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => {
                                                         if(confirm(`Are you sure you want to remove ${item.first_name}?`)) {
-                                                            router.delete(`/admin/staff/${item.id}`);
+                                                            router.delete(`/admin/user/${item.id}`);
                                                         }
                                                     }} className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-red-600 focus:text-red-600">
                                                         <Trash2 className="size-4" /> Remove Staff
@@ -323,6 +323,6 @@ export default function StaffIndex({ staff }: { staff: any }) {
 StaffIndex.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Staff Management', href: '/admin/staff' },
+        { title: 'Staff Management', href: '/admin/user' },
     ],
 };

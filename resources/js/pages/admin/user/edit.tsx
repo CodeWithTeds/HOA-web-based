@@ -6,19 +6,22 @@ import {
     Phone,
     Shield,
     Calendar,
-    Building,
     User,
     CheckCircle,
+    Save,
+    Pencil,
+    Building,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
+import { PhotoUpload } from '@/components/photo-upload';
 import { useState } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
-export default function StaffCreate() {
+export default function StaffEdit({ staff }: { staff: any }) {
     const [alert, setAlert] = useState<{
         show: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
@@ -26,20 +29,30 @@ export default function StaffCreate() {
         message?: string;
     }>({ show: false, type: 'success', title: '' });
 
-    const { data, setData, post, processing, errors, clearErrors } = useForm({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        role: 'hoa personnel',
-        department: '',
-        status: 'ACTIVE',
-        hireDate: new Date().toISOString().split('T')[0],
+    const { data, setData, post, put, transform, processing, errors, clearErrors } = useForm({
+        firstName: staff.first_name || '',
+        lastName: staff.last_name || '',
+        email: staff.email || '',
+        phone: staff.phone || '',
+        role: staff.role || 'hoa personnel',
+        department: staff.department || '',
+        status: staff.status || 'ACTIVE',
+        hireDate: staff.hire_date ? new Date(staff.hire_date).toISOString().split('T')[0] : '',
+        photo: null as File | null,
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/admin/staff', {
+
+        // Use transform to add _method spoofing for file uploads in updates
+        // This is necessary because PHP doesn't parse multipart/form-data on PUT/PATCH
+        transform((data) => ({
+            ...data,
+            _method: 'put',
+        }));
+
+        post(`/admin/user/${staff.id}`, {
+            forceFormData: true,
             onError: () => {
                 setAlert({
                     show: true,
@@ -53,7 +66,7 @@ export default function StaffCreate() {
 
     return (
         <>
-            <Head title="Register Staff" />
+            <Head title="Edit Staff Member" />
             <SweetAlert
                 type={alert.type}
                 title={alert.title}
@@ -70,19 +83,19 @@ export default function StaffCreate() {
                 <div className="shrink-0 relative overflow-hidden px-10 pt-10 pb-8 border-b border-neutral-100 dark:border-neutral-800/60">
                     <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-5">
-                            <div className="flex items-center justify-center size-14 rounded-2xl bg-blue-600 shadow-xl shadow-blue-500/20">
-                                <UserPlus className="size-7 text-white" strokeWidth={2} />
+                            <div className="flex items-center justify-center size-14 rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-500/20">
+                                <Pencil className="size-7 text-white" strokeWidth={2} />
                             </div>
                             <div>
                                 <h1 className="text-[28px] font-extrabold tracking-[-0.03em] text-[#0A2540] dark:text-white">
-                                    Register Staff Profile
+                                    Edit Staff Profile
                                 </h1>
-                                <p className="text-[15px] text-neutral-500 dark:text-neutral-400 font-medium mt-0.5">
-                                    Provision a new staff account into the management platform.
+                                <p className="text-[15px] text-neutral-600 dark:text-neutral-300 font-medium mt-0.5">
+                                    Update information for <span className="font-bold text-[#0A2540] dark:text-white">{staff.first_name} {staff.last_name}</span>.
                                 </p>
                             </div>
                         </div>
-                        <Link href="/admin/staff">
+                        <Link href="/admin/user">
                             <Button variant="ghost" className="h-11 gap-2 rounded-xl text-[14px] font-bold text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                 <ArrowLeft className="size-4" /> Back to Directory
                             </Button>
@@ -101,19 +114,13 @@ export default function StaffCreate() {
                                     Provide the basic contact and identity details for the new staff member. An avatar profile picture can be uploaded.
                                 </p>
                             </div>
-                            
+
                             <div className="md:col-span-2">
-                                <div className="mb-8 flex items-center gap-6">
-                                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 border border-dashed border-neutral-300 dark:bg-neutral-900/50 dark:border-neutral-700">
-                                        <User className="size-8 text-neutral-400" />
-                                    </div>
-                                    <div>
-                                        <Button type="button" variant="outline" className="h-9 mb-1.5 text-[13px] font-bold">
-                                            Upload Photo
-                                        </Button>
-                                        <p className="text-[12px] text-neutral-500">JPG, GIF or PNG. 1MB max.</p>
-                                    </div>
-                                </div>
+                                <PhotoUpload
+                                    value={data.photo || staff.profile_picture}
+                                    onChange={(file) => setData('photo', file)}
+                                    error={errors.photo}
+                                />
 
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-6">
                                     {/* First Name */}
@@ -196,7 +203,7 @@ export default function StaffCreate() {
                                     Configure the role, department, and status for the staff member within the system.
                                 </p>
                             </div>
-                            
+
                             <div className="md:col-span-2">
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-6">
                                     {/* Role */}
@@ -275,7 +282,7 @@ export default function StaffCreate() {
                                 Fields marked with <span className="text-red-400 font-bold">*</span> are required
                             </p>
                             <div className="flex items-center gap-4">
-                                <Link href="/admin/staff">
+                                <Link href="/admin/user">
                                     <Button type="button" variant="ghost" className="h-12 rounded-xl px-8 text-[15px] font-bold text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                                         Cancel
                                     </Button>
@@ -288,12 +295,12 @@ export default function StaffCreate() {
                                     {processing ? (
                                         <span className="flex items-center gap-2.5">
                                             <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Registering…
+                                            Saving Changes…
                                         </span>
                                     ) : (
                                         <span className="flex items-center gap-2">
-                                            <UserPlus className="size-4.5" />
-                                            Confirm Registration
+                                            <Save className="size-5" />
+                                            Save Changes
                                         </span>
                                     )}
                                 </Button>
@@ -306,10 +313,10 @@ export default function StaffCreate() {
     );
 }
 
-StaffCreate.layout = {
+StaffEdit.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Staff Management', href: '/admin/staff' },
-        { title: 'Register Staff', href: '/admin/staff/create' },
+        { title: 'Staff Management', href: '/admin/user' },
+        { title: 'Edit Staff', href: '#' },
     ],
 };

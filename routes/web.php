@@ -15,14 +15,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
-        Route::get('admin/staff', [StaffController::class, 'index'])->name('admin.staff.index');
-        Route::get('admin/staff/create', [StaffController::class, 'create'])->name('admin.staff.create');
-        Route::post('admin/staff', [StaffController::class, 'store'])->name('admin.staff.store');
-        Route::get('admin/staff/{staff}', [StaffController::class, 'show'])->name('admin.staff.show');
-        Route::get('admin/staff/{staff}/edit', [StaffController::class, 'edit'])->name('admin.staff.edit');
-        Route::put('admin/staff/{staff}', [StaffController::class, 'update'])->name('admin.staff.update');
-        Route::patch('admin/staff/{staff}/status', [StaffController::class, 'toggleStatus'])->name('admin.staff.status');
-        Route::delete('admin/staff/{staff}', [StaffController::class, 'destroy'])->name('admin.staff.destroy');
+        Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
+        Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
+        Route::post('admin/user', [StaffController::class, 'store'])->name('admin.user.store');
+        Route::get('admin/user/{user}', [StaffController::class, 'show'])->name('admin.user.show');
+        Route::get('admin/user/{user}/edit', [StaffController::class, 'edit'])->name('admin.user.edit');
+        Route::put('admin/user/{user}', [StaffController::class, 'update'])->name('admin.user.update');
+        Route::patch('admin/user/{user}/status', [StaffController::class, 'toggleStatus'])->name('admin.user.status');
+        Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
     });
 
     Route::middleware('role:staff')->group(function () {

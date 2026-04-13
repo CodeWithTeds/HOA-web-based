@@ -28,7 +28,7 @@ class UpdateStaffRequest extends FormRequest
         $staffId = $this->route('staff') ?? $this->route('id');
 
         return [
-            'profilePicture' => ['nullable', 'string'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
             'firstName' => ['required', 'string', 'min:2'],
             'lastName' => ['required', 'string', 'min:2'],
             'email' => ['required', 'string', 'email', 'unique:staff,email,' . $staffId],
