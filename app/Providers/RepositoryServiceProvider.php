@@ -21,6 +21,10 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->singleton(TaskRepositoryInterface::class, TaskRepository::class);
         $this->app->singleton(StaffRepositoryInterface::class, EloquentStaffRepository::class);
         $this->app->singleton(ResidentRepositoryInterface::class, EloquentResidentRepository::class);
+        $this->app->singleton(
+            \App\Repositories\Billing\BillingRepositoryInterface::class,
+            \App\Repositories\Billing\EloquentBillingRepository::class
+        );
     }
 
     /**

@@ -26,6 +26,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('admin/residents/{resident}', [ResidentController::class, 'update'])->name('admin.residents.update');
         Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
         
+        // Billing & Collection
+        Route::get('admin/billing', [\App\Http\Controllers\Admin\BillingController::class, 'index'])->name('admin.billing.index');
+        Route::get('admin/billing/create-period', [\App\Http\Controllers\Admin\BillingController::class, 'createPeriod'])->name('admin.billing.create-period');
+        Route::post('admin/billing/periods', [\App\Http\Controllers\Admin\BillingController::class, 'storePeriod'])->name('admin.billing.periods.store');
+        Route::post('admin/billing/periods/{id}/generate', [\App\Http\Controllers\Admin\BillingController::class, 'generateInvoices'])->name('admin.billing.periods.generate');
+        
         Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
         Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
         Route::post('admin/user', [StaffController::class, 'store'])->name('admin.user.store');
