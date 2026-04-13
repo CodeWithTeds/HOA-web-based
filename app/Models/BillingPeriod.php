@@ -13,6 +13,7 @@ class BillingPeriod extends Model
         'start_date',
         'end_date',
         'due_date',
+        'amount',
         'status',
     ];
 
@@ -20,6 +21,7 @@ class BillingPeriod extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'due_date' => 'date',
+        'amount' => 'decimal:2',
         'status' => BillingPeriodStatus::class,
     ];
 

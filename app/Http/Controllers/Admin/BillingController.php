@@ -75,6 +75,7 @@ class BillingController extends Controller
         // Auto-generate invoices for the selected or all residents
         $generatedCount = $this->billingService->generateMonthlyInvoices(
             $period->id, 
+            $validated['amount'],
             $validated['resident_ids'] ?? null
         );
 

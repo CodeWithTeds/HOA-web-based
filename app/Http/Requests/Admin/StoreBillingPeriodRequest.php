@@ -26,6 +26,7 @@ class StoreBillingPeriodRequest extends FormRequest
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after:start_date'],
             'due_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'amount' => ['required', 'numeric', 'min:0'],
             'resident_ids' => ['nullable', 'array'],
             'resident_ids.*' => ['exists:residents,id'],
         ];

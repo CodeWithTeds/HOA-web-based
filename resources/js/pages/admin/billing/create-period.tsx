@@ -43,6 +43,7 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
 
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        amount: '',
         start_date: '',
         end_date: '',
         due_date: '',
@@ -110,7 +111,7 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
             />
 
             <div
-                className="flex h-full flex-1 flex-col rounded-2xl bg-white dark:bg-[#0c0c0c] text-[#0A2540] dark:text-neutral-100 overflow-hidden relative"
+                className="flex h-full flex-1 flex-col rounded-2xl bg-white dark:bg-[#0c0c0c] text-[#0A2540] dark:text-neutral-100 overflow-hidden relative shadow-2xl shadow-black/5"
                 style={{ fontFamily: fontStack }}
             >
                 {/* ─── PROCESSING OVERLAY ─── */}
@@ -133,13 +134,13 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                                 <Receipt className="size-5 text-white" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white">Initiate Billing Cycle</h1>
-                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-0.5">Configuration and Selective Resident Billing</p>
+                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white leading-none">Initiate Billing Cycle</h1>
+                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-1.5">Configuration and Selective Resident Billing</p>
                             </div>
                         </div>
                         <Link href="/admin/billing">
                             <Button variant="outline" className="h-9 gap-2 rounded-lg text-[12px] font-bold text-neutral-500 border-neutral-200">
-                                <ArrowLeft className="size-3.5" /> Back to Overview
+                                <ArrowLeft className="size-3.5" /> Back to Registry
                             </Button>
                         </Link>
                     </div>
@@ -148,8 +149,8 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                 {/* ─── MAIN CONTENT ─── */}
                 <div className="flex-1 flex overflow-hidden">
                     
-                    {/* LEFT PANEL: FIXED HEIGHT RESIDENT SELECTION */}
-                    <div className="w-[340px] px-8 py-10 bg-neutral-50/50 dark:bg-neutral-900/20 border-r border-neutral-100 dark:border-neutral-800/60 flex flex-col">
+                    {/* LEFT PANEL: RESIDENT SELECTION */}
+                    <div className="w-[340px] px-8 pt-6 pb-10 bg-neutral-50/50 dark:bg-neutral-900/20 border-r border-neutral-100 dark:border-neutral-800/60 flex flex-col">
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -165,7 +166,6 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                                 </button>
                             </div>
                             
-                            {/* SEARCH BOX */}
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-neutral-400" />
                                 <Input 
@@ -176,7 +176,6 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                                 />
                             </div>
 
-                            {/* THE LIST: FIXED HEIGHT (Displays ~10 items) */}
                             <div className="h-[480px] overflow-y-auto pr-2 space-y-1 custom-scrollbar">
                                 {filteredResidents.map(resident => (
                                     <div 
@@ -216,67 +215,92 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                         </div>
                     </div>
 
-                    {/* RIGHT PANE: FORM FIELDS (Expansive Layout) */}
+                    {/* RIGHT PANE: FORM FIELDS */}
                     <div className="flex-1 overflow-y-auto">
-                        <form onSubmit={submit} className="px-10 py-10">
+                        <form onSubmit={submit} className="px-10 pt-6 pb-20">
                             <div className="space-y-12">
                                 <SectionHeader icon={CalendarDays} title="Billing Details" description="Define the period name and financial schedule." />
                                 
-                                <div className="space-y-6">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Billing Period Name <span className="text-red-500">*</span></Label>
-                                        <Input value={data.name} onChange={e => setData('name', e.target.value)} placeholder="e.g. May 2026 HOA Dues" className="h-10 rounded-lg text-[14px] font-bold border-neutral-200" />
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Billing Period Name <span className="text-red-500">*</span></Label>
+                                        <Input 
+                                            value={data.name} 
+                                            onChange={e => setData('name', e.target.value)} 
+                                            placeholder="e.g. May 2026 HOA Dues" 
+                                            className="h-11 rounded-xl text-[14px] font-bold border-neutral-200" 
+                                        />
                                         {errors.name && <p className="text-[10px] font-bold text-red-500">⚠ {errors.name}</p>}
                                     </div>
 
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Coverage Start</Label>
-                                            <Input type="date" value={data.start_date} onChange={e => setData('start_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
+                                    <div className="space-y-2">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Assessment Amount (PHP) <span className="text-red-500">*</span></Label>
+                                        <div className="relative">
+                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] font-black text-neutral-400">₱</div>
+                                            <Input 
+                                                type="number"
+                                                step="0.01"
+                                                value={data.amount} 
+                                                onChange={e => setData('amount', e.target.value)} 
+                                                placeholder="0.00" 
+                                                className="h-11 pl-8 rounded-xl text-[14px] font-black border-neutral-200" 
+                                            />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Coverage End</Label>
-                                            <Input type="date" value={data.end_date} onChange={e => setData('end_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Payment Due</Label>
-                                            <Input type="date" value={data.due_date} onChange={e => setData('due_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-red-100 bg-red-50/20 text-red-600" />
-                                        </div>
+                                        {errors.amount && <p className="text-[10px] font-bold text-red-500">⚠ {errors.amount}</p>}
                                     </div>
                                 </div>
 
-                                <div className="p-6 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex gap-4">
-                                    <div className="size-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20">
-                                        <Wallet className="size-5" />
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage Start</Label>
+                                        <Input type="date" value={data.start_date} onChange={e => setData('start_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
                                     </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-[14px] font-black text-[#0A2540] dark:text-white uppercase leading-tight">Bulk Verification</h4>
-                                        <p className="text-[12px] text-neutral-500 font-bold leading-relaxed">
-                                            Verify your selections on the left. Residents will receive their digital invoices immediately upon authorization.
-                                        </p>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage End</Label>
+                                        <Input type="date" value={data.end_date} onChange={e => setData('end_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Payment Due</Label>
+                                        <Input type="date" value={data.due_date} onChange={e => setData('due_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-red-100 bg-red-50/20 text-red-600" />
+                                    </div>
+                                </div>
+
+                                {/* AUTHORIZATION CARD WITH INTEGRATED ACTIONS */}
+                                <div className="p-8 rounded-[2rem] bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 flex flex-col gap-6 relative overflow-hidden">
+                                    <div className="flex gap-5">
+                                        <div className="size-12 rounded-[1.25rem] bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-blue-600/20">
+                                            <Wallet className="size-6" strokeWidth={2.5} />
+                                        </div>
+                                        <div className="space-y-1.5 pt-1">
+                                            <h4 className="text-[16px] font-black text-[#0A2540] dark:text-white uppercase leading-tight tracking-tight">Finalize & Authorize</h4>
+                                            <p className="text-[13px] text-neutral-500 font-bold leading-relaxed max-w-xl">
+                                                Verify your selections on the left. Residents will receive their digital invoices immediately upon authorization. This will generate entries for {data.resident_ids.length || residents.length} accounts.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-end gap-3 pt-2 relative z-10">
+                                        <Link href="/admin/billing">
+                                            <Button type="button" variant="ghost" className="h-11 px-6 rounded-xl text-[13px] font-black text-neutral-400 hover:bg-neutral-200/50 uppercase tracking-wider transition-colors">Discard</Button>
+                                        </Link>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="h-11 gap-2.5 px-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[14px] font-black shadow-2xl shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50"
+                                        >
+                                            {processing ? <Loader2 className="size-4 animate-spin" /> : null}
+                                            {processing ? 'Processing...' : 'Authorize Period'}
+                                        </Button>
+                                    </div>
+
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full -mr-16 -mt-16 blur-2xl" />
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                {/* ─── FOOTER ─── */}
-                <div className="shrink-0 bg-white dark:bg-[#0c0c0c] border-t border-neutral-100 dark:border-neutral-800/60 px-8 py-5 flex items-center justify-between">
-                    <p className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Targeting: {data.resident_ids.length || residents.length} accounts</p>
-                    <div className="flex items-center gap-3">
-                        <Link href="/admin/billing">
-                            <Button type="button" variant="ghost" className="h-10 rounded-xl px-6 text-[13px] font-black text-neutral-500 hover:bg-neutral-50">Discard</Button>
-                        </Link>
-                        <Button
-                            onClick={submit}
-                            disabled={processing}
-                            className="h-10 rounded-xl px-8 text-[13px] font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] disabled:opacity-50"
-                        >
-                            {processing ? 'Authorizing...' : 'Authorize Invoices'}
-                        </Button>
-                    </div>
-                </div>
+                {/* REMOVED STICKY FOOTER IN FAVOR OF CARD-BASED ACTIONS */}
             </div>
         </>
     );
@@ -285,7 +309,7 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
 BillingPeriodCreate.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Billing & Collection', href: '/admin/billing' },
+        { title: 'Billing Registry', href: '/admin/billing' },
         { title: 'New Cycle', href: '#' },
     ],
 };
