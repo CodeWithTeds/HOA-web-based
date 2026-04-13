@@ -29,7 +29,7 @@ class StoreStaffRequest extends FormRequest
             'firstName' => ['required', 'string', 'min:2'],
             'lastName' => ['required', 'string', 'min:2'],
             'email' => ['required', 'string', 'email', 'unique:staff,email'],
-            'phone' => ['nullable', 'string'],
+            'phone' => ['nullable', 'string', 'digits:11'],
             'role' => ['required', new Enum(StaffRole::class)],
             'department' => ['nullable', 'string'],
             'status' => ['required', new Enum(StaffStatus::class)],

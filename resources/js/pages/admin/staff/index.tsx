@@ -228,22 +228,30 @@ export default function StaffIndex({ staff }: { staff: any }) {
                                         <td className="pr-8 pl-6 py-4 text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="size-9 p-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-100 dark:hover:bg-neutral-800">
+                                                    <Button variant="ghost" className="size-9 p-0 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
                                                         <MoreHorizontal className="size-4 text-neutral-500" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl border-neutral-200 dark:border-neutral-800" style={{ fontFamily: fontStack }}>
-                                                    <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
-                                                        <Eye className="size-4 text-neutral-400" /> View Profile
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
-                                                        <Pencil className="size-4 text-neutral-400" /> Edit Details
-                                                    </DropdownMenuItem>
+                                                    <Link href={`/admin/staff/${item.id}`}>
+                                                        <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
+                                                            <Eye className="size-4 text-neutral-400" /> View Profile
+                                                        </DropdownMenuItem>
+                                                    </Link>
+                                                    <Link href={`/admin/staff/${item.id}/edit`}>
+                                                        <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer">
+                                                            <Pencil className="size-4 text-neutral-400" /> Edit Details
+                                                        </DropdownMenuItem>
+                                                    </Link>
                                                     <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-amber-600 focus:text-amber-600">
-                                                        <Ban className="size-4" /> Suspend Access
+                                                    <DropdownMenuItem onClick={() => router.patch(`/admin/staff/${item.id}/status`)} className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-amber-600 focus:text-amber-600">
+                                                        <Ban className="size-4" /> {item.status === 'ACTIVE' ? 'Suspend Access' : 'Restore Access'}
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-red-600 focus:text-red-600">
+                                                    <DropdownMenuItem onClick={() => {
+                                                        if(confirm(`Are you sure you want to remove ${item.first_name}?`)) {
+                                                            router.delete(`/admin/staff/${item.id}`);
+                                                        }
+                                                    }} className="gap-2.5 rounded-lg font-semibold text-[13px] cursor-pointer text-red-600 focus:text-red-600">
                                                         <Trash2 className="size-4" /> Remove Staff
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

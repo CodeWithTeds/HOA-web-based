@@ -40,4 +40,49 @@ class StaffController extends Controller
 
         return redirect()->route('admin.staff.index')->with('success', 'Staff member registered successfully.');
     }
+
+    /**
+     * Show the specified staff member.
+     */
+    public function show(string $id): Response
+    {
+        $staff = $this->staffService->getStaffById($id);
+        return Inertia::render('admin/staff/show', ['staff' => $staff]);
+    }
+
+    /**
+     * Show the form for editing the specified staff member.
+     */
+    public function edit(string $id): Response
+    {
+        $staff = $this->staffService->getStaffById($id);
+        return Inertia::render('admin/staff/edit', ['staff' => $staff]);
+    }
+
+    /**
+     * Update the specified staff member.
+     */
+    public function update(\App\Http\Requests\Admin\UpdateStaffRequest $request, string $id): \Illuminate\Http\RedirectResponse
+    {
+        $this->staffService->updateStaff($id, $request->validated());
+        return redirect()->route('admin.staff.index')->with('success', 'Staff member updated successfully.');
+    }
+
+    /**
+     * Toggle the status of the specified staff member.
+     */
+    public function toggleStatus(string $id): \Illuminate\Http\RedirectResponse
+    {
+        $this->staffService->toggleStaffStatus($id);
+        return redirect()->back()->with('success', 'Staff status updated successfully.');
+    }
+
+    /**
+     * Remove the specified staff member from storage.
+     */
+    public function destroy(string $id): \Illuminate\Http\RedirectResponse
+    {
+        $this->staffService->deleteStaff($id);
+        return redirect()->route('admin.staff.index')->with('success', 'Staff member removed successfully.');
+    }
 }
