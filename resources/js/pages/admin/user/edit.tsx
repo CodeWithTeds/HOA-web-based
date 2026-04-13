@@ -38,6 +38,7 @@ export default function StaffEdit({ staff }: { staff: any }) {
         department: staff.department || '',
         status: staff.status || 'ACTIVE',
         hireDate: staff.hire_date ? new Date(staff.hire_date).toISOString().split('T')[0] : '',
+        password: '',
         photo: null as File | null,
     });
 
@@ -187,6 +188,41 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                             className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.phone ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                         />
                                         {errors.phone && <p className="text-[12px] font-bold text-red-500 flex items-center gap-1.5 animate-in slide-in-from-top-1 duration-200">⚠ {errors.phone}</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Gradient divider */}
+                        <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 dark:via-neutral-800 to-transparent mb-10" />
+
+                        {/* Account Security */}
+                        <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+                            <div className="md:col-span-1">
+                                <h2 className="text-[18px] font-extrabold tracking-[-0.02em] text-[#0A2540] dark:text-white">Account Security</h2>
+                                <p className="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400">
+                                    Update the staff member's password. Leave blank to keep the current password.
+                                </p>
+                            </div>
+                            
+                            <div className="md:col-span-2">
+                                <div className="grid grid-cols-1 gap-x-8 gap-y-6">
+                                    <div className="space-y-2.5">
+                                        <Label htmlFor="password" className="text-[13px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                                            New Password <span className="text-neutral-400 font-normal normal-case text-[11px]">(optional)</span>
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                value={data.password}
+                                                onChange={e => { setData('password', e.target.value); clearErrors('password'); }}
+                                                placeholder="••••••••"
+                                                className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.password ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
+                                            />
+                                        </div>
+                                        {errors.password && <p className="text-[12px] font-bold text-red-500 flex items-center gap-1.5 animate-in slide-in-from-top-1 duration-200">⚠ {errors.password}</p>}
+                                        <p className="text-[11px] text-neutral-400 font-medium">Minimum 8 characters. If you don't want to change the password, leave this field empty.</p>
                                     </div>
                                 </div>
                             </div>

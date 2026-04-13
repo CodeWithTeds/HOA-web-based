@@ -25,13 +25,14 @@ class UpdateStaffRequest extends FormRequest
     public function rules(): array
     {
         // we can access the route parameter 'staff' or 'id'
-        $staffId = $this->route('staff') ?? $this->route('id');
+        $staffId = $this->route('user') ?? $this->route('staff') ?? $this->route('id');
 
         return [
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
             'firstName' => ['required', 'string', 'min:2'],
             'lastName' => ['required', 'string', 'min:2'],
             'email' => ['required', 'string', 'email', 'unique:staff,email,' . $staffId],
+            'password' => ['nullable', 'string', 'min:8'],
             'phone' => ['nullable', 'string', 'digits:11'],
             'role' => ['required', new Enum(StaffRole::class)],
             'department' => ['nullable', 'string'],

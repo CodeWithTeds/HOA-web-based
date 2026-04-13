@@ -17,10 +17,13 @@ class StaffController extends Controller
     /**
      * Display a listing of staff.
      */
-    public function index(): Response
+    public function index(\Illuminate\Http\Request $request): Response
     {
-        $staff = $this->staffService->getPaginatedStaff(10);
-        return Inertia::render('admin/user/index', ['staff' => $staff]);
+        $staff = $this->staffService->getPaginatedStaff(10, $request->input('search'));
+        return Inertia::render('admin/user/index', [
+            'staff' => $staff,
+            'filters' => $request->only('search')
+        ]);
     }
 
     /**

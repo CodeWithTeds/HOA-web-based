@@ -14,9 +14,9 @@ class StaffService
         protected StaffRepositoryInterface $staffRepository
     ) {}
 
-    public function getPaginatedStaff(int $perPage = 10)
+    public function getPaginatedStaff(int $perPage = 10, ?string $search = null)
     {
-        return $this->staffRepository->paginate($perPage);
+        return $this->staffRepository->paginateWithSearch($perPage, $search);
     }
 
     public function createStaff(array $data): Staff
@@ -33,6 +33,7 @@ class StaffService
             'first_name' => $data['firstName'],
             'last_name' => $data['lastName'],
             'email' => $data['email'],
+            'password' => $data['password'],
             'phone' => $data['phone'] ?? null,
             'role' => $data['role'],
             'department' => $data['department'] ?? null,
@@ -69,6 +70,11 @@ class StaffService
             'status' => $data['status'],
             'hire_date' => $data['hireDate'],
         ];
+
+        // Only update password if provided
+        if (!empty($data['password'])) {
+            $attributes['password'] = $data['password'];
+        }
 
         // Handle photo upload if present
         if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {

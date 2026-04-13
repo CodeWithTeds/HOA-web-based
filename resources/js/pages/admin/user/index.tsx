@@ -43,9 +43,9 @@ function getGradient(name: string) {
     return avatarGradients[code % avatarGradients.length];
 }
 
-export default function StaffIndex({ staff }: { staff: any }) {
+export default function StaffIndex({ staff, filters }: { staff: any, filters?: any }) {
     const { flash } = usePage<any>().props;
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(filters?.search || '');
 
     const [alert, setAlert] = useState<{
         show: boolean;
@@ -63,19 +63,27 @@ export default function StaffIndex({ staff }: { staff: any }) {
         }
     }, [flash]);
 
-    const filteredData = staff?.data?.filter((item: any) => {
-        if (!searchQuery) return true;
-        const q = searchQuery.toLowerCase();
-        return (
-            item.first_name?.toLowerCase().includes(q) ||
-            item.last_name?.toLowerCase().includes(q) ||
-            item.email?.toLowerCase().includes(q) ||
-            item.role?.toLowerCase().includes(q)
-        );
-    });
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchQuery !== (filters?.search || '')) {
+                router.get(
+                    '/admin/user',
+                    { search: searchQuery },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        replace: true,
+                    }
+                );
+            }
+        }, 400);
 
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    const users = staff?.data || [];
     const totalStaff = staff?.total || 0;
-    const activeCount = staff?.data?.filter((s: any) => s.status === 'ACTIVE').length || 0;
+    const activeCount = users.filter((s: any) => s.status === 'ACTIVE').length || 0;
 
     return (
         <>
@@ -137,7 +145,7 @@ export default function StaffIndex({ staff }: { staff: any }) {
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="text-[13px] font-semibold text-neutral-400">
-                            Showing <span className="text-neutral-600 dark:text-neutral-300">{filteredData?.length || 0}</span> of {totalStaff}
+                            Showing <span className="text-neutral-600 dark:text-neutral-300">{users.length}</span> of {totalStaff}
                         </span>
                         <Button variant="outline" className="h-10 gap-2 rounded-xl text-[13px] font-semibold border-neutral-200 dark:border-neutral-800">
                             <Download className="size-3.5" /> Export
@@ -171,8 +179,8 @@ export default function StaffIndex({ staff }: { staff: any }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-                            {filteredData?.length > 0 ? (
-                                filteredData.map((item: any) => (
+                            {users.length > 0 ? (
+                                users.map((item: any) => (
                                     <tr key={item.id} className="group hover:bg-blue-50/40 dark:hover:bg-blue-900/5 transition-colors duration-150">
                                         {/* Name */}
                                         <td className="pl-8 pr-6 py-4">
