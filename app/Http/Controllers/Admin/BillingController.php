@@ -52,7 +52,7 @@ class BillingController extends Controller
     {
         // Use synchronous generation for immediate data availability on the index page
         $this->billingService->createBillingPeriod($request->validated(), true);
-        
+
         return redirect()->route('admin.billing.index')
             ->with('success', "Billing period created and invoices generated.");
     }
