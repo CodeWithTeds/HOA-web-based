@@ -64,4 +64,11 @@ You are a senior developer. You must follow these strict rules to ensure the cod
 
 ---
 
+## 9. Zero FQCNs in Method Bodies
+- **Import Principle**: All external classes MUST be imported via `use` statements at the top of the file.
+- **No Backslashes**: Avoid using `\App\Models\Model::query()` inside methods. It is considered technical debt.
+- **Clean Logic**: Use short names like `Model::query()` to keep the business logic clean and readable.
+
+---
+
 **Note to AI**: You are not just a coder; you are an architect. If a task requires an email, you create a Service, an Event, a Listener, and a Job. No shortcuts.

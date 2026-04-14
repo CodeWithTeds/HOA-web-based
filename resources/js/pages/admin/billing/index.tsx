@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     Plus,
     Search,
@@ -34,7 +34,8 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { SweetAlert } from '@/components/ui/sweet-alert';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -60,11 +61,38 @@ interface Invoice {
 }
 
 export default function BillingIndex({ invoices, summaries, periods, filters }: any) {
+    const { flash } = usePage<any>().props;
     const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [invoiceDetails, setInvoiceDetails] = useState<any>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+    const [alert, setAlert] = useState<{
+        show: boolean;
+        type: 'success' | 'error' | 'warning' | 'info';
+        title: string;
+        message?: string;
+    }>({ show: false, type: 'success', title: '' });
+
+    useEffect(() => {
+        if (flash?.success) {
+            setAlert({ 
+                show: true, 
+                type: 'success', 
+                title: 'Operation Successful', 
+                message: String(flash.success) 
+            });
+        }
+        if (flash?.error) {
+            setAlert({ 
+                show: true, 
+                type: 'error', 
+                title: 'Operation Failed', 
+                message: String(flash.error) 
+            });
+        }
+    }, [flash?.success, flash?.error]);
 
     const { data, setData, post, processing, reset, errors } = useForm({
         invoice_id: '',
@@ -96,8 +124,9 @@ export default function BillingIndex({ invoices, summaries, periods, filters }: 
         setIsLoadingDetails(true);
         try {
             const response = await fetch(`/admin/billing/invoices/${invoice.id}`);
-            const data = await response.json();
-            setInvoiceDetails(data);
+            const result = await response.json();
+            // Handle InvoiceResource wrapper which nests data inside a 'data' key
+            setInvoiceDetails(result.data || result);
         } catch (error) {
             console.error('Failed to fetch invoice details', error);
         } finally {
@@ -136,6 +165,13 @@ export default function BillingIndex({ invoices, summaries, periods, filters }: 
     return (
         <>
             <Head title="Billing & Collections" />
+            <SweetAlert
+                type={alert.type}
+                title={alert.title}
+                message={alert.message}
+                show={alert.show}
+                onClose={() => setAlert(prev => ({ ...prev, show: false }))}
+            />
 
             <div
                 className="flex h-full flex-1 flex-col rounded-2xl bg-white dark:bg-[#0c0c0c] text-[#0A2540] dark:text-neutral-100 overflow-hidden"

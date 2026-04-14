@@ -17,10 +17,14 @@ You are a senior full-stack developer. When generating code for this project, yo
 ### **Services (`app/Services`)**
 - Use for **Business Logic** and complex rules.
 - Services should handle the "How" of the business process.
+- **Business Logic Only**: Services must focus solely on business rules and logic. 
+- **No Database Interaction**: Services must NEVER interact directly with the database (no Eloquent queries). They must use Repositories for all data access.
 - Controllers should call Services, not implement logic.
+- **Thin Controllers**: Controllers must be as thin as possible (aim for 1-4 lines per method).
 
 ### **Repositories (`app/Repositories`)**
 - Use for all **Database Interactions**.
+- **Exclusive Responsibility**: Repositories are the ONLY place where Eloquent models or database queries should be accessed.
 - **Organization**: Separate by folder based on implementation (e.g., `Contracts/`, `Eloquent/`).
 - Example: `app/Repositories/User/EloquentUserRepository.php` implementing `app/Repositories/User/UserRepositoryInterface.php`.
 
@@ -40,6 +44,7 @@ You are a senior full-stack developer. When generating code for this project, yo
 ### **Resources (`app/Http/Resources`)**
 - Use for **API Response Formatting**.
 - Ensure consistent data structures for the frontend.
+- **CRUD Standard**: Always apply API Resources for CRUD operations to maintain a clean and predictable response structure.
 
 ### **Jobs & Queues (`app/Jobs`)**
 - Use for **Background Tasks** or heavy processing (e.g., sending bulk emails, image processing).
@@ -65,12 +70,15 @@ You are a senior full-stack developer. When generating code for this project, yo
 
 ## 3. Implementation Rules
 
-1. **Interacting with Database**: Always use **Repositories**.
-2. **Business Rules**: Always use **Services**.
+1. **Interacting with Database**: Always use **Repositories**. No Eloquent calls are allowed in Controllers or Services.
+2. **Business Rules**: Always use **Services**. Keep them focused on logic; avoid direct database interaction.
 3. **Repeated Logic**: Extract to **Traits**.
 4. **Input Handling**: Always use **Request Forms**.
 5. **State Management**: Always use **Enums**.
 6. **Side Effects**: Use **Events/Listeners** or **Jobs/Queues**.
+7. **Code Reusability (Imports)**: Always include `use` statements at the top of the file. NEVER use fully qualified class names (e.g., `\App\Models\Payment::create()`) inside method bodies. Use the short class name instead (e.g., `Payment::create()`).
+8. **Controller Slimness**: Keep controller methods between 1-4 lines; delegate all complexity to Services.
+9. **API Consistency**: Always use **API Resources** for returning CRUD data.
 
 ---
 

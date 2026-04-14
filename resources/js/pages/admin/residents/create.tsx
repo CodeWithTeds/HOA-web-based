@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     UserPlus,
@@ -18,17 +18,27 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 export default function ResidentCreate() {
+    const { flash } = usePage<any>().props;
     const [alert, setAlert] = useState<{
         show: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
         title: string;
         message?: string;
     }>({ show: false, type: 'success', title: '' });
+
+    useEffect(() => {
+        if (flash?.success) {
+            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
+        }
+        if (flash?.error) {
+            setAlert({ show: true, type: 'error', title: 'Operation Failed', message: flash.error });
+        }
+    }, [flash?.success, flash?.error]);
 
     const { data, setData, post, processing, errors, clearErrors } = useForm({
         // Personal Info

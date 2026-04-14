@@ -3,9 +3,11 @@
 namespace App\Repositories\Billing;
 
 use App\Enums\PaymentStatus;
+use App\Models\BillingPeriod;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -67,5 +69,90 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
             'total_collections' => (float) $paymentQuery->sum('amount'),
             'outstanding_balance' => (float) $invoiceQuery->sum('balance'),
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getAllBillingPeriods(): Collection
+    {
+        return BillingPeriod::latest()->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findBillingPeriod(int $id): BillingPeriod
+    {
+        return BillingPeriod::findOrFail($id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createBillingPeriod(array $data): BillingPeriod
+    {
+        return BillingPeriod::create($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createInvoice(array $data): Invoice
+    {
+        return $this->model->create($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function invoiceExists(int $residentId, int $billingPeriodId): bool
+    {
+        return $this->model->newQuery()
+            ->where('resident_id', $residentId)
+            ->where('billing_period_id', $billingPeriodId)
+            ->exists();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findInvoice(int $id, array $relations = []): Invoice
+    {
+        return $this->model->newQuery()->with($relations)->findOrFail($id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createPayment(array $data): Payment
+    {
+        return Payment::create($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInvoicesForExport(array $filters): Collection
+    {
+        $query = $this->model->newQuery()->with(['resident', 'billingPeriod']);
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->whereHas('resident', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })->orWhere('invoice_number', 'like', "%{$search}%");
+        }
+
+        if (!empty($filters['billing_period_id'])) {
+            $query->where('billing_period_id', $filters['billing_period_id']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        return $query->latest()->get();
     }
 }

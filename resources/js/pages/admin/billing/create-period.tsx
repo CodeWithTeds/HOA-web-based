@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     Calendar,
@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, memo } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -33,6 +33,7 @@ interface Resident {
 }
 
 export default function BillingPeriodCreate({ residents }: { residents: Resident[] }) {
+    const { flash } = usePage<any>().props;
     const [searchTerm, setSearchTerm] = useState('');
     const [alert, setAlert] = useState<{
         show: boolean;
@@ -41,7 +42,16 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
         message?: string;
     }>({ show: false, type: 'success', title: '' });
 
-    const { data, setData, post, processing, errors } = useForm({
+    useEffect(() => {
+        if (flash?.success) {
+            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
+        }
+        if (flash?.error) {
+            setAlert({ show: true, type: 'error', title: 'Operation Failed', message: flash.error });
+        }
+    }, [flash?.success, flash?.error]);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         amount: '',
         start_date: '',
@@ -86,19 +96,6 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
         });
     };
 
-    const SectionHeader = ({ icon: Icon, title, description }: any) => (
-        <div className="flex items-start gap-4 mb-6 relative pl-4">
-            <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-blue-600/30 dark:bg-blue-400/20 rounded-full" />
-            <div className="flex items-center justify-center size-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
-                <Icon className="size-4.5" />
-            </div>
-            <div>
-                <h2 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white uppercase">{title}</h2>
-                <p className="text-[12px] text-neutral-400 font-bold mt-0.5 leading-tight">{description}</p>
-            </div>
-        </div>
-    );
-
     return (
         <>
             <Head title="Create Billing Period" />
@@ -114,17 +111,7 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                 className="flex h-full flex-1 flex-col rounded-2xl bg-white dark:bg-[#0c0c0c] text-[#0A2540] dark:text-neutral-100 overflow-hidden relative shadow-2xl shadow-black/5"
                 style={{ fontFamily: fontStack }}
             >
-                {/* ─── PROCESSING OVERLAY ─── */}
-                {processing && (
-                    <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/60 dark:bg-black/60 backdrop-blur-[6px]">
-                        <div className="flex flex-col items-center gap-6 p-10 rounded-[2.5rem] bg-white dark:bg-neutral-900 shadow-2xl animate-in fade-in zoom-in duration-300">
-                            <div className="size-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-xl shadow-blue-500/30">
-                                <Loader2 className="size-8 text-white animate-spin" strokeWidth={2.5} />
-                            </div>
-                            <h3 className="text-lg font-black tracking-tight uppercase">Authorizing Invoices</h3>
-                        </div>
-                    </div>
-                )}
+                {/* REMOVED HEAVY OVERLAY TO PREVENT UI JOLT */}
 
                 {/* ─── HEADER ─── */}
                 <div className="shrink-0 px-8 py-6 border-b border-neutral-100 dark:border-neutral-800/60 bg-neutral-50/30 dark:bg-neutral-900/40">
@@ -178,32 +165,12 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
 
                             <div className="h-[480px] overflow-y-auto pr-2 space-y-1 custom-scrollbar">
                                 {filteredResidents.map(resident => (
-                                    <div 
+                                    <ResidentItem 
                                         key={resident.id}
-                                        onClick={() => toggleResident(resident.id)}
-                                        className={`
-                                            p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition-all border
-                                            ${data.resident_ids.includes(resident.id) 
-                                                ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/10' 
-                                                : 'bg-white border-neutral-100 dark:bg-neutral-800 dark:border-neutral-700 hover:border-blue-200'
-                                            }
-                                        `}
-                                    >
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className={`size-7 rounded-lg flex items-center justify-center shrink-0 ${data.resident_ids.includes(resident.id) ? 'bg-white/20' : 'bg-neutral-100'}`}>
-                                                <UserCircle className={`size-4 ${data.resident_ids.includes(resident.id) ? 'text-white' : 'text-neutral-400'}`} />
-                                            </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-[12px] font-bold truncate leading-none mb-0.5">
-                                                    {resident.last_name}, {resident.first_name[0]}.
-                                                </span>
-                                                <span className={`text-[9px] font-black uppercase tracking-tighter truncate ${data.resident_ids.includes(resident.id) ? 'text-white/60' : 'text-neutral-400'}`}>
-                                                    P{resident.phase} B{resident.block} L{resident.lot}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {data.resident_ids.includes(resident.id) && <CheckSquare className="size-3.5 text-white" />}
-                                    </div>
+                                        resident={resident}
+                                        isSelected={data.resident_ids.includes(resident.id)}
+                                        onToggle={() => toggleResident(resident.id)}
+                                    />
                                 ))}
                             </div>
 
@@ -313,3 +280,51 @@ BillingPeriodCreate.layout = {
         { title: 'New Cycle', href: '#' },
     ],
 };
+
+// ─── OPTIMIZED SUB-COMPONENTS ───
+
+const SectionHeader = ({ icon: Icon, title, description }: any) => (
+    <div className="flex items-start gap-4 mb-6 relative pl-4">
+        <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-blue-600/30 dark:bg-blue-400/20 rounded-full" />
+        <div className="flex items-center justify-center size-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
+            <Icon className="size-4.5" />
+        </div>
+        <div>
+            <h2 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white uppercase">{title}</h2>
+            <p className="text-[12px] text-neutral-400 font-bold mt-0.5 leading-tight">{description}</p>
+        </div>
+    </div>
+);
+
+// ─── OPTIMIZED SUB-COMPONENTS ───
+
+const ResidentItem = memo(({ resident, isSelected, onToggle }: { resident: Resident, isSelected: boolean, onToggle: () => void }) => {
+    return (
+        <div 
+            onClick={onToggle}
+            className={`
+                p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition-all border
+                ${isSelected 
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/10' 
+                    : 'bg-white border-neutral-100 dark:bg-neutral-800 dark:border-neutral-700 hover:border-blue-200'
+                }
+            `}
+        >
+            <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`size-7 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/20' : 'bg-neutral-100'}`}>
+                    <UserCircle className={`size-4 ${isSelected ? 'text-white' : 'text-neutral-400'}`} />
+                </div>
+                <div className="flex flex-col min-w-0">
+                    <span className="text-[12px] font-bold truncate leading-none mb-0.5">
+                        {resident.last_name}, {resident.first_name[0]}.
+                    </span>
+                    <span className={`text-[9px] font-black uppercase tracking-tighter truncate ${isSelected ? 'text-white/60' : 'text-neutral-400'}`}>
+                        P{resident.phase} B{resident.block} L{resident.lot}
+                    </span>
+                </div>
+            </div>
+            {isSelected && <CheckSquare className="size-3.5 text-white" />}
+        </div>
+    );
+});
+ ResidentItem.displayName = 'ResidentItem';

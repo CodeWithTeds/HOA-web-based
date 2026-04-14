@@ -2,8 +2,10 @@
 
 namespace App\Repositories\Resident;
 
+use App\Enums\ResidentStatus;
 use App\Models\Resident;
 use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentResidentRepository extends BaseRepository implements ResidentRepositoryInterface
@@ -44,5 +46,24 @@ class EloquentResidentRepository extends BaseRepository implements ResidentRepos
         }
 
         return $query->latest()->paginate($perPage);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getActiveResidents(): Collection
+    {
+        return $this->model->newQuery()
+            ->where('status', ResidentStatus::ACTIVE->value)
+            ->orderBy('last_name')
+            ->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByIds(array $ids): Collection
+    {
+        return $this->model->newQuery()->whereIn('id', $ids)->get();
     }
 }

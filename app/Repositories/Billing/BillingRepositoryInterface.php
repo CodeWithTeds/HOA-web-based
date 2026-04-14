@@ -2,7 +2,11 @@
 
 namespace App\Repositories\Billing;
 
+use App\Models\BillingPeriod;
+use App\Models\Invoice;
+use App\Models\Payment;
 use App\Repositories\BaseRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface BillingRepositoryInterface extends BaseRepositoryInterface
@@ -23,4 +27,69 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
      * @return array
      */
     public function getSummaries(int $billingPeriodId = null): array;
+
+    /**
+     * Get all billing periods.
+     *
+     * @return Collection
+     */
+    public function getAllBillingPeriods(): Collection;
+
+    /**
+     * Find a billing period by ID.
+     *
+     * @param int $id
+     * @return BillingPeriod
+     */
+    public function findBillingPeriod(int $id): BillingPeriod;
+
+    /**
+     * Create a new billing period.
+     *
+     * @param array $data
+     * @return BillingPeriod
+     */
+    public function createBillingPeriod(array $data): BillingPeriod;
+
+    /**
+     * Create a new invoice.
+     *
+     * @param array $data
+     * @return Invoice
+     */
+    public function createInvoice(array $data): Invoice;
+
+    /**
+     * Check if an invoice exists for a resident and billing period.
+     *
+     * @param int $residentId
+     * @param int $billingPeriodId
+     * @return bool
+     */
+    public function invoiceExists(int $residentId, int $billingPeriodId): bool;
+
+    /**
+     * Find an invoice by ID with relations.
+     *
+     * @param int $id
+     * @param array $relations
+     * @return Invoice
+     */
+    public function findInvoice(int $id, array $relations = []): Invoice;
+
+    /**
+     * Create a payment record.
+     *
+     * @param array $data
+     * @return Payment
+     */
+    public function createPayment(array $data): Payment;
+
+    /**
+     * Get invoices for export.
+     *
+     * @param array $filters
+     * @return Collection
+     */
+    public function getInvoicesForExport(array $filters): Collection;
 }

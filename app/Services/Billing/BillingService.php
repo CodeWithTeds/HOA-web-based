@@ -8,8 +8,10 @@ use App\Models\Invoice;
 use App\Models\Resident;
 use App\Models\Payment;
 use App\Enums\PaymentStatus;
+use App\Events\BillingPeriodCreated;
 use App\Repositories\Billing\BillingRepositoryInterface;
 use App\Repositories\Resident\ResidentRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -55,9 +57,37 @@ class BillingService
      * @param array $data
      * @return BillingPeriod
      */
-    public function createBillingPeriod(array $data): BillingPeriod
+    public function createBillingPeriod(array $data, bool $sync = false): BillingPeriod
     {
-        return BillingPeriod::create($data);
+        $period = $this->billingRepository->createBillingPeriod($data);
+
+        if ($sync) {
+            $this->generateMonthlyInvoices($period->id, $period->amount, $data['resident_ids'] ?? []);
+        } else {
+            BillingPeriodCreated::dispatch($period, $data['resident_ids'] ?? []);
+        }
+
+        return $period;
+    }
+
+    /**
+     * Get all active residents for billing selection.
+     *
+     * @return Collection
+     */
+    public function getActiveResidents(): Collection
+    {
+        return $this->residentRepository->getActiveResidents();
+    }
+
+    /**
+     * Get all billing periods.
+     *
+     * @return Collection
+     */
+    public function getAllBillingPeriods(): Collection
+    {
+        return $this->billingRepository->getAllBillingPeriods();
     }
 
     /**
@@ -70,27 +100,23 @@ class BillingService
      */
     public function generateMonthlyInvoices(int $billingPeriodId, ?float $amount = null, array $residentIds = null): int
     {
-        $billingPeriod = BillingPeriod::findOrFail($billingPeriodId);
+        $billingPeriod = $this->billingRepository->findBillingPeriod($billingPeriodId);
         $amount = $amount ?? $billingPeriod->amount;
         
-        $query = Resident::where('status', 'Active');
-        if (!empty($residentIds)) {
-            $query->whereIn('id', $residentIds);
-        }
+        $residents = !empty($residentIds) 
+            ? $this->residentRepository->getByIds($residentIds)
+            : $this->residentRepository->getActiveResidents();
         
-        $residents = $query->get();
         $count = 0;
 
         DB::transaction(function () use ($billingPeriod, $residents, $amount, &$count) {
             foreach ($residents as $resident) {
                 // Skip if invoice already exists for this resident and period
-                if (Invoice::where('resident_id', $resident->id)
-                    ->where('billing_period_id', $billingPeriod->id)
-                    ->exists()) {
+                if ($this->billingRepository->invoiceExists($resident->id, $billingPeriod->id)) {
                     continue;
                 }
 
-                $invoice = Invoice::create([
+                $invoice = $this->billingRepository->createInvoice([
                     'resident_id' => $resident->id,
                     'billing_period_id' => $billingPeriod->id,
                     'invoice_number' => 'INV-' . date('Ym') . '-' . Str::upper(Str::random(6)),
@@ -118,15 +144,15 @@ class BillingService
      * Record a payment for an invoice.
      *
      * @param array $data
-     * @return \App\Models\Payment
+     * @return Payment
      */
-    public function recordPayment(array $data): \App\Models\Payment
+    public function recordPayment(array $data): Payment
     {
         return DB::transaction(function () use ($data) {
-            $invoice = Invoice::findOrFail($data['invoice_id']);
+            $invoice = $this->billingRepository->findInvoice($data['invoice_id']);
             
             // Create the payment record
-            $payment = Payment::create([
+            $payment = $this->billingRepository->createPayment([
                 'invoice_id' => $invoice->id,
                 'amount' => $data['amount'],
                 'payment_date' => $data['payment_date'],
@@ -136,18 +162,23 @@ class BillingService
             ]);
 
             // Update invoice balances
-            $invoice->paid_amount += $data['amount'];
-            $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
+            $paidAmount = $invoice->paid_amount + $data['amount'];
+            $balance = $invoice->total_amount - $paidAmount;
             
+            $status = InvoiceStatus::UNPAID;
             // Determine status
-            if ($invoice->balance <= 0) {
-                $invoice->status = InvoiceStatus::PAID;
-                $invoice->balance = 0;
-            } elseif ($invoice->paid_amount > 0) {
-                $invoice->status = InvoiceStatus::PARTIALLY_PAID;
+            if ($balance <= 0) {
+                $status = InvoiceStatus::PAID;
+                $balance = 0;
+            } elseif ($paidAmount > 0) {
+                $status = InvoiceStatus::PARTIALLY_PAID;
             }
 
-            $invoice->save();
+            $invoice->update([
+                'paid_amount' => $paidAmount,
+                'balance' => $balance,
+                'status' => $status
+            ]);
 
             return $payment;
         });
@@ -161,6 +192,17 @@ class BillingService
      */
     public function getInvoiceDetails(int $id): Invoice
     {
-        return Invoice::with(['resident', 'billingPeriod', 'items', 'payments'])->findOrFail($id);
+        return $this->billingRepository->findInvoice($id, ['resident', 'billingPeriod', 'items', 'payments']);
+    }
+
+    /**
+     * Get invoices for export.
+     *
+     * @param array $filters
+     * @return Collection
+     */
+    public function getInvoicesForExport(array $filters): Collection
+    {
+        return $this->billingRepository->getInvoicesForExport($filters);
     }
 }
