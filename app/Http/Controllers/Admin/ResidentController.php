@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\GetResidentsRequest;
 use App\Http\Requests\Admin\StoreResidentRequest;
 use App\Http\Requests\Admin\UpdateResidentRequest;
 use App\Services\Resident\ResidentService;
+use App\Models\Resident;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
@@ -131,7 +132,7 @@ class ResidentController extends Controller
     public function exportCsv(GetResidentsRequest $request): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $filters = $request->validated();
-        $residents = \App\Models\Resident::when($filters['search'] ?? null, function ($query, $search) {
+        $residents = Resident::when($filters['search'] ?? null, function ($query, $search) {
                 $query->where('first_name', 'like', "%{$search}%")
                       ->orWhere('last_name', 'like', "%{$search}%");
             })
