@@ -147,9 +147,11 @@ export default function StaffIndex({ staff, filters }: { staff: any, filters?: a
                         <span className="text-[13px] font-semibold text-neutral-400">
                             Showing <span className="text-neutral-600 dark:text-neutral-300">{users.length}</span> of {totalStaff}
                         </span>
-                        <Button variant="outline" className="h-10 gap-2 rounded-xl text-[13px] font-semibold border-neutral-200 dark:border-neutral-800">
-                            <Download className="size-3.5" /> Export
-                        </Button>
+                        <a href={`/admin/user/export?${new URLSearchParams(filters).toString()}`}>
+                            <Button variant="outline" className="h-10 gap-2 rounded-xl text-[13px] font-semibold border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 active:scale-95 transition-all">
+                                <Download className="size-3.5" /> Export CSV
+                            </Button>
+                        </a>
                     </div>
                 </div>
 

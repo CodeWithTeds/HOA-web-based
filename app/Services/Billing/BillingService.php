@@ -6,6 +6,8 @@ use App\Enums\InvoiceStatus;
 use App\Models\BillingPeriod;
 use App\Models\Invoice;
 use App\Models\Resident;
+use App\Models\Payment;
+use App\Enums\PaymentStatus;
 use App\Repositories\Billing\BillingRepositoryInterface;
 use App\Repositories\Resident\ResidentRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -110,5 +112,55 @@ class BillingService
         });
 
         return $count;
+    }
+
+    /**
+     * Record a payment for an invoice.
+     *
+     * @param array $data
+     * @return \App\Models\Payment
+     */
+    public function recordPayment(array $data): \App\Models\Payment
+    {
+        return DB::transaction(function () use ($data) {
+            $invoice = Invoice::findOrFail($data['invoice_id']);
+            
+            // Create the payment record
+            $payment = Payment::create([
+                'invoice_id' => $invoice->id,
+                'amount' => $data['amount'],
+                'payment_date' => $data['payment_date'],
+                'payment_method' => $data['payment_method'],
+                'reference_number' => $data['reference_number'] ?? null,
+                'status' => PaymentStatus::VERIFIED,
+            ]);
+
+            // Update invoice balances
+            $invoice->paid_amount += $data['amount'];
+            $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
+            
+            // Determine status
+            if ($invoice->balance <= 0) {
+                $invoice->status = InvoiceStatus::PAID;
+                $invoice->balance = 0;
+            } elseif ($invoice->paid_amount > 0) {
+                $invoice->status = InvoiceStatus::PARTIALLY_PAID;
+            }
+
+            $invoice->save();
+
+            return $payment;
+        });
+    }
+
+    /**
+     * Get invoice details with items and payments.
+     *
+     * @param int $id
+     * @return Invoice
+     */
+    public function getInvoiceDetails(int $id): Invoice
+    {
+        return Invoice::with(['resident', 'billingPeriod', 'items', 'payments'])->findOrFail($id);
     }
 }

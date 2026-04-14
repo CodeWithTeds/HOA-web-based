@@ -124,11 +124,13 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" className="h-10 rounded-xl border-neutral-200 font-bold text-[13px] gap-2 px-4">
-                                <FileSpreadsheet className="size-4 text-emerald-600" /> Import / Export
-                            </Button>
+                            <a href={`/admin/residents/export?${new URLSearchParams(filters).toString()}`}>
+                                <Button variant="outline" className="h-10 rounded-xl border-neutral-200 font-bold text-[13px] gap-2 px-4 hover:bg-neutral-50 active:scale-95 transition-all">
+                                    <FileSpreadsheet className="size-4 text-emerald-600" /> Export CSV
+                                </Button>
+                            </a>
                             <Link href="/admin/residents/create">
-                                <Button className="h-10 gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-lg shadow-blue-600/10">
+                                <Button className="h-10 gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-lg shadow-blue-600/10 active:scale-95 transition-all">
                                     <Plus className="size-4" strokeWidth={3} /> Add Resident
                                 </Button>
                             </Link>

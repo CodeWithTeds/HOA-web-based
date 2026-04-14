@@ -121,4 +121,51 @@ class ResidentController extends Controller
         return redirect()->route('admin.residents.index')
             ->with('success', 'Resident deleted successfully.');
     }
+
+    /**
+     * Export residents to CSV.
+     *
+     * @param GetResidentsRequest $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function exportCsv(GetResidentsRequest $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $filters = $request->validated();
+        $residents = \App\Models\Resident::when($filters['search'] ?? null, function ($query, $search) {
+                $query->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->when($filters['resident_type'] ?? null, fn($q, $type) => $q->where('resident_type', $type))
+            ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            ->latest()
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="resident_registry_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($residents) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['ID', 'Last Name', 'First Name', 'Type', 'Phase', 'Block', 'Lot', 'Status', 'Email', 'Phone']);
+
+            foreach ($residents as $res) {
+                fputcsv($file, [
+                    $res->id,
+                    $res->last_name,
+                    $res->first_name,
+                    $res->resident_type->value,
+                    $res->phase,
+                    $res->block,
+                    $res->lot,
+                    $res->status->value,
+                    $res->email,
+                    $res->phone_number,
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

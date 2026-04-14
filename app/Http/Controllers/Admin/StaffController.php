@@ -88,4 +88,42 @@ class StaffController extends Controller
         $this->staffService->deleteStaff($id);
         return redirect()->route('admin.user.index')->with('success', 'Staff member removed successfully.');
     }
+
+    /**
+     * Export staff list to CSV.
+     */
+    public function exportCsv(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $staff = \App\Models\User::where('role', \App\Enums\UserRole::STAFF)
+            ->when($request->input('search'), function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="staff_list_' . date('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($staff) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['ID', 'Name', 'Email', 'Role', 'Status', 'Registered At']);
+
+            foreach ($staff as $user) {
+                fputcsv($file, [
+                    $user->id,
+                    $user->name,
+                    $user->email,
+                    $user->role->value,
+                    $user->status ?? 'Active',
+                    $user->created_at->format('Y-m-d H:i'),
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
