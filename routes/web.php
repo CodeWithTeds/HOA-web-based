@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\ResidentController;
+use App\Http\Controllers\Admin\BillingController;
+use App\Http\Controllers\Admin\ReportController;
 
 Route::inertia('/', 'landing', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -28,13 +30,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
         
         // Billing & Collection
-        Route::get('admin/billing/export', [\App\Http\Controllers\Admin\BillingController::class, 'exportCsv'])->name('admin.billing.export');
-        Route::get('admin/billing', [\App\Http\Controllers\Admin\BillingController::class, 'index'])->name('admin.billing.index');
-        Route::get('admin/billing/create-period', [\App\Http\Controllers\Admin\BillingController::class, 'createPeriod'])->name('admin.billing.create-period');
-        Route::post('admin/billing/periods', [\App\Http\Controllers\Admin\BillingController::class, 'storePeriod'])->name('admin.billing.periods.store');
-        Route::post('admin/billing/periods/{id}/generate', [\App\Http\Controllers\Admin\BillingController::class, 'generateInvoices'])->name('admin.billing.periods.generate');
-        Route::post('admin/billing/payments', [\App\Http\Controllers\Admin\BillingController::class, 'recordPayment'])->name('admin.billing.payments.store');
-        Route::get('admin/billing/invoices/{id}', [\App\Http\Controllers\Admin\BillingController::class, 'showInvoice'])->name('admin.billing.invoices.show');
+        Route::get('admin/billing/export', [BillingController::class, 'exportCsv'])->name('admin.billing.export');
+        Route::get('admin/billing', [BillingController::class, 'index'])->name('admin.billing.index');
+        Route::get('admin/billing/create-period', [BillingController::class, 'createPeriod'])->name('admin.billing.create-period');
+        Route::post('admin/billing/periods', [BillingController::class, 'storePeriod'])->name('admin.billing.periods.store');
+        Route::post('admin/billing/periods/{id}/generate', [BillingController::class, 'generateInvoices'])->name('admin.billing.periods.generate');
+        Route::post('admin/billing/payments', [BillingController::class, 'recordPayment'])->name('admin.billing.payments.store');
+        Route::get('admin/billing/invoices/{id}', [BillingController::class, 'showInvoice'])->name('admin.billing.invoices.show');
+
+        // Reports & Analytics
+        Route::get('admin/reports', [ReportController::class, 'index'])->name('admin.reports.index');
         
         Route::get('admin/user/export', [StaffController::class, 'exportCsv'])->name('admin.user.export');
         Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');

@@ -8,6 +8,10 @@ use App\Repositories\Staff\EloquentStaffRepository;
 use App\Repositories\Staff\StaffRepositoryInterface;
 use App\Repositories\Resident\ResidentRepositoryInterface;
 use App\Repositories\Resident\EloquentResidentRepository;
+use App\Repositories\Billing\BillingRepositoryInterface;
+use App\Repositories\Billing\EloquentBillingRepository;
+use App\Repositories\Report\ReportRepositoryInterface;
+use App\Repositories\Report\EloquentReportRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -21,10 +25,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->singleton(TaskRepositoryInterface::class, TaskRepository::class);
         $this->app->singleton(StaffRepositoryInterface::class, EloquentStaffRepository::class);
         $this->app->singleton(ResidentRepositoryInterface::class, EloquentResidentRepository::class);
-        $this->app->singleton(
-            \App\Repositories\Billing\BillingRepositoryInterface::class,
-            \App\Repositories\Billing\EloquentBillingRepository::class
-        );
+        $this->app->singleton(BillingRepositoryInterface::class, EloquentBillingRepository::class);
+        $this->app->singleton(ReportRepositoryInterface::class, EloquentReportRepository::class);
     }
 
     /**

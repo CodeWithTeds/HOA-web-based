@@ -79,7 +79,7 @@ export function AppSidebar() {
             { title: 'User Management', href: '/admin/user', icon: BookUser },
             { title: 'Resident Management', href: '/admin/residents', icon: Home },
             { title: 'Billing and Collection', href: '/admin/billing', icon: CreditCard },
-            { title: 'Reports and Analytics', href: '#', icon: BarChart3 },
+            { title: 'Reports and Analytics', href: '/admin/reports', icon: BarChart3 },
             { title: 'Facility Management', href: '#', icon: Settings2 },
             { title: 'Announcements', href: '#', icon: Megaphone },
             { title: 'Complaints Management', href: '#', icon: AlertCircle },
