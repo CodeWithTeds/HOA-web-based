@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Report\ReportService;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -28,5 +29,15 @@ class ReportController extends Controller
         return Inertia::render('admin/reports/index', [
             'data' => $this->reportService->getFinancialDashboardData()
         ]);
+    }
+
+    /**
+     * Export the financial reports to CSV.
+     *
+     * @return StreamedResponse
+     */
+    public function exportCsv(): StreamedResponse
+    {
+        return $this->reportService->exportFinancialData();
     }
 }

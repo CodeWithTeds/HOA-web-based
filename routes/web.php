@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/billing/invoices/{id}', [BillingController::class, 'showInvoice'])->name('admin.billing.invoices.show');
 
         // Reports & Analytics
+        Route::get('admin/reports/export', [ReportController::class, 'exportCsv'])->name('admin.reports.export');
         Route::get('admin/reports', [ReportController::class, 'index'])->name('admin.reports.index');
         
         Route::get('admin/user/export', [StaffController::class, 'exportCsv'])->name('admin.user.export');

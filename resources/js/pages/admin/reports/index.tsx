@@ -18,15 +18,15 @@ import {
     Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { 
-    AreaChart, 
+import {
+    AreaChart,
     Area,
     BarChart,
     Bar,
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
     ResponsiveContainer,
     PieChart,
     Pie,
@@ -120,29 +120,28 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Button variant="outline" className="h-10 rounded-xl border-neutral-200 font-bold text-[12px] gap-2 px-4 shadow-sm active:scale-95 transition-all">
-                                <Download className="size-3.5" /> Generate PDF
-                            </Button>
-                            <Button className="h-10 gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 shadow-lg shadow-indigo-600/10 active:scale-95 transition-all uppercase text-[11px] tracking-tight">
-                                <FileSpreadsheet className="size-3.5" /> Export Data
-                            </Button>
+                            <a href="/admin/reports/export" id="export-csv-data" target="_blank" rel="noopener noreferrer">
+                                <Button className="h-10 gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 shadow-lg shadow-indigo-600/10 active:scale-95 transition-all uppercase text-[11px] tracking-tight">
+                                    <FileSpreadsheet className="size-3.5" /> Export CSV
+                                </Button>
+                            </a>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto bg-neutral-50/30 dark:bg-transparent">
                     <div className="px-8 py-8 space-y-8">
-                        
+
                         {/* ─── SUMMARY GRID ─── */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <SummaryCard 
+                            <SummaryCard
                                 title="Projected Revenue"
                                 value={formatCurrency(data.stats.total_expected)}
                                 subValue="Accumulated billed amount"
                                 icon={LayoutDashboard}
                                 colorClass="bg-blue-600"
                             />
-                            <SummaryCard 
+                            <SummaryCard
                                 title="Actual Collections"
                                 value={formatCurrency(data.stats.total_collected)}
                                 subValue="Verified cash inflow"
@@ -150,14 +149,14 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                 colorClass="bg-emerald-600"
                                 trend={+12}
                             />
-                            <SummaryCard 
+                            <SummaryCard
                                 title="Total Receivables"
                                 value={formatCurrency(data.stats.total_outstanding)}
                                 subValue="Remaining unpaid balance"
                                 icon={AlertCircle}
                                 colorClass="bg-red-600"
                             />
-                            <SummaryCard 
+                            <SummaryCard
                                 title="Collection Efficacy"
                                 value={`${data.stats.collection_rate}%`}
                                 subValue="Overall success rate"
@@ -168,13 +167,13 @@ export default function ReportIndex({ data }: { data: ReportData }) {
 
                         {/* ─── CHARTS SECTION ─── */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            
-                            {/* Revenue Trajectory Area Chart */}
+
+                            {/* Revenue Trajectory Pie Chart */}
                             <div className="lg:col-span-2 p-7 rounded-[2rem] bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 shadow-xl shadow-black/5 flex flex-col h-[480px] relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                     <Activity className="size-32 text-indigo-600" />
                                 </div>
-                                
+
                                 <div className="flex items-start justify-between mb-10 relative z-10">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1.5">
@@ -182,71 +181,51 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                             <h3 className="text-[15px] font-black uppercase tracking-[0.15em] text-[#0A2540] dark:text-white">Revenue Trajectory</h3>
                                         </div>
                                         <p className="text-[12px] font-bold text-neutral-400 uppercase tracking-tight flex items-center gap-2">
-                                            Monthly payment velocity index <span className="size-1 rounded-full bg-neutral-300" /> <span className="text-indigo-600">Actual vs Target</span>
+                                            Monthly payment velocity index <span className="size-1 rounded-full bg-neutral-300" /> <span className="text-indigo-600">Actual Breakdown</span>
                                         </p>
                                     </div>
-                                    <div className="flex gap-4">
-                                        <div className="text-right">
+                                    <div className="flex gap-4 text-right">
+                                        <div>
                                             <p className="text-[10px] font-black text-neutral-400 uppercase leading-none mb-1">Peak Velocity</p>
                                             <p className="text-[14px] font-black text-emerald-600 tracking-tighter">{formatCurrency(Math.max(...data.trends.map(t => t.amount)))}</p>
-                                        </div>
-                                        <div className="w-px h-8 bg-neutral-100 dark:bg-neutral-800" />
-                                        <div className="flex p-1 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-800 h-fit">
-                                            <Button variant="ghost" className="h-8 px-4 text-[11px] font-black rounded-lg bg-white dark:bg-neutral-700 shadow-sm border border-neutral-100 dark:border-neutral-600 text-indigo-600 uppercase tracking-wider">Velocity View</Button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="flex-1 w-full -ml-4 relative z-10">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={data.trends} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                                        <AreaChart data={data.trends}>
                                             <defs>
-                                                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="#4f46e5" stopOpacity={1} />
-                                                    <stop offset="100%" stopColor="#818cf8" stopOpacity={0.6} />
+                                                <linearGradient id="cryptoGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                                                 </linearGradient>
-                                                <filter id="glow">
-                                                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                                                    <feMerge>
-                                                        <feMergeNode in="coloredBlur" />
-                                                        <feMergeNode in="SourceGraphic" />
-                                                    </feMerge>
-                                                </filter>
                                             </defs>
-                                            <CartesianGrid strokeDasharray="8 8" vertical={false} stroke="#f1f5f9" />
-                                            <XAxis 
-                                                dataKey="name" 
-                                                axisLine={false} 
-                                                tickLine={false} 
-                                                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 900 }} 
-                                                dy={15}
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e293b" opacity={0.1} />
+                                            <XAxis
+                                                dataKey="name"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 900 }}
                                             />
-                                            <YAxis 
-                                                axisLine={false} 
-                                                tickLine={false} 
-                                                tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} 
-                                                tickFormatter={(val) => `₱${val/1000}k`}
+                                            <YAxis
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 900 }}
+                                                tickFormatter={(val) => `₱${val / 1000}k`}
                                             />
-                                            <Tooltip 
-                                                cursor={{ fill: '#f8fafc', radius: 16 }}
+                                            <Tooltip
                                                 content={({ active, payload, label }) => {
                                                     if (active && payload && payload.length) {
-                                                        const val = payload[0].value as number;
+                                                        const p = payload[0];
                                                         return (
-                                                            <div className="bg-[#0A2540] p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[170px] animate-in slide-in-from-bottom-2 duration-300">
-                                                                <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-                                                                    <p className="text-[10px] font-black text-white/50 uppercase tracking-widest">{label}</p>
-                                                                    <Heart className="size-3 text-rose-500 fill-rose-500" />
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <p className="text-[10px] font-black text-indigo-400 uppercase mb-0.5">Total Collected</p>
-                                                                    <p className="text-[20px] font-black text-white leading-none tracking-tighter">
-                                                                        {formatCurrency(val)}
+                                                            <div className="bg-[#0f172a] p-4 rounded-xl shadow-2xl border border-white/10 min-w-[150px]">
+                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2 mb-2">{label}</p>
+                                                                <div className="flex items-center justify-between">
+                                                                    <p className="text-[18px] font-black text-white tracking-tighter">
+                                                                        {formatCurrency(p.value as number)}
                                                                     </p>
-                                                                    <div className="flex items-center gap-2 mt-3 p-1.5 rounded-lg bg-white/5 border border-white/10">
-                                                                        <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                                                        <p className="text-[9px] font-black text-white uppercase tracking-tighter">Performance Peak</p>
-                                                                    </div>
+                                                                    <TrendingUp className="size-4 text-indigo-400" />
                                                                 </div>
                                                             </div>
                                                         );
@@ -254,23 +233,17 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                                     return null;
                                                 }}
                                             />
-                                            <Bar 
-                                                dataKey="amount" 
-                                                fill="url(#barGradient)" 
-                                                radius={[12, 12, 0, 0]} 
-                                                barSize={40}
-                                                animationDuration={2500}
-                                                animationBegin={100}
-                                                label={{ 
-                                                    position: 'top', 
-                                                    fill: '#4f46e5', 
-                                                    fontSize: 10, 
-                                                    fontWeight: 900, 
-                                                    formatter: (val: number) => val > 0 ? `₱${Math.round(val/1000)}k` : '',
-                                                    dy: -10
-                                                }}
+                                            <Area
+                                                type="monotone"
+                                                dataKey="amount"
+                                                stroke="#4f46e5"
+                                                strokeWidth={4}
+                                                fillOpacity={1}
+                                                fill="url(#cryptoGradient)"
+                                                animationDuration={2000}
+                                                activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
                                             />
-                                        </BarChart>
+                                        </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
 
@@ -314,8 +287,8 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                                 ))}
                                             </Pie>
                                             <Tooltip />
-                                            <Legend 
-                                                verticalAlign="bottom" 
+                                            <Legend
+                                                verticalAlign="bottom"
                                                 align="center"
                                                 iconType="circle"
                                                 wrapperStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', paddingTop: '20px' }}
@@ -373,8 +346,8 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                                             {period.collection_percentage}%
                                                         </span>
                                                         <div className="w-16 h-1 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className={`h-full ${period.collection_percentage > 90 ? 'bg-emerald-500' : 'bg-indigo-500'}`} 
+                                                            <div
+                                                                className={`h-full ${period.collection_percentage > 90 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
                                                                 style={{ width: `${period.collection_percentage}%` }}
                                                             />
                                                         </div>

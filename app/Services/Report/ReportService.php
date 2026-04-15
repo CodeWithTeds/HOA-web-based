@@ -4,6 +4,7 @@ namespace App\Services\Report;
 
 use App\Repositories\Report\ReportRepositoryInterface;
 use Illuminate\Support\Collection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportService
 {
@@ -66,5 +67,62 @@ class ReportService
             'amount' => (float) $item->amount,
             'fill' => $colors[$item->status->value ?? $item->status] ?? '#94a3b8',
         ])->toArray();
+    }
+
+    /**
+     * Export all financial data to CSV.
+     *
+     * @return StreamedResponse
+     */
+    public function exportFinancialData(): StreamedResponse
+    {
+        $stats = $this->reportRepository->getFinancialTotals();
+        $trends = $this->reportRepository->getRevenueTrends();
+        $periods = $this->reportRepository->getBillingPeriodSummaries();
+
+        return new StreamedResponse(function () use ($stats, $trends, $periods) {
+            $handle = fopen('php://output', 'w');
+
+            // Header Section
+            fputcsv($handle, ['HOA FINANCIAL INTELLIGENCE REPORT']);
+            fputcsv($handle, ['Generated At:', now()->toDateTimeString()]);
+            fputcsv($handle, []);
+
+            // Summary Stats
+            fputcsv($handle, ['--- OVERALL SUMMARY ---']);
+            fputcsv($handle, ['Metric', 'Value']);
+            fputcsv($handle, ['Total Expected Revenue', $stats['total_expected']]);
+            fputcsv($handle, ['Total Collected', $stats['total_collected']]);
+            fputcsv($handle, ['Total Outstanding', $stats['total_outstanding']]);
+            fputcsv($handle, ['Collection Rate (%)', $stats['collection_rate']]);
+            fputcsv($handle, []);
+
+            // Revenue Trends
+            fputcsv($handle, ['--- MONTHLY REVENUE TRENDS ---']);
+            fputcsv($handle, ['Month', 'Amount Collected']);
+            foreach ($trends as $trend) {
+                fputcsv($handle, [$trend->month, $trend->total]);
+            }
+            fputcsv($handle, []);
+
+            // Billing Period Performance
+            fputcsv($handle, ['--- BILLING CYCLE PERFORMANCE ---']);
+            fputcsv($handle, ['Cycle Name', 'Invoices', 'Billed', 'Collected', 'Balance', 'Success Rate (%)']);
+            foreach ($periods as $period) {
+                fputcsv($handle, [
+                    $period['name'],
+                    $period['invoices_count'],
+                    $period['total_billed'],
+                    $period['total_collected'],
+                    $period['balance'],
+                    $period['collection_percentage']
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="financial_report_' . date('Y-m-d') . '.csv"',
+        ]);
     }
 }
