@@ -51,6 +51,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('admin/user/{user}', [StaffController::class, 'update'])->name('admin.user.update');
         Route::patch('admin/user/{user}/status', [StaffController::class, 'toggleStatus'])->name('admin.user.status');
         Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
+
+        // Facility Management
+        Route::get('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'index'])->name('admin.facilities.index');
+        Route::post('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'store'])->name('admin.facilities.store');
+        Route::put('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'update'])->name('admin.facilities.update');
+        Route::delete('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
+
+        // Facility Bookings
+        Route::get('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('admin.bookings.index');
+        Route::post('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'store'])->name('admin.bookings.store');
     });
 
     Route::middleware('role:staff')->group(function () {
