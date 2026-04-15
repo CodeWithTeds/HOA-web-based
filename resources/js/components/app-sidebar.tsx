@@ -156,7 +156,7 @@ export function AppSidebar() {
             <SidebarHeader className="pt-10 px-6 pb-6">
                 <Link href={dashLink} prefetch className="flex items-center gap-4 group">
                     <div className={logoBoxClass}>
-                        <AppLogoIcon className={`size-7 fill-current ${logoIconClass}`} />
+                        <AppLogoIcon className="size-7" />
                     </div>
                     <div className="flex flex-col">
                         <span className={`font-black text-base tracking-tighter leading-none ${brandNameClass}`}>

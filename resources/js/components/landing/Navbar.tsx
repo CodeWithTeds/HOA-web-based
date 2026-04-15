@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import AppLogoIcon from '@/components/app-logo-icon';
 
 export default function Navbar() {
     return (
@@ -6,6 +7,7 @@ export default function Navbar() {
             <div className="mx-auto max-w-[1440px] flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2">
+                    <AppLogoIcon className="size-9" />
                     <span className="text-2xl font-black text-blue-600 tracking-tighter uppercase">Smart HOA</span>
                 </Link>
 
