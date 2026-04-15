@@ -26,11 +26,21 @@ class FacilityService
 
     public function createFacility(array $data): Facility
     {
+        if (isset($data['image'])) {
+            $path = $data['image']->store('facilities', 'public');
+            $data['image_path'] = '/storage/' . $path;
+            unset($data['image']);
+        }
         return $this->repository->createFacility($data);
     }
 
     public function updateFacility(int $id, array $data): bool
     {
+        if (isset($data['image'])) {
+            $path = $data['image']->store('facilities', 'public');
+            $data['image_path'] = '/storage/' . $path;
+            unset($data['image']);
+        }
         return $this->repository->updateFacility($id, $data);
     }
 

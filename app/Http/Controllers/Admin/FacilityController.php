@@ -21,6 +21,18 @@ class FacilityController extends Controller
         ]);
     }
 
+    public function create(): Response
+    {
+        return Inertia::render('admin/facilities/create');
+    }
+
+    public function calendar(): Response
+    {
+        return Inertia::render('admin/facilities/calendar', [
+            'bookings' => \App\Models\FacilityBooking::with(['facility', 'resident'])->get(),
+        ]);
+    }
+
     public function store(StoreFacilityRequest $request)
     {
         $this->service->createFacility($request->validated());

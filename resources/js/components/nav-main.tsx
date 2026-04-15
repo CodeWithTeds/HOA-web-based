@@ -5,9 +5,18 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem } from '@/types';
+import { ChevronRight } from 'lucide-react';
 
 type AccentColor = 'blue' | 'emerald' | 'white';
 
@@ -64,30 +73,82 @@ export function NavMain({
             </SidebarGroupLabel>
             <SidebarMenu className="gap-1">
                 {items.map((item) => {
-                    const active = isCurrentUrl(item.href);
+                    const hasSubItems = item.items && item.items.length > 0;
+                    const isAnyChildActive = hasSubItems && item.items?.some(sub => isCurrentUrl(sub.href));
+                    const active = isCurrentUrl(item.href) || isAnyChildActive;
+
+                    if (!hasSubItems) {
+                        return (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={active}
+                                    tooltip={{ children: item.title }}
+                                    className={`
+                                        h-11 px-4 rounded-xl transition-all duration-200
+                                        ${active ? activeClass : inactiveClass}
+                                    `}
+                                >
+                                    <Link href={item.href} prefetch className="flex items-center gap-3">
+                                        {item.icon && (
+                                            <item.icon
+                                                className={`size-[18px] ${active ? 'text-white' : iconInactiveClass}`}
+                                            />
+                                        )}
+                                        <span className={`font-semibold tracking-tight text-[13px]`}>
+                                            {item.title}
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        );
+                    }
+
                     return (
-                        <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton
-                                asChild
-                                isActive={active}
-                                tooltip={{ children: item.title }}
-                                className={`
-                                    h-11 px-4 rounded-xl transition-all duration-200
-                                    ${active ? activeClass : inactiveClass}
-                                `}
-                            >
-                                <Link href={item.href} prefetch className="flex items-center gap-3">
-                                    {item.icon && (
-                                        <item.icon
-                                            className={`size-[18px] ${active ? 'text-white' : iconInactiveClass}`}
-                                        />
-                                    )}
-                                    <span className={`font-semibold tracking-tight text-[13px]`}>
-                                        {item.title}
-                                    </span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <Collapsible key={item.title} asChild defaultOpen={active} className="group/collapsible">
+                            <SidebarMenuItem>
+                                <CollapsibleTrigger asChild>
+                                    <SidebarMenuButton
+                                        tooltip={{ children: item.title }}
+                                        className={`
+                                            h-11 px-4 rounded-xl transition-all duration-200
+                                            ${active ? activeClass : inactiveClass}
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-3 w-full">
+                                            {item.icon && (
+                                                <item.icon
+                                                    className={`size-[18px] ${active ? 'text-white' : iconInactiveClass}`}
+                                                />
+                                            )}
+                                            <span className={`font-semibold tracking-tight text-[13px] flex-1 text-left`}>
+                                                {item.title}
+                                            </span>
+                                            <ChevronRight className={`ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 ${active ? 'text-white' : 'text-white/40'}`} />
+                                        </div>
+                                    </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub className="mt-1 flex flex-col gap-0.5 border-l-0 ml-0 pl-11">
+                                        {item.items?.map((subItem) => (
+                                            <SidebarMenuSubItem key={subItem.title}>
+                                                <SidebarMenuSubButton asChild isActive={isCurrentUrl(subItem.href)}>
+                                                    <Link 
+                                                        href={subItem.href}
+                                                        className={`
+                                                            text-[12px] font-bold h-8 transition-colors
+                                                            ${isCurrentUrl(subItem.href) ? 'text-white' : 'text-white/50 hover:text-white'}
+                                                        `}
+                                                    >
+                                                        {subItem.title}
+                                                    </Link>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        ))}
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
                     );
                 })}
             </SidebarMenu>

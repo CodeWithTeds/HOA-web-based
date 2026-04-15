@@ -92,9 +92,11 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
                                     View Bookings
                                 </Button>
                             </Link>
-                            <Button className="h-10 gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-lg shadow-blue-600/10 active:scale-95 transition-all">
-                                <Plus className="size-4" strokeWidth={3} /> Add Facility
-                            </Button>
+                            <Link href="/admin/facilities/create">
+                                <Button className="h-10 gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-lg shadow-blue-600/10 active:scale-95 transition-all">
+                                    <Plus className="size-4" strokeWidth={3} /> Add Facility
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -156,7 +158,7 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
                                             </div>
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">Rate</span>
-                                                <span className="text-[14px] font-bold text-blue-600">${facility.base_price} <span className="text-[10px] text-neutral-400 font-medium">/{facility.price_type}</span></span>
+                                                <span className="text-[14px] font-bold text-blue-600">₱{facility.base_price} <span className="text-[10px] text-neutral-400 font-medium">/{facility.price_type}</span></span>
                                             </div>
                                         </div>
                                         

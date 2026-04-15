@@ -54,12 +54,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Facility Management
         Route::get('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'index'])->name('admin.facilities.index');
+        Route::get('admin/facilities/create', [\App\Http\Controllers\Admin\FacilityController::class, 'create'])->name('admin.facilities.create');
+        Route::get('admin/facilities/{id}/edit', [\App\Http\Controllers\Admin\FacilityController::class, 'edit'])->name('admin.facilities.edit');
+        Route::get('admin/facilities/calendar', [\App\Http\Controllers\Admin\FacilityController::class, 'calendar'])->name('admin.facilities.calendar');
         Route::post('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'store'])->name('admin.facilities.store');
         Route::put('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'update'])->name('admin.facilities.update');
         Route::delete('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
 
         // Facility Bookings
         Route::get('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('admin.bookings.index');
+        Route::get('admin/bookings/create', [\App\Http\Controllers\Admin\BookingController::class, 'create'])->name('admin.bookings.create');
         Route::post('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'store'])->name('admin.bookings.store');
     });
 

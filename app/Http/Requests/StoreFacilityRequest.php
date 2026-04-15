@@ -20,6 +20,7 @@ class StoreFacilityRequest extends FormRequest
             'base_price' => 'required|numeric|min:0',
             'price_type' => 'required|string|in:Flat rate,Hourly',
             'status' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }
 }

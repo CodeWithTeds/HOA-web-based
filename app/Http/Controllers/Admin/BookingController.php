@@ -22,6 +22,14 @@ class BookingController extends Controller
         ]);
     }
 
+    public function create(): Response
+    {
+        return Inertia::render('admin/facilities/bookings/create', [
+            'residents' => \App\Models\Resident::select('id', 'first_name', 'last_name')->get(),
+            'facilities' => \App\Models\Facility::all(),
+        ]);
+    }
+
     public function store(StoreBookingRequest $request)
     {
         try {
