@@ -6,6 +6,7 @@ use App\Models\Facility;
 use App\Models\FacilityBooking;
 use App\Repositories\Facility\FacilityRepositoryInterface;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 
 class FacilityService
@@ -58,7 +59,7 @@ class FacilityService
     {
         // Conflict prevention logic
         if ($this->hasConflict($data['facility_id'], $data['start_time'], $data['end_time'])) {
-            throw new \Exception('Facility is already booked for this time slot.');
+            throw new Exception('Facility is already booked for this time slot.');
         }
 
         // Calculate fee

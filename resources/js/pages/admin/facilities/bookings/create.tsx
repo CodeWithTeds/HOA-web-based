@@ -28,15 +28,6 @@ export default function BookingCreate({ residents, facilities }: { residents: an
         message?: string;
     }>({ show: false, type: 'success', title: '' });
 
-    useEffect(() => {
-        if (flash?.success) {
-            setAlert({ show: true, type: 'success', title: 'Reservation Confirmed', message: flash.success });
-        }
-        if (flash?.error) {
-            setAlert({ show: true, type: 'error', title: 'Conflict Detected', message: flash.error });
-        }
-    }, [flash]);
-
     const { data, setData, post, processing, errors } = useForm({
         resident_id: '',
         facility_id: '',
@@ -46,13 +37,26 @@ export default function BookingCreate({ residents, facilities }: { residents: an
         notes: '',
     });
 
+    useEffect(() => {
+        if (flash?.success) {
+            setAlert({ show: true, type: 'success', title: 'Reservation Confirmed', message: flash.success });
+        }
+        if (errors.error) {
+            setAlert({ show: true, type: 'error', title: 'Conflict Detected', message: errors.error });
+        }
+    }, [flash, errors]);
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/admin/bookings', {
             onError: (err) => {
-                if (err.conflict) {
-                     setAlert({ show: true, type: 'error', title: 'Schedule Conflict', message: err.conflict });
-                }
+                const errorMessage = err.error || err.facility_id || err.resident_id || err.start_time || err.end_time;
+                setAlert({ 
+                    show: true, 
+                    type: 'error', 
+                    title: 'Reservation Failed', 
+                    message: typeof errorMessage === 'string' ? errorMessage : 'Please check your inputs and try again.' 
+                });
             }
         });
     };
@@ -183,6 +187,12 @@ export default function BookingCreate({ residents, facilities }: { residents: an
                                             {errors.end_time && <p className="text-[10px] font-bold text-red-500">⚠ {errors.end_time}</p>}
                                         </div>
                                     </div>
+                                    {errors.error && (
+                                        <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-100 flex items-center gap-2">
+                                            <AlertCircle className="size-3.5 text-red-600" />
+                                            <p className="text-[11px] font-black text-red-600 uppercase tracking-tight">{errors.error}</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-1.5">

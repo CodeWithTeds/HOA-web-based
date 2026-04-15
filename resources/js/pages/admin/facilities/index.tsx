@@ -119,19 +119,19 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
 
                 {/* ─── FACILITY GRID ─── */}
                 <div className="flex-1 overflow-auto p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {filteredFacilities.map((facility) => (
                             <div key={facility.id} className="group relative flex flex-col rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden hover:shadow-xl hover:shadow-neutral-200/40 dark:hover:shadow-none transition-all duration-300">
-                                <div className="aspect-video bg-neutral-100 dark:bg-neutral-800 relative">
+                                <div className="aspect-[4/3] bg-neutral-100 dark:bg-neutral-800 relative">
                                     {facility.image_path ? (
                                         <img src={facility.image_path} alt={facility.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="flex items-center justify-center h-full">
-                                            <Box className="size-12 text-neutral-300 dark:text-neutral-700" strokeWidth={1} />
+                                            <Box className="size-10 text-neutral-300 dark:text-neutral-700" strokeWidth={1} />
                                         </div>
                                     )}
-                                    <div className="absolute top-4 right-4">
-                                        <Badge className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                                    <div className="absolute top-3 right-3">
+                                        <Badge className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${
                                             facility.status === 'Active'
                                                 ? 'bg-emerald-50 text-emerald-700'
                                                 : facility.status === 'Under Maintenance'
@@ -142,32 +142,38 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
                                         </Badge>
                                     </div>
                                 </div>
-                                <div className="p-6">
-                                    <h3 className="text-[17px] font-black tracking-tight text-[#0A2540] dark:text-white group-hover:text-blue-600 transition-colors">
+                                <div className="p-5">
+                                    <h3 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white group-hover:text-blue-600 transition-colors truncate">
                                         {facility.name}
                                     </h3>
-                                    <p className="text-[13px] text-neutral-400 mt-1 line-clamp-2 font-medium leading-relaxed">
+                                    <p className="text-[11px] text-neutral-400 mt-1 line-clamp-2 font-medium leading-relaxed h-[32px]">
                                         {facility.description || 'No description provided.'}
                                     </p>
                                     
-                                    <div className="mt-6 flex items-center justify-between border-t border-neutral-50 dark:border-neutral-800/60 pt-4">
-                                        <div className="flex items-center gap-4">
+                                    <div className="mt-4 flex items-center justify-between border-t border-neutral-50 dark:border-neutral-800/60 pt-3">
+                                        <div className="flex items-center gap-3">
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">Capacity</span>
-                                                <span className="text-[14px] font-bold text-[#0A2540] dark:text-neutral-200">{facility.capacity} pax</span>
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] uppercase font-black tracking-widest text-neutral-400">Rate</span>
-                                                <span className="text-[14px] font-bold text-blue-600">₱{facility.base_price} <span className="text-[10px] text-neutral-400 font-medium">/{facility.price_type}</span></span>
+                                                <span className="text-[9px] uppercase font-black tracking-widest text-neutral-400">Rate</span>
+                                                <span className="text-[12px] font-bold text-blue-600">₱{facility.base_price}</span>
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center gap-2">
-                                            <Button variant="ghost" className="size-8 p-0 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl">
-                                                <Pencil className="size-3.5 text-neutral-400" />
-                                            </Button>
-                                            <Button variant="ghost" className="size-8 p-0 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl group/del">
-                                                <Trash2 className="size-3.5 text-neutral-400 group-hover/del:text-rose-600 transition-colors" />
+                                        <div className="flex items-center gap-1.5">
+                                            <Link href={`/admin/facilities/${facility.id}/edit`}>
+                                                <Button variant="ghost" className="size-7 p-0 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg">
+                                                    <Pencil className="size-3 text-neutral-400" />
+                                                </Button>
+                                            </Link>
+                                            <Button 
+                                                variant="ghost" 
+                                                className="size-7 p-0 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg group/del"
+                                                onClick={() => {
+                                                    if (confirm('Are you sure you want to delete this facility?')) {
+                                                        router.delete(`/admin/facilities/${facility.id}`);
+                                                    }
+                                                }}
+                                            >
+                                                <Trash2 className="size-3 text-neutral-400 group-hover/del:text-rose-600 transition-colors" />
                                             </Button>
                                         </div>
                                     </div>

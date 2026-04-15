@@ -48,7 +48,23 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
         if (flash?.error) {
             setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
         }
-    }, [flash]);
+    }, [flash?.success, flash?.error]);
+
+    const handleStatusUpdate = (id: number, status: string) => {
+        router.patch(`/admin/bookings/${id}/status`, { status }, {
+            onSuccess: () => {
+                // The prop will be updated automatically by Inertia
+            },
+            onError: (errors) => {
+                setAlert({
+                    show: true,
+                    type: 'error',
+                    title: 'Update Failed',
+                    message: typeof errors.error === 'string' ? errors.error : 'Could not update status.'
+                });
+            }
+        });
+    };
 
     const filteredBookings = bookings.filter(b => 
         b.resident?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,10 +239,16 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                                                    <DropdownMenuItem className="gap-2 font-bold text-[12px]">
+                                                    <DropdownMenuItem 
+                                                        className="gap-2 font-bold text-[12px]"
+                                                        onSelect={() => handleStatusUpdate(booking.id, 'Confirmed')}
+                                                    >
                                                         <CheckCircle2 className="size-4 text-emerald-600" /> Approve
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="gap-2 font-bold text-[12px]">
+                                                    <DropdownMenuItem 
+                                                        className="gap-2 font-bold text-[12px]"
+                                                        onSelect={() => handleStatusUpdate(booking.id, 'Cancelled')}
+                                                    >
                                                         <XCircle className="size-4 text-rose-600" /> Decline
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
