@@ -91,7 +91,7 @@ export function AppSidebar() {
                 ]
             },
 
-            { title: 'Announcements', href: '#', icon: Megaphone },
+            { title: 'Announcements', href: '/admin/announcements', icon: Megaphone },
             { title: 'Complaints Management', href: '#', icon: AlertCircle },
             { title: 'Chat Support', href: '#', icon: MessageSquare },
             { title: 'System Settings', href: '#', icon: ShieldCheck },

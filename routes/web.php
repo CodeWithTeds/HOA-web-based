@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AnnouncementController;
 
 Route::inertia('/', 'landing', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -66,6 +67,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/bookings/create', [\App\Http\Controllers\Admin\BookingController::class, 'create'])->name('admin.bookings.create');
         Route::post('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'store'])->name('admin.bookings.store');
         Route::patch('admin/bookings/{id}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
+
+        // Announcements
+        Route::get('admin/announcements', [AnnouncementController::class, 'index'])->name('admin.announcements.index');
+        Route::get('admin/announcements/create', [AnnouncementController::class, 'create'])->name('admin.announcements.create');
+        Route::post('admin/announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
+        Route::get('admin/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('admin.announcements.edit');
+        Route::put('admin/announcements/{id}', [AnnouncementController::class, 'update'])->name('admin.announcements.update');
+        Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
     });
 
     Route::middleware('role:staff')->group(function () {

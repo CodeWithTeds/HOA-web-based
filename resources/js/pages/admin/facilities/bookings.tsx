@@ -17,10 +17,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
-     DropdownMenu,
-     DropdownMenuContent,
-     DropdownMenuItem,
-     DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SweetAlert } from '@/components/ui/sweet-alert';
 import { useState, useEffect } from 'react';
@@ -66,7 +66,7 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
         });
     };
 
-    const filteredBookings = bookings.filter(b => 
+    const filteredBookings = bookings.filter(b =>
         b.resident?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.resident?.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.facility?.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -118,22 +118,22 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
 
                         <div className="flex items-center gap-3">
                             <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl mr-4">
-                                <Button 
+                                <Button
                                     onClick={() => setViewMode('list')}
-                                    variant={viewMode === 'list' ? 'default' : 'ghost'} 
+                                    variant={viewMode === 'list' ? 'default' : 'ghost'}
                                     className={`h-8 gap-2 rounded-lg text-[11px] font-black ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-neutral-400 shadow-none'}`}
                                 >
                                     <LayoutList className="size-3.5" /> Registry
                                 </Button>
-                                <Button 
+                                <Button
                                     onClick={() => setViewMode('calendar')}
-                                    variant={viewMode === 'calendar' ? 'default' : 'ghost'} 
+                                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
                                     className={`h-8 gap-2 rounded-lg text-[11px] font-black ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-neutral-400 shadow-none'}`}
                                 >
                                     <Calendar className="size-3.5" /> Calendar
                                 </Button>
                             </div>
-                            
+
                             <Link href="/admin/bookings/create">
                                 <Button className="h-10 gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-lg shadow-blue-600/10 active:scale-95 transition-all">
                                     <Calendar className="size-4" /> Secure Booking
@@ -221,13 +221,12 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                             ₱{booking.total_fee}
                                         </td>
                                         <td className="px-3 py-4 text-center">
-                                            <Badge className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                                                booking.status === 'Confirmed'
-                                                    ? 'bg-emerald-50 text-emerald-700'
-                                                    : booking.status === 'Pending'
-                                                        ? 'bg-amber-50 text-amber-700'
-                                                        : 'bg-rose-50 text-rose-700'
-                                            }`}>
+                                            <Badge className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${booking.status === 'Confirmed'
+                                                ? 'bg-emerald-50 text-emerald-700'
+                                                : booking.status === 'Pending'
+                                                    ? 'bg-amber-50 text-amber-700'
+                                                    : 'bg-rose-50 text-rose-700'
+                                                }`}>
                                                 {booking.status}
                                             </Badge>
                                         </td>
@@ -239,13 +238,13 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         className="gap-2 font-bold text-[12px]"
                                                         onSelect={() => handleStatusUpdate(booking.id, 'Confirmed')}
                                                     >
                                                         <CheckCircle2 className="size-4 text-emerald-600" /> Approve
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem 
+                                                    <DropdownMenuItem
                                                         className="gap-2 font-bold text-[12px]"
                                                         onSelect={() => handleStatusUpdate(booking.id, 'Cancelled')}
                                                     >

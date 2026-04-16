@@ -14,6 +14,8 @@ use App\Repositories\Report\ReportRepositoryInterface;
 use App\Repositories\Report\EloquentReportRepository;
 use App\Repositories\Facility\FacilityRepositoryInterface;
 use App\Repositories\Facility\EloquentFacilityRepository;
+use App\Repositories\Announcement\AnnouncementRepositoryInterface;
+use App\Repositories\Announcement\EloquentAnnouncementRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -30,6 +32,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->singleton(BillingRepositoryInterface::class, EloquentBillingRepository::class);
         $this->app->singleton(ReportRepositoryInterface::class, EloquentReportRepository::class);
         $this->app->singleton(FacilityRepositoryInterface::class, EloquentFacilityRepository::class);
+        $this->app->singleton(AnnouncementRepositoryInterface::class, EloquentAnnouncementRepository::class);
     }
 
     /**
