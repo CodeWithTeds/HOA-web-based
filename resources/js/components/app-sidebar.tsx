@@ -92,7 +92,7 @@ export function AppSidebar() {
             },
 
             { title: 'Announcements', href: '/admin/announcements', icon: Megaphone },
-            { title: 'Complaints Management', href: '#', icon: AlertCircle },
+            { title: 'Complaints Management', href: '/admin/complaints', icon: AlertCircle },
             { title: 'Chat Support', href: '#', icon: MessageSquare },
             { title: 'System Settings', href: '#', icon: ShieldCheck },
         );

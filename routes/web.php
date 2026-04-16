@@ -7,13 +7,21 @@ use App\Http\Controllers\Admin\ResidentController;
 use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\ComplaintController;
+use App\Http\Controllers\Admin\FacilityController;
+use App\Http\Controllers\Admin\BookingController;
+use App\Models\Announcement;
+use App\Enums\AnnouncementStatus;
+use App\Http\Resources\AnnouncementResource;
+use App\Repositories\Announcement\AnnouncementRepositoryInterface;
+use Inertia\Inertia;
 
 Route::get('/', function () {
-    $announcements = app(\App\Repositories\Announcement\AnnouncementRepositoryInterface::class)->getPublished(3);
+    $announcements = app(AnnouncementRepositoryInterface::class)->getPublished(3);
     
-    return \Inertia\Inertia::render('landing', [
-        'canRegister' => \Laravel\Fortify\Features::enabled(\Laravel\Fortify\Features::registration()),
-        'announcements' => \App\Http\Resources\AnnouncementResource::collection($announcements)->resolve(),
+    return Inertia::render('landing', [
+        'canRegister' => Features::enabled(Features::registration()),
+        'announcements' => AnnouncementResource::collection($announcements)->resolve(),
     ]);
 })->name('home');
 
@@ -21,12 +29,12 @@ Route::get('/landing', function () {
     return redirect()->route('home');
 });
 
-Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
-    if ($announcement->status !== \App\Enums\AnnouncementStatus::PUBLISHED) {
+Route::get('/announcements/{announcement}', function (Announcement $announcement) {
+    if ($announcement->status !== AnnouncementStatus::PUBLISHED) {
         abort(404);
     }
-    return \Inertia\Inertia::render('announcements/show', [
-        'announcement' => new \App\Http\Resources\AnnouncementResource($announcement),
+    return Inertia::render('announcements/show', [
+        'announcement' => new AnnouncementResource($announcement),
     ]);
 });
 
@@ -70,19 +78,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
 
         // Facility Management
-        Route::get('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'index'])->name('admin.facilities.index');
-        Route::get('admin/facilities/create', [\App\Http\Controllers\Admin\FacilityController::class, 'create'])->name('admin.facilities.create');
-        Route::get('admin/facilities/{id}/edit', [\App\Http\Controllers\Admin\FacilityController::class, 'edit'])->name('admin.facilities.edit');
-        Route::get('admin/facilities/calendar', [\App\Http\Controllers\Admin\FacilityController::class, 'calendar'])->name('admin.facilities.calendar');
-        Route::post('admin/facilities', [\App\Http\Controllers\Admin\FacilityController::class, 'store'])->name('admin.facilities.store');
-        Route::put('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'update'])->name('admin.facilities.update');
-        Route::delete('admin/facilities/{id}', [\App\Http\Controllers\Admin\FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
+        Route::get('admin/facilities', [FacilityController::class, 'index'])->name('admin.facilities.index');
+        Route::get('admin/facilities/create', [FacilityController::class, 'create'])->name('admin.facilities.create');
+        Route::get('admin/facilities/{id}/edit', [FacilityController::class, 'edit'])->name('admin.facilities.edit');
+        Route::get('admin/facilities/calendar', [FacilityController::class, 'calendar'])->name('admin.facilities.calendar');
+        Route::post('admin/facilities', [FacilityController::class, 'store'])->name('admin.facilities.store');
+        Route::put('admin/facilities/{id}', [FacilityController::class, 'update'])->name('admin.facilities.update');
+        Route::delete('admin/facilities/{id}', [FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
 
         // Facility Bookings
-        Route::get('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('admin.bookings.index');
-        Route::get('admin/bookings/create', [\App\Http\Controllers\Admin\BookingController::class, 'create'])->name('admin.bookings.create');
-        Route::post('admin/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'store'])->name('admin.bookings.store');
-        Route::patch('admin/bookings/{id}/status', [\App\Http\Controllers\Admin\BookingController::class, 'updateStatus'])->name('admin.bookings.status');
+        Route::get('admin/bookings', [BookingController::class, 'index'])->name('admin.bookings.index');
+        Route::get('admin/bookings/create', [BookingController::class, 'create'])->name('admin.bookings.create');
+        Route::post('admin/bookings', [BookingController::class, 'store'])->name('admin.bookings.store');
+        Route::patch('admin/bookings/{id}/status', [BookingController::class, 'updateStatus'])->name('admin.bookings.status');
 
         // Announcements
         Route::get('admin/announcements', [AnnouncementController::class, 'index'])->name('admin.announcements.index');
@@ -91,6 +99,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('admin.announcements.edit');
         Route::put('admin/announcements/{id}', [AnnouncementController::class, 'update'])->name('admin.announcements.update');
         Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
+
+        // Complaints
+        Route::get('admin/complaints', [ComplaintController::class, 'index'])->name('admin.complaints.index');
+        Route::get('admin/complaints/create', [ComplaintController::class, 'create'])->name('admin.complaints.create');
+        Route::post('admin/complaints', [ComplaintController::class, 'store'])->name('admin.complaints.store');
+        Route::get('admin/complaints/{id}', [ComplaintController::class, 'show'])->name('admin.complaints.show');
+        Route::get('admin/complaints/{id}/edit', [ComplaintController::class, 'edit'])->name('admin.complaints.edit');
+        Route::put('admin/complaints/{id}', [ComplaintController::class, 'update'])->name('admin.complaints.update');
+        Route::delete('admin/complaints/{id}', [ComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
     });
 
     Route::middleware('role:staff')->group(function () {
