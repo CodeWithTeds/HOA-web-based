@@ -13,6 +13,7 @@ import {
     AlertCircle,
     Image as ImageIcon,
     FileText,
+    Settings,
     Save,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
 
     const res = announcement.data;
 
-    const { data, setData, put, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         _method: 'PUT',
         title: res.title || '',
         content: res.content || '',
@@ -56,7 +57,6 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Use POST with _method PUT for file upload support in Laravel PUT requests
         post(`/admin/announcements/${res.id}`, {
             onError: () => {
                 setAlert({
@@ -77,7 +77,7 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
             </div>
             <div>
                 <h2 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white uppercase">{title}</h2>
-                <p className="text-[11px] text-neutral-400 font-bold mt-0.5">{description}</p>
+                <p className="text-[12px] text-neutral-400 font-bold mt-0.5 leading-tight">{description}</p>
             </div>
         </div>
     );
@@ -105,17 +105,17 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
                                 <Megaphone className="size-5 text-white" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white">
+                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white leading-none">
                                     Edit Announcement
                                 </h1>
-                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-0.5">
-                                    Modify an existing announcement for the community
+                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-1.5">
+                                    Notice ID: #{res.id} • Author: {res.author?.name}
                                 </p>
                             </div>
                         </div>
                         <Link href="/admin/announcements">
                             <Button variant="outline" className="h-9 gap-2 rounded-lg text-[12px] font-bold text-neutral-500 border-neutral-200">
-                                <ArrowLeft className="size-3.5" /> Back to List
+                                <ArrowLeft className="size-3.5" /> Back to Dashboard
                             </Button>
                         </Link>
                     </div>
@@ -123,145 +123,104 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
 
                 {/* ─── SCROLLABLE FORM ─── */}
                 <form onSubmit={submit} className="flex-1 overflow-y-auto">
-                    <div className="max-w-[1000px] mx-auto px-12 py-10">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                    <div className="px-12 py-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12">
                             
-                            {/* MAIN CONTENT AREA */}
-                            <div className="md:col-span-8 space-y-8">
-                                <div className="space-y-6">
-                                    <SectionHeader 
-                                        icon={FileText} 
-                                        title="Content" 
-                                        description="Update the message or title."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Announcement Title <span className="text-red-500">*</span></Label>
-                                            <Input 
-                                                value={data.title} 
-                                                onChange={e => setData('title', e.target.value)} 
-                                                placeholder="e.g. Scheduled Water Maintenance" 
-                                                className="h-11 rounded-xl text-[14px] font-bold border-neutral-200 focus:ring-amber-500/20"
-                                            />
-                                            {errors.title && <p className="text-[10px] font-bold text-red-500">⚠ {errors.title}</p>}
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Main Content <span className="text-red-500">*</span></Label>
-                                            <textarea 
-                                                value={data.content} 
-                                                onChange={e => setData('content', e.target.value)}
-                                                rows={12}
-                                                placeholder="Provide detailed information here..."
-                                                className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[14px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
-                                            />
-                                            {errors.content && <p className="text-[10px] font-bold text-red-500">⚠ {errors.content}</p>}
-                                        </div>
+                            {/* COLUMN 1: PRIMARY CONTENT */}
+                            <div className="space-y-8">
+                                <SectionHeader 
+                                    icon={FileText} 
+                                    title="Main Content" 
+                                    description="Update the headline and message body."
+                                />
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Announcement Title <span className="text-red-500">*</span></Label>
+                                        <Input 
+                                            value={data.title} 
+                                            onChange={e => setData('title', e.target.value)} 
+                                            placeholder="e.g. Annual HOA Assembly 2026" 
+                                            className="h-10 rounded-xl text-[14px] font-bold border-neutral-200" 
+                                        />
+                                        {errors.title && <p className="text-[10px] font-bold text-red-500">⚠ {errors.title}</p>}
                                     </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <SectionHeader 
-                                        icon={ImageIcon} 
-                                        title="Media" 
-                                        description="Replace the existing image."
-                                    />
-                                    <div className="flex flex-col gap-4">
-                                        {res.image_url && !data.image && (
-                                            <div className="relative size-32 rounded-xl overflow-hidden border border-neutral-200">
-                                                <img src={res.image_url} alt="Current" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                                    <span className="text-[10px] text-white font-bold uppercase tracking-widest">Current Image</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/40 flex flex-col items-center justify-center gap-3 group hover:border-amber-400/50 transition-all cursor-pointer relative overflow-hidden">
-                                            <input 
-                                                type="file" 
-                                                onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                                accept="image/*"
-                                            />
-                                            <div className="size-12 rounded-full bg-white dark:bg-neutral-800 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-amber-500 transition-colors">
-                                                <ImageIcon className="size-6" />
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-[13px] font-bold text-neutral-600 dark:text-neutral-300">
-                                                    {data.image ? (data.image as any).name : 'Click to update image'}
-                                                </p>
-                                                <p className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider mt-1">PNG, JPG up to 2MB</p>
-                                            </div>
-                                        </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Content Body <span className="text-red-500">*</span></Label>
+                                        <textarea 
+                                            value={data.content} 
+                                            onChange={e => setData('content', e.target.value)}
+                                            rows={10}
+                                            placeholder="Specify the full details of this announcement..."
+                                            className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[14px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                                        />
+                                        {errors.content && <p className="text-[10px] font-bold text-red-500">⚠ {errors.content}</p>}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* SIDEBAR SETTINGS */}
-                            <div className="md:col-span-4 space-y-8">
-                                <div className="space-y-6 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/40">
-                                    <SectionHeader 
-                                        icon={Layout} 
-                                        title="Categorization" 
-                                        description="Update labels."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Category</Label>
-                                            <select 
-                                                value={data.category} 
-                                                onChange={e => setData('category', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                                            >
-                                                <option value="general">General</option>
-                                                <option value="maintenance">Maintenance</option>
-                                                <option value="emergency">Emergency</option>
-                                                <option value="event">Event</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Priority Level</Label>
-                                            <select 
-                                                value={data.priority} 
-                                                onChange={e => setData('priority', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                                            >
-                                                <option value="normal">Normal</option>
-                                                <option value="important">Important</option>
-                                                <option value="urgent">Urgent / Emergency</option>
-                                            </select>
-                                        </div>
+                            {/* COLUMN 2: SETTINGS & VISIBILITY */}
+                            <div className="space-y-8">
+                                <SectionHeader 
+                                    icon={Settings} 
+                                    title="Configuration" 
+                                    description="Update classification and scheduling."
+                                />
+                                <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Category</Label>
+                                        <select value={data.category} onChange={e => setData('category', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20">
+                                            <option value="general">General</option>
+                                            <option value="maintenance">Maintenance</option>
+                                            <option value="emergency">Emergency</option>
+                                            <option value="event">Event</option>
+                                        </select>
                                     </div>
-                                </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Priority Level</Label>
+                                        <select value={data.priority} onChange={e => setData('priority', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20">
+                                            <option value="normal">Normal</option>
+                                            <option value="important">Important</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Post Status</Label>
+                                        <select value={data.status} onChange={e => setData('status', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20">
+                                            <option value="private">Private</option>
+                                            <option value="published">Published</option>
+                                            <option value="archived">Archived</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Scheduled Date</Label>
+                                        <Input type="datetime-local" value={data.published_at} onChange={e => setData('published_at', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold" />
+                                    </div>
 
-                                <div className="space-y-6 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/40">
-                                    <SectionHeader 
-                                        icon={Clock} 
-                                        title="Publishing" 
-                                        description="Update timing and visibility."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Post Status</Label>
-                                            <select 
-                                                value={data.status} 
-                                                onChange={e => setData('status', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                                            >
-                                                <option value="draft">Draft (Private)</option>
-                                                <option value="published">Published (Public)</option>
-                                                <option value="archived">Archived</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Scheduled Date</Label>
-                                            <Input 
-                                                type="datetime-local" 
-                                                value={data.published_at} 
-                                                onChange={e => setData('published_at', e.target.value)} 
-                                                className="h-10 rounded-lg text-[13px] font-bold"
-                                            />
+                                    <div className="col-span-2 space-y-4">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Featured Image</Label>
+                                        <div className="flex flex-col gap-4">
+                                            {res.image_url && !data.image && (
+                                                <div className="relative size-24 rounded-xl overflow-hidden border border-neutral-200 shadow-sm">
+                                                    <img src={res.image_url} alt="Current" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
+                                            <div className="p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/40 flex flex-col items-center justify-center gap-3 relative group hover:border-amber-400/50 cursor-pointer overflow-hidden transition-all">
+                                                <input 
+                                                    type="file" 
+                                                    onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    accept="image/*"
+                                                />
+                                                <div className="size-10 rounded-full bg-white dark:bg-neutral-800 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-amber-500 transition-colors">
+                                                    <ImageIcon className="size-5" />
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-[12px] font-bold text-neutral-600 dark:text-neutral-300">
+                                                        {data.image ? (data.image as any).name : 'Click to replace image file'}
+                                                    </p>
+                                                    <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">PNG, JPG up to 2MB</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -275,7 +234,7 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-neutral-400">
                             <Info className="size-4" />
-                            <p className="text-[12px] font-bold uppercase tracking-wider px-2">Update id: {res.id}</p>
+                            <p className="text-[12px] font-bold uppercase tracking-wider">Update changes to notice #{res.id}</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <Link href="/admin/announcements">
@@ -288,8 +247,8 @@ export default function AnnouncementEdit({ announcement }: { announcement: any }
                                 disabled={processing}
                                 className="h-10 rounded-xl px-8 text-[13px] font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xl shadow-amber-600/20 transition-all active:scale-[0.98] disabled:opacity-50"
                             >
-                                <Save className="size-4 mr-2" />
-                                {processing ? 'Saving...' : 'Save Changes'}
+                                {processing ? <Clock className="size-4 animate-spin mr-2" /> : <Save className="size-4 mr-2" />}
+                                {processing ? 'Updating...' : 'Save Changes'}
                             </Button>
                         </div>
                     </div>
@@ -304,6 +263,6 @@ AnnouncementEdit.layout = (page: any) => ({
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
         { title: 'Announcements', href: '/admin/announcements' },
-        { title: 'Edit Notice', href: `/admin/announcements` },
+        { title: 'Edit Post', href: `/admin/announcements` },
     ],
 });

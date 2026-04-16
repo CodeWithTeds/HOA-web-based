@@ -7,13 +7,13 @@ import {
     User,
     ShieldAlert,
     Info,
-    Tiptap,
     Layout,
     Clock,
     Tag,
     AlertCircle,
     Image as ImageIcon,
     FileText,
+    Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +46,7 @@ export default function AnnouncementCreate() {
         content: '',
         category: 'general',
         priority: 'normal',
-        status: 'draft',
+        status: 'private',
         published_at: '',
         image: null as File | null,
     });
@@ -73,7 +73,7 @@ export default function AnnouncementCreate() {
             </div>
             <div>
                 <h2 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white uppercase">{title}</h2>
-                <p className="text-[11px] text-neutral-400 font-bold mt-0.5">{description}</p>
+                <p className="text-[12px] text-neutral-400 font-bold mt-0.5 leading-tight">{description}</p>
             </div>
         </div>
     );
@@ -101,11 +101,11 @@ export default function AnnouncementCreate() {
                                 <Megaphone className="size-5 text-white" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white">
-                                    Create Announcement
+                                <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white leading-none">
+                                    New Community Notice
                                 </h1>
-                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-0.5">
-                                    Broadcast a new message to the community
+                                <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-1.5">
+                                    Broadcast information to all registered residents
                                 </p>
                             </div>
                         </div>
@@ -119,135 +119,97 @@ export default function AnnouncementCreate() {
 
                 {/* ─── SCROLLABLE FORM ─── */}
                 <form onSubmit={submit} className="flex-1 overflow-y-auto">
-                    <div className="max-w-[1000px] mx-auto px-12 py-10">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+                    <div className="px-12 py-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12">
                             
-                            {/* MAIN CONTENT AREA */}
-                            <div className="md:col-span-8 space-y-8">
-                                <div className="space-y-6">
-                                    <SectionHeader 
-                                        icon={FileText} 
-                                        title="Content" 
-                                        description="The core message of your announcement."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Announcement Title <span className="text-red-500">*</span></Label>
-                                            <Input 
-                                                value={data.title} 
-                                                onChange={e => setData('title', e.target.value)} 
-                                                placeholder="e.g. Scheduled Water Maintenance" 
-                                                className="h-11 rounded-xl text-[14px] font-bold border-neutral-200 focus:ring-indigo-500/20"
-                                            />
-                                            {errors.title && <p className="text-[10px] font-bold text-red-500">⚠ {errors.title}</p>}
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Main Content <span className="text-red-500">*</span></Label>
-                                            <textarea 
-                                                value={data.content} 
-                                                onChange={e => setData('content', e.target.value)}
-                                                rows={12}
-                                                placeholder="Provide detailed information here..."
-                                                className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[14px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                                            />
-                                            {errors.content && <p className="text-[10px] font-bold text-red-500">⚠ {errors.content}</p>}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <SectionHeader 
-                                        icon={ImageIcon} 
-                                        title="Media" 
-                                        description="Optional featured image for the post."
-                                    />
-                                    <div className="p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/40 flex flex-col items-center justify-center gap-3 group hover:border-indigo-400/50 transition-all cursor-pointer relative overflow-hidden">
-                                        <input 
-                                            type="file" 
-                                            onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            accept="image/*"
+                            {/* COLUMN 1: PRIMARY CONTENT */}
+                            <div className="space-y-8">
+                                <SectionHeader 
+                                    icon={FileText} 
+                                    title="Main Content" 
+                                    description="The headline and core message of your notice."
+                                />
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Announcement Title <span className="text-red-500">*</span></Label>
+                                        <Input 
+                                            value={data.title} 
+                                            onChange={e => setData('title', e.target.value)} 
+                                            placeholder="e.g. Annual HOA Assembly 2026" 
+                                            className="h-10 rounded-xl text-[14px] font-bold border-neutral-200" 
                                         />
-                                        <div className="size-12 rounded-full bg-white dark:bg-neutral-800 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-indigo-500 transition-colors">
-                                            <ImageIcon className="size-6" />
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[13px] font-bold text-neutral-600 dark:text-neutral-300">
-                                                {data.image ? (data.image as any).name : 'Click to upload or drag and drop'}
-                                            </p>
-                                            <p className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider mt-1">PNG, JPG up to 2MB</p>
-                                        </div>
+                                        {errors.title && <p className="text-[10px] font-bold text-red-500">⚠ {errors.title}</p>}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Content Body <span className="text-red-500">*</span></Label>
+                                        <textarea 
+                                            value={data.content} 
+                                            onChange={e => setData('content', e.target.value)}
+                                            rows={10}
+                                            placeholder="Specify the full details of this announcement..."
+                                            className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[14px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        />
+                                        {errors.content && <p className="text-[10px] font-bold text-red-500">⚠ {errors.content}</p>}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* SIDEBAR SETTINGS */}
-                            <div className="md:col-span-4 space-y-8">
-                                <div className="space-y-6 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/40">
-                                    <SectionHeader 
-                                        icon={Layout} 
-                                        title="Categorization" 
-                                        description="How this will be labeled."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Category</Label>
-                                            <select 
-                                                value={data.category} 
-                                                onChange={e => setData('category', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                                            >
-                                                <option value="general">General</option>
-                                                <option value="maintenance">Maintenance</option>
-                                                <option value="emergency">Emergency</option>
-                                                <option value="event">Event</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Priority Level</Label>
-                                            <select 
-                                                value={data.priority} 
-                                                onChange={e => setData('priority', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                                            >
-                                                <option value="normal">Normal</option>
-                                                <option value="important">Important</option>
-                                                <option value="urgent">Urgent / Emergency</option>
-                                            </select>
-                                        </div>
+                            {/* COLUMN 2: SETTINGS & VISIBILITY */}
+                            <div className="space-y-8">
+                                <SectionHeader 
+                                    icon={Settings} 
+                                    title="Configuration" 
+                                    description="Classification and publishing controls."
+                                />
+                                <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Category</Label>
+                                        <select value={data.category} onChange={e => setData('category', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20">
+                                            <option value="general">General</option>
+                                            <option value="maintenance">Maintenance</option>
+                                            <option value="emergency">Emergency</option>
+                                            <option value="event">Event</option>
+                                        </select>
                                     </div>
-                                </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Priority Level</Label>
+                                        <select value={data.priority} onChange={e => setData('priority', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20">
+                                            <option value="normal">Normal</option>
+                                            <option value="important">Important</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Post Status</Label>
+                                        <select value={data.status} onChange={e => setData('status', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20">
+                                            <option value="private">Private</option>
+                                            <option value="published">Published</option>
+                                            <option value="archived">Archived</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Scheduled Date</Label>
+                                        <Input type="datetime-local" value={data.published_at} onChange={e => setData('published_at', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold" />
+                                    </div>
 
-                                <div className="space-y-6 p-6 rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/40">
-                                    <SectionHeader 
-                                        icon={Clock} 
-                                        title="Publishing" 
-                                        description="Status and timing control."
-                                    />
-                                    <div className="space-y-4">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Post Status</Label>
-                                            <select 
-                                                value={data.status} 
-                                                onChange={e => setData('status', e.target.value)}
-                                                className="w-full h-10 rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                                            >
-                                                <option value="draft">Draft (Private)</option>
-                                                <option value="published">Published (Public)</option>
-                                                <option value="archived">Archived</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Scheduled Date</Label>
-                                            <Input 
-                                                type="datetime-local" 
-                                                value={data.published_at} 
-                                                onChange={e => setData('published_at', e.target.value)} 
-                                                className="h-10 rounded-lg text-[13px] font-bold"
+                                    <div className="col-span-2 space-y-4">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Featured Image</Label>
+                                        <div className="p-8 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/40 flex flex-col items-center justify-center gap-3 relative group hover:border-indigo-400/50 cursor-pointer overflow-hidden transition-all">
+                                            <input 
+                                                type="file" 
+                                                onChange={e => setData('image', e.target.files ? e.target.files[0] : null)}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                accept="image/*"
                                             />
+                                            <div className="size-10 rounded-full bg-white dark:bg-neutral-800 shadow-sm flex items-center justify-center text-neutral-400 group-hover:text-indigo-500 transition-colors">
+                                                <ImageIcon className="size-5" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[12px] font-bold text-neutral-600 dark:text-neutral-300">
+                                                    {data.image ? (data.image as any).name : 'Click to select image file'}
+                                                </p>
+                                                <p className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider">PNG, JPG up to 2MB</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -260,13 +222,13 @@ export default function AnnouncementCreate() {
                 <div className="shrink-0 bg-white dark:bg-[#0c0c0c] border-t border-neutral-100 dark:border-neutral-800/60 px-8 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-neutral-400">
-                            <AlertCircle className="size-4" />
-                            <p className="text-[12px] font-bold uppercase tracking-wider px-2">Broadcasting to community database</p>
+                            <Info className="size-4" />
+                            <p className="text-[12px] font-bold uppercase tracking-wider">Required fields marked with *</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <Link href="/admin/announcements">
                                 <Button type="button" variant="ghost" className="h-10 rounded-xl px-6 text-[13px] font-black text-neutral-500 hover:bg-neutral-50">
-                                    Discard Draft
+                                    Discard
                                 </Button>
                             </Link>
                             <Button
@@ -274,7 +236,7 @@ export default function AnnouncementCreate() {
                                 disabled={processing}
                                 className="h-10 rounded-xl px-8 text-[13px] font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-600/20 transition-all active:scale-[0.98] disabled:opacity-50"
                             >
-                                {processing ? 'Posting...' : 'Post Announcement'}
+                                {processing ? 'Posting...' : 'Confirm Post'}
                             </Button>
                         </div>
                     </div>
@@ -289,6 +251,6 @@ AnnouncementCreate.layout = (page: any) => ({
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
         { title: 'Announcements', href: '/admin/announcements' },
-        { title: 'Post New', href: '/admin/announcements/create' },
+        { title: 'New Post', href: '/admin/announcements/create' },
     ],
 });

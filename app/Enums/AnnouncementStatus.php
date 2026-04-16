@@ -4,12 +4,12 @@ namespace App\Enums;
 
 enum AnnouncementStatus: string
 {
-    case DRAFT = 'draft';
+    case PRIVATE = 'private';
     case PUBLISHED = 'published';
     case ARCHIVED = 'archived';
 
     public static function default(): string
     {
-        return self::DRAFT->value;
+        return self::PRIVATE->value;
     }
 }

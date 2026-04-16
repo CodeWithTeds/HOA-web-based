@@ -6,8 +6,9 @@ import Features from '@/components/landing/Features';
 import Transparency from '@/components/landing/Transparency';
 import CTA from '@/components/landing/CTA';
 import Footer from '@/components/landing/Footer';
+import PublicAnnouncements from '@/components/landing/PublicAnnouncements';
 
-export default function Landing() {
+export default function Landing({ announcements }: { announcements: any }) {
     return (
         <div className="font-sans antialiased text-[#0A2540] bg-white selection:bg-blue-600/10 selection:text-blue-600">
             <Head title="Smart HOA - Modern Community Management" />
@@ -17,6 +18,7 @@ export default function Landing() {
             <main>
                 <Hero />
                 <Overview />
+                <PublicAnnouncements announcements={announcements || []} />
                 <Features />
                 <Transparency />
                 <CTA />

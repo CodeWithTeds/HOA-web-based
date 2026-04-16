@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
             $table->string('category')->default(AnnouncementCategory::GENERAL->value);
             $table->string('priority')->default(AnnouncementPriority::NORMAL->value);
-            $table->string('status')->default(AnnouncementStatus::DRAFT->value);
+            $table->string('status')->default('private');
             $table->timestamp('published_at')->nullable();
             $table->string('image_path')->nullable();
             $table->timestamps();

@@ -74,7 +74,7 @@ export default function AnnouncementIndex({ announcements, filters }: { announce
         switch (status.toLowerCase()) {
             case 'published':
                 return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-            case 'draft':
+            case 'private':
                 return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
             case 'archived':
                 return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500';
@@ -224,7 +224,7 @@ export default function AnnouncementIndex({ announcements, filters }: { announce
                                             <div className="flex items-center gap-2">
                                                 <Calendar className="size-3 text-neutral-400" />
                                                 <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-300">
-                                                    {announcement.published_at ? new Date(announcement.published_at).toLocaleDateString() : 'Draft'}
+                                                    {announcement.published_at ? new Date(announcement.published_at).toLocaleDateString() : 'Private'}
                                                 </span>
                                             </div>
                                         </td>

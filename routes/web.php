@@ -8,11 +8,27 @@ use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AnnouncementController;
 
-Route::inertia('/', 'landing', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    $announcements = app(\App\Repositories\Announcement\AnnouncementRepositoryInterface::class)->getPublished(3);
+    
+    return \Inertia\Inertia::render('landing', [
+        'canRegister' => \Laravel\Fortify\Features::enabled(\Laravel\Fortify\Features::registration()),
+        'announcements' => \App\Http\Resources\AnnouncementResource::collection($announcements)->resolve(),
+    ]);
+})->name('home');
 
-Route::inertia('/landing', 'landing');
+Route::get('/landing', function () {
+    return redirect()->route('home');
+});
+
+Route::get('/announcements/{announcement}', function (\App\Models\Announcement $announcement) {
+    if ($announcement->status !== \App\Enums\AnnouncementStatus::PUBLISHED) {
+        abort(404);
+    }
+    return \Inertia\Inertia::render('announcements/show', [
+        'announcement' => new \App\Http\Resources\AnnouncementResource($announcement),
+    ]);
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard', ['portalType' => 'homeowner'])->name('dashboard');
