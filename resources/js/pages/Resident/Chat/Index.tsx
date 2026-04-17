@@ -26,6 +26,7 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
     const [messages, setMessages] = useState<Message[]>(initialMessages.data || []);
     const [newMessage, setNewMessage] = useState('');
     const scrollRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         scrollToBottom();
@@ -35,10 +36,16 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
             .listen('.App\\Events\\Chat\\MessageSent', (e: { message: Message }) => {
                 // To avoid duplication
                 setMessages(prev => {
+                    const isAtBottom = checkIsAtBottom();
                     if (prev.find(m => m.id === e.message.id)) return prev;
-                    return [...prev, e.message];
+                    
+                    const next = [...prev, e.message];
+                    // Auto-scroll if currently at bottom, or if user sent it
+                    if (isAtBottom || e.message.sender_type === 'homeowner') {
+                       setTimeout(() => scrollToBottom('smooth'), 50);
+                    }
+                    return next;
                 });
-                scrollToBottom();
             });
 
         return () => {
@@ -46,9 +53,15 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
         };
     }, []);
 
-    const scrollToBottom = () => {
+    const checkIsAtBottom = () => {
+        if (!scrollContainerRef.current) return true;
+        const { scrollHeight, scrollTop, clientHeight } = scrollContainerRef.current;
+        return scrollHeight - scrollTop - clientHeight < 100;
+    };
+
+    const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
         setTimeout(() => {
-            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+            scrollRef.current?.scrollIntoView({ behavior });
         }, 100);
     };
 
@@ -97,7 +110,7 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
                 <div className="flex flex-1 overflow-hidden">
                     <div className="flex-1 flex flex-col bg-white">
                         {/* Messages Area */}
-                        <ScrollArea className="flex-1 p-6 bg-neutral-50/20">
+                        <ScrollArea className="flex-1 p-6 bg-neutral-50/20" ref={scrollContainerRef}>
                             <div className="space-y-6">
                                 {messages.length === 0 && (
                                     <div className="flex flex-col items-center justify-center py-20 text-neutral-400">

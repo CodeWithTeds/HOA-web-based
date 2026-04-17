@@ -1,14 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, usePage, Link } from '@inertiajs/react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Send, User as UserIcon, Search, MoreVertical, MessageSquare, Home } from 'lucide-react';
+import { Send, Search, MessageSquare, Archive } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import AppLayout from '@/layouts/app-layout';
 import echo from '@/echo';
 import axios from 'axios';
+
+const VISIBLE_COUNT = 6;
 
 interface Message {
     id: number;
@@ -32,26 +41,27 @@ interface Thread {
 export default function AdminChat({ threads }: { threads: Thread[] }) {
     const { auth } = usePage().props as any;
     const [activeResidentId, setActiveResidentId] = useState<number | null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [allMessages, setAllMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const scrollRef = useRef<HTMLDivElement>(null);
 
     const filteredThreads = threads.filter(t => 
         t.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Only show the last 6 messages — everything else is in the log
+    const visibleMessages = allMessages.slice(-VISIBLE_COUNT);
+    const logMessages = allMessages.slice(0, -VISIBLE_COUNT);
+
     useEffect(() => {
         if (activeResidentId) {
             axios.get(`/admin/chat/${activeResidentId}`).then(res => {
-                setMessages(res.data.messages);
-                scrollToBottom();
+                setAllMessages(res.data.messages);
             });
 
             const channel = echo.private(`chat.resident.${activeResidentId}`)
                 .listen('.App\\Events\\Chat\\MessageSent', (e: { message: Message }) => {
-                    setMessages(prev => [...prev, e.message]);
-                    scrollToBottom();
+                    setAllMessages(prev => [...prev, e.message]);
                 });
 
             return () => {
@@ -59,12 +69,6 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
             };
         }
     }, [activeResidentId]);
-
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-    };
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,9 +80,8 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
                 resident_id: activeResidentId,
                 is_admin: true
             });
-            setMessages(prev => [...prev, res.data.message]);
+            setAllMessages(prev => [...prev, res.data.message]);
             setNewMessage('');
-            scrollToBottom();
         } catch (err) {
             console.error(err);
         }
@@ -160,38 +163,131 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
                     </div>
 
                     {/* Chat Window */}
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className="flex-1 flex flex-col bg-white overflow-hidden">
                         {activeResidentId ? (
                             <>
-                                {/* Messages Area */}
-                                <ScrollArea className="flex-1 p-6 bg-neutral-50/20">
-                                    <div className="space-y-6">
-                                        {messages.map((msg) => {
-                                            const isMe = msg.sender_type === 'admin' || msg.sender_type === 'staff';
-                                            return (
-                                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                                        <div className={`
-                                                            px-4 py-3 rounded-2xl text-[13px] font-medium leading-relaxed shadow-sm
-                                                            ${isMe 
-                                                                ? 'bg-[#0A2540] text-white rounded-br-none' 
-                                                                : 'bg-white border border-neutral-100 text-[#0A2540] rounded-bl-none'}
-                                                        `}>
-                                                            {msg.content}
-                                                        </div>
-                                                        <span className="text-[10px] mt-1.5 font-bold text-neutral-400 uppercase tracking-widest px-1">
-                                                            {msg.human_time}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                        <div ref={scrollRef} />
+                                {/* ─── Chat Sub-Header ─── */}
+                                <div className="shrink-0 px-6 py-3 border-b border-neutral-100 bg-white flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-8 w-8 rounded-lg border border-neutral-100">
+                                            <AvatarFallback className="bg-blue-50 text-blue-600 font-black text-[12px]">
+                                                {threads.find(t => t.id === activeResidentId)?.name.charAt(0)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <h2 className="text-[14px] font-black text-[#0A2540]">
+                                                {threads.find(t => t.id === activeResidentId)?.name}
+                                            </h2>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Active</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </ScrollArea>
+
+                                    {/* Log Button */}
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="sm" className="h-8 px-3 border-neutral-200 rounded-lg font-bold flex gap-2 text-[12px] hover:bg-neutral-50">
+                                                <Archive className="size-3.5 text-neutral-400" />
+                                                View Log ({logMessages.length})
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-3xl h-[70vh] flex flex-col p-0 overflow-hidden bg-white shadow-2xl">
+                                            <DialogHeader className="p-5 border-b border-neutral-100 bg-white shrink-0">
+                                                <DialogTitle className="text-lg font-black text-[#0A2540]">
+                                                    Message Log — {threads.find(t => t.id === activeResidentId)?.name}
+                                                </DialogTitle>
+                                            </DialogHeader>
+                                            
+                                            {/* Scrollable log table */}
+                                            <div className="flex-1 overflow-hidden flex flex-col">
+                                                <div className="flex-1 overflow-y-auto">
+                                                    {allMessages.length === 0 ? (
+                                                        <div className="flex items-center justify-center h-full text-neutral-400">
+                                                            <p className="text-[13px] font-bold">No messages yet</p>
+                                                        </div>
+                                                    ) : (
+                                                        <table className="w-full border-collapse text-left">
+                                                            <thead className="sticky top-0 z-10 bg-white border-b border-neutral-100 shadow-sm">
+                                                                <tr>
+                                                                    <th className="px-5 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest w-36">Time</th>
+                                                                    <th className="px-5 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest w-24">Sender</th>
+                                                                    <th className="px-5 py-3 text-[10px] font-black text-neutral-400 uppercase tracking-widest">Message</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-neutral-50">
+                                                                {allMessages.map((msg) => {
+                                                                    const isMe = msg.sender_type === 'admin' || msg.sender_type === 'staff';
+                                                                    return (
+                                                                        <tr key={msg.id} className="hover:bg-neutral-50/50 transition-colors">
+                                                                            <td className="px-5 py-3 text-[11px] font-bold text-neutral-400 whitespace-nowrap">{msg.human_time}</td>
+                                                                            <td className="px-5 py-3">
+                                                                                <Badge variant="outline" className={`text-[9px] font-black uppercase tracking-wider ${isMe ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-neutral-50 text-neutral-600 border-neutral-100'}`}>
+                                                                                    {isMe ? 'Admin' : 'Resident'}
+                                                                                </Badge>
+                                                                            </td>
+                                                                            <td className="px-5 py-3 text-[12px] font-medium text-[#0A2540] leading-relaxed">{msg.content}</td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="p-3 bg-neutral-50 border-t border-neutral-100 shrink-0">
+                                                <p className="text-[10px] font-bold text-neutral-400 text-center uppercase tracking-widest">
+                                                    {allMessages.length} Total Messages
+                                                </p>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+
+                                {/* ─── Fixed Messages Area (last 6 only, NO scroll) ─── */}
+                                <div className="flex-1 flex flex-col justify-end p-6 bg-neutral-50/20 overflow-hidden">
+                                    {visibleMessages.length === 0 ? (
+                                        <div className="flex-1 flex flex-col items-center justify-center text-neutral-300">
+                                            <MessageSquare className="size-10 text-neutral-200 mb-3" strokeWidth={1.5} />
+                                            <p className="text-[13px] font-bold text-neutral-400">No messages yet. Start the conversation below.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-4">
+                                            {logMessages.length > 0 && (
+                                                <div className="flex justify-center">
+                                                    <span className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest bg-white/80 px-3 py-1 rounded-full border border-neutral-100">
+                                                        {logMessages.length} older message{logMessages.length !== 1 ? 's' : ''} in log
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {visibleMessages.map((msg) => {
+                                                const isMe = msg.sender_type === 'admin' || msg.sender_type === 'staff';
+                                                return (
+                                                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                        <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                                                            <div className={`
+                                                                px-4 py-3 rounded-2xl text-[13px] font-medium leading-relaxed shadow-sm
+                                                                ${isMe 
+                                                                    ? 'bg-[#0A2540] text-white rounded-br-none' 
+                                                                    : 'bg-white border border-neutral-100 text-[#0A2540] rounded-bl-none'}
+                                                            `}>
+                                                                {msg.content}
+                                                            </div>
+                                                            <span className="text-[10px] mt-1.5 font-bold text-neutral-400 uppercase tracking-widest px-1">
+                                                                {msg.human_time}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Input Area */}
-                                <div className="p-4 bg-white border-t border-neutral-100">
+                                <div className="shrink-0 p-4 bg-white border-t border-neutral-100">
                                     <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto w-full">
                                         <Input 
                                             placeholder="Type a message to the resident..." 
