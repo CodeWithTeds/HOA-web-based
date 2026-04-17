@@ -12,13 +12,14 @@ use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Models\Announcement;
 use App\Enums\AnnouncementStatus;
+use App\Http\Controllers\Resident\ChatController;
 use App\Http\Resources\AnnouncementResource;
 use App\Repositories\Announcement\AnnouncementRepositoryInterface;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     $announcements = app(AnnouncementRepositoryInterface::class)->getPublished(3);
-    
+
     return Inertia::render('landing', [
         'canRegister' => Features::enabled(Features::registration()),
         'announcements' => AnnouncementResource::collection($announcements)->resolve(),
@@ -43,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
-        
+
         // Residents
         Route::get('admin/residents/export', [ResidentController::class, 'exportCsv'])->name('admin.residents.export');
         Route::get('admin/residents', [ResidentController::class, 'index'])->name('admin.residents.index');
@@ -53,7 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/residents/{resident}/edit', [ResidentController::class, 'edit'])->name('admin.residents.edit');
         Route::put('admin/residents/{resident}', [ResidentController::class, 'update'])->name('admin.residents.update');
         Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
-        
+
         // Billing & Collection
         Route::get('admin/billing/export', [BillingController::class, 'exportCsv'])->name('admin.billing.export');
         Route::get('admin/billing', [BillingController::class, 'index'])->name('admin.billing.index');
@@ -66,7 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Reports & Analytics
         Route::get('admin/reports/export', [ReportController::class, 'exportCsv'])->name('admin.reports.export');
         Route::get('admin/reports', [ReportController::class, 'index'])->name('admin.reports.index');
-        
+
         Route::get('admin/user/export', [StaffController::class, 'exportCsv'])->name('admin.user.export');
         Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
         Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
@@ -108,6 +109,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/complaints/{id}/edit', [ComplaintController::class, 'edit'])->name('admin.complaints.edit');
         Route::put('admin/complaints/{id}', [ComplaintController::class, 'update'])->name('admin.complaints.update');
         Route::delete('admin/complaints/{id}', [ComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
+    });
+
+    Route::middleware(['role:admin,staff'])->group(function () {
+        // Chat Support (Management)
+        Route::get('admin/chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('admin.chat.index');
+        Route::get('admin/chat/{residentId}', [\App\Http\Controllers\Admin\ChatController::class, 'show'])->name('admin.chat.show');
+        Route::post('admin/chat', [\App\Http\Controllers\Admin\ChatController::class, 'store'])->name('admin.chat.store');
+    });
+
+    Route::middleware('role:homeowner')->group(function () {
+        // Chat Support (Resident)
+        Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::post('chat', [ChatController::class, 'store'])->name('chat.store');
     });
 
     Route::middleware('role:staff')->group(function () {

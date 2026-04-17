@@ -16,6 +16,12 @@ use App\Enums\UserRole;
 
 #[Fillable(['name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property \App\Enums\UserRole $role
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -34,5 +40,10 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
             'role' => UserRole::class,
         ];
+    }
+
+    public function residentMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ResidentMessage::class, 'resident_id');
     }
 }

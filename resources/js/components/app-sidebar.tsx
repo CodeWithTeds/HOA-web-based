@@ -93,7 +93,7 @@ export function AppSidebar() {
 
             { title: 'Announcements', href: '/admin/announcements', icon: Megaphone },
             { title: 'Complaints Management', href: '/admin/complaints', icon: AlertCircle },
-            { title: 'Chat Support', href: '#', icon: MessageSquare },
+            { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
             { title: 'System Settings', href: '#', icon: ShieldCheck },
         );
     }
@@ -104,7 +104,7 @@ export function AppSidebar() {
             { title: 'Billing and Payments', href: '/staff/billing', icon: CreditCard },
             { title: 'Facility Reservations', href: '/staff/facilities', icon: CalendarCheck },
             { title: 'Complaints', href: '/staff/complaints', icon: AlertCircle },
-            { title: 'Chat Support', href: '/staff/chat', icon: MessageSquare },
+            { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
             { title: 'Reports', href: '/staff/reports', icon: BarChart3 },
             { title: 'Announcements', href: '/staff/announcements', icon: Megaphone },
             { title: 'Logout', href: '/logout', icon: LogOut },
