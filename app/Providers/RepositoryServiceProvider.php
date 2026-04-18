@@ -18,6 +18,8 @@ use App\Repositories\Announcement\AnnouncementRepositoryInterface;
 use App\Repositories\Announcement\EloquentAnnouncementRepository;
 use App\Repositories\Complaint\ComplaintRepositoryInterface;
 use App\Repositories\Complaint\EloquentComplaintRepository;
+use App\Repositories\Dashboard\DashboardRepositoryInterface;
+use App\Repositories\Dashboard\EloquentDashboardRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -36,6 +38,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->singleton(FacilityRepositoryInterface::class, EloquentFacilityRepository::class);
         $this->app->singleton(AnnouncementRepositoryInterface::class, EloquentAnnouncementRepository::class);
         $this->app->singleton(ComplaintRepositoryInterface::class, EloquentComplaintRepository::class);
+        $this->app->singleton(DashboardRepositoryInterface::class, EloquentDashboardRepository::class);
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ComplaintController;
 use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\BookingController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Models\Announcement;
 use App\Enums\AnnouncementStatus;
 use App\Http\Controllers\Resident\ChatController;
@@ -43,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard', ['portalType' => 'homeowner'])->name('dashboard');
 
     Route::middleware('role:admin')->group(function () {
-        Route::inertia('admin/dashboard', 'dashboard', ['portalType' => 'admin'])->name('admin.dashboard');
+        Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
         // Residents
         Route::get('admin/residents/export', [ResidentController::class, 'exportCsv'])->name('admin.residents.export');
@@ -125,7 +126,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:staff')->group(function () {
-        Route::inertia('staff/dashboard', 'dashboard', ['portalType' => 'staff'])->name('staff.dashboard');
+        Route::get('staff/dashboard', [DashboardController::class, 'index'])->name('staff.dashboard');
     });
 });
 
