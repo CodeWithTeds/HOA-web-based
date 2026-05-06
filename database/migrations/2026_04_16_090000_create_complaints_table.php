@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('subject');
             $table->text('description');
-            $table->foreignId('resident_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('resident_id')->constrained('residents')->onDelete('cascade');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->string('category')->default(ComplaintCategory::MAINTENANCE->value);
             $table->string('priority')->default(ComplaintPriority::LOW->value);

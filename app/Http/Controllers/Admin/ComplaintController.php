@@ -9,6 +9,7 @@ use App\Http\Resources\ComplaintResource;
 use App\Repositories\Complaint\ComplaintRepositoryInterface;
 use App\Enums\ComplaintStatus;
 use App\Enums\UserRole;
+use App\Models\Resident;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -36,7 +37,7 @@ class ComplaintController extends Controller
     public function create()
     {
         return Inertia::render('admin/complaints/create', [
-            'residents' => User::where('role', UserRole::HOMEOWNER)->orderBy('name')->get(['id', 'name']),
+            'residents' => $this->residentOptions(),
             'staff' => User::whereIn('role', [UserRole::ADMIN, UserRole::STAFF])->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -60,7 +61,7 @@ class ComplaintController extends Controller
         
         return Inertia::render('admin/complaints/edit', [
             'complaint' => new ComplaintResource($complaint),
-            'residents' => User::where('role', UserRole::HOMEOWNER)->orderBy('name')->get(['id', 'name']),
+            'residents' => $this->residentOptions(),
             'staff' => User::whereIn('role', [UserRole::ADMIN, UserRole::STAFF])->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -106,5 +107,18 @@ class ComplaintController extends Controller
         $this->complaintRepository->delete($complaint);
 
         return redirect()->route('admin.complaints.index')->with('success', 'Complaint deleted successfully.');
+    }
+
+    private function residentOptions()
+    {
+        return Resident::query()
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'suffix', 'resident_type'])
+            ->map(fn (Resident $resident) => [
+                'id' => $resident->id,
+                'name' => $resident->full_name,
+                'type' => $resident->resident_type?->value,
+            ]);
     }
 }

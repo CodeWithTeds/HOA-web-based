@@ -20,7 +20,7 @@ class StoreComplaintRequest extends FormRequest
         return [
             'subject' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'resident_id' => ['required', 'exists:users,id'],
+            'resident_id' => ['required', 'exists:residents,id'],
             'category' => ['required', new Enum(ComplaintCategory::class)],
             'priority' => ['required', new Enum(ComplaintPriority::class)],
             'status' => ['required', new Enum(ComplaintStatus::class)],

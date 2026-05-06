@@ -13,6 +13,11 @@ class Resident extends Model
 {
     use HasFactory;
 
+    protected $appends = [
+        'full_name',
+        'name',
+    ];
+
     protected $fillable = [
         'first_name',
         'middle_name',
@@ -54,6 +59,16 @@ class Resident extends Model
 
     public function getFullNameAttribute(): string
     {
-        return "{$this->first_name} {$this->middle_name} {$this->last_name} {$this->suffix}";
+        return collect([
+            $this->first_name,
+            $this->middle_name,
+            $this->last_name,
+            $this->suffix,
+        ])->filter()->implode(' ');
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->full_name;
     }
 }

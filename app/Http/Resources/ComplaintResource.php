@@ -15,8 +15,8 @@ class ComplaintResource extends JsonResource
             'description' => $this->description,
             'resident' => [
                 'id' => $this->resident?->id,
-                'name' => $this->resident?->name,
-                'type' => $this->resident?->resident_type, // Assuming this field exists on User or Resident table
+                'name' => $this->resident?->full_name,
+                'type' => $this->resident?->resident_type?->value,
             ],
             'assigned_staff' => [
                 'id' => $this->assignedStaff?->id,
