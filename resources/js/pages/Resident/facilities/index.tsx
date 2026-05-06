@@ -24,7 +24,7 @@ interface Facility {
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 export default function FacilityBooking() {
-    const { facilities, flash, errors: pageErrors, hasPendingBooking } = usePage<any>().props;
+    const { facilities, flash, errors: pageErrors, hasPendingBooking, residentNotLinked } = usePage<any>().props;
     const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -113,6 +113,19 @@ export default function FacilityBooking() {
                             <h3 className="text-lg font-bold text-amber-600 dark:text-amber-400">Pending Booking Found</h3>
                             <p className="text-sm font-medium text-amber-700/80 dark:text-amber-500/80">
                                 You already have a pending facility booking. You can only book another facility once your previous request has been approved or completed.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {residentNotLinked && (
+                    <div className="flex items-center gap-4 rounded-3xl bg-red-500/10 p-6 border border-red-500/20 shadow-lg relative overflow-hidden mt-2">
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-red-500"></div>
+                        <AlertCircle className="h-8 w-8 text-red-500 shrink-0" />
+                        <div>
+                            <h3 className="text-lg font-bold text-red-600 dark:text-red-400">Account Not Linked</h3>
+                            <p className="text-sm font-medium text-red-700/80 dark:text-red-500/80">
+                                Your login account is not yet linked to a resident profile. Please contact the HOA office to connect your account so you can make bookings and view billing.
                             </p>
                         </div>
                     </div>
