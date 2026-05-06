@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Billing;
 
+use App\Enums\PaymentStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,9 @@ class InvoiceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $hasPendingPayment = $this->relationLoaded('payments')
+            && $this->payments->contains('status', PaymentStatus::PENDING);
+
         return [
             'id' => $this->id,
             'invoice_number' => $this->invoice_number,
@@ -22,10 +26,11 @@ class InvoiceResource extends JsonResource
             'total_amount' => $this->total_amount,
             'paid_amount' => $this->paid_amount,
             'balance' => $this->balance,
-            'status' => $this->status,
+            'status' => $this->status?->value ?? $this->status,
+            'display_status' => $hasPendingPayment ? PaymentStatus::PENDING->value : ($this->status?->value ?? $this->status),
             'due_date' => $this->due_date,
             'items' => $this->whenLoaded('items'),
-            'payments' => $this->whenLoaded('payments'),
+            'payments' => PaymentResource::collection($this->whenLoaded('payments'))->resolve($request),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

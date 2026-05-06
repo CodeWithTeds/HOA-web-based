@@ -79,6 +79,16 @@ class BillingController extends Controller
     }
 
     /**
+     * Verify a pending homeowner payment proof.
+     */
+    public function verifyPayment(int $payment): RedirectResponse
+    {
+        $this->billingService->verifyPayment($payment);
+
+        return redirect()->back()->with('success', 'Payment proof verified and invoice balance updated.');
+    }
+
+    /**
      * Get invoice details as JSON.
      */
     public function showInvoice(int $id): InvoiceResource

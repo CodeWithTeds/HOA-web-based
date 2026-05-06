@@ -5,12 +5,12 @@ namespace App\Services\Billing;
 use App\Enums\InvoiceStatus;
 use App\Models\BillingPeriod;
 use App\Models\Invoice;
-use App\Models\Resident;
 use App\Models\Payment;
 use App\Enums\PaymentStatus;
 use App\Events\BillingPeriodCreated;
 use App\Repositories\Billing\BillingRepositoryInterface;
 use App\Repositories\Resident\ResidentRepositoryInterface;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +46,7 @@ class BillingService
      * @param int|null $billingPeriodId
      * @return array
      */
-    public function getFinancialSummaries(int $billingPeriodId = null): array
+    public function getFinancialSummaries(?int $billingPeriodId = null): array
     {
         return $this->billingRepository->getSummaries($billingPeriodId);
     }
@@ -98,7 +98,7 @@ class BillingService
      * @param array|null $residentIds If null, generate for all active residents (bulk).
      * @return int Number of invoices generated
      */
-    public function generateMonthlyInvoices(int $billingPeriodId, ?float $amount = null, array $residentIds = null): int
+    public function generateMonthlyInvoices(int $billingPeriodId, ?float $amount = null, ?array $residentIds = null): int
     {
         $billingPeriod = $this->billingRepository->findBillingPeriod($billingPeriodId);
         $amount = $amount ?? $billingPeriod->amount;
@@ -162,25 +162,36 @@ class BillingService
             ]);
 
             // Update invoice balances
-            $paidAmount = $invoice->paid_amount + $data['amount'];
-            $balance = $invoice->total_amount - $paidAmount;
-            
-            $status = InvoiceStatus::UNPAID;
-            // Determine status
-            if ($balance <= 0) {
-                $status = InvoiceStatus::PAID;
-                $balance = 0;
-            } elseif ($paidAmount > 0) {
-                $status = InvoiceStatus::PARTIALLY_PAID;
-            }
-
-            $invoice->update([
-                'paid_amount' => $paidAmount,
-                'balance' => $balance,
-                'status' => $status
-            ]);
+            $this->applyVerifiedPaymentToInvoice($invoice, (float) $data['amount']);
 
             return $payment;
+        });
+    }
+
+    /**
+     * Verify a homeowner-uploaded proof of payment.
+     *
+     * @param int $paymentId
+     * @return Payment
+     *
+     * @throws AuthorizationException
+     */
+    public function verifyPayment(int $paymentId): Payment
+    {
+        return DB::transaction(function () use ($paymentId) {
+            $payment = $this->billingRepository->findPayment($paymentId, ['invoice']);
+
+            if ($payment->status !== PaymentStatus::PENDING) {
+                throw new AuthorizationException('Only pending payments can be verified.');
+            }
+
+            $verifiedPayment = $this->billingRepository->updatePayment($payment, [
+                'status' => PaymentStatus::VERIFIED,
+            ]);
+
+            $this->applyVerifiedPaymentToInvoice($payment->invoice, (float) $payment->amount);
+
+            return $verifiedPayment;
         });
     }
 
@@ -204,5 +215,25 @@ class BillingService
     public function getInvoicesForExport(array $filters): Collection
     {
         return $this->billingRepository->getInvoicesForExport($filters);
+    }
+
+    private function applyVerifiedPaymentToInvoice(Invoice $invoice, float $amount): Invoice
+    {
+        $paidAmount = (float) $invoice->paid_amount + $amount;
+        $balance = (float) $invoice->total_amount - $paidAmount;
+        $status = InvoiceStatus::UNPAID;
+
+        if ($balance <= 0) {
+            $status = InvoiceStatus::PAID;
+            $balance = 0;
+        } elseif ($paidAmount > 0) {
+            $status = InvoiceStatus::PARTIALLY_PAID;
+        }
+
+        return $this->billingRepository->updateInvoice($invoice, [
+            'paid_amount' => $paidAmount,
+            'balance' => $balance,
+            'status' => $status,
+        ]);
     }
 }

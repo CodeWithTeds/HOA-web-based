@@ -78,12 +78,39 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
     public function findInvoice(int $id, array $relations = []): Invoice;
 
     /**
+     * Update an invoice.
+     *
+     * @param Invoice $invoice
+     * @param array $data
+     * @return Invoice
+     */
+    public function updateInvoice(Invoice $invoice, array $data): Invoice;
+
+    /**
      * Create a payment record.
      *
      * @param array $data
      * @return Payment
      */
     public function createPayment(array $data): Payment;
+
+    /**
+     * Find a payment by ID with relations.
+     *
+     * @param int $id
+     * @param array $relations
+     * @return Payment
+     */
+    public function findPayment(int $id, array $relations = []): Payment;
+
+    /**
+     * Update a payment.
+     *
+     * @param Payment $payment
+     * @param array $data
+     * @return Payment
+     */
+    public function updatePayment(Payment $payment, array $data): Payment;
 
     /**
      * Get all invoices owned by a resident.

@@ -28,7 +28,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
      */
     public function getPaginatedInvoices(array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
-        $query = $this->model->newQuery()->with(['resident', 'billingPeriod']);
+        $query = $this->model->newQuery()->with(['resident', 'billingPeriod', 'payments']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -43,7 +43,11 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
         }
 
         if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
+            if ($filters['status'] === PaymentStatus::PENDING->value) {
+                $query->whereHas('payments', fn ($paymentQuery) => $paymentQuery->where('status', PaymentStatus::PENDING->value));
+            } else {
+                $query->where('status', $filters['status']);
+            }
         }
 
         return $query->latest()->paginate($perPage);
@@ -56,10 +60,14 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     {
         $invoiceQuery = $this->model->newQuery();
         $paymentQuery = Payment::query()->where('status', PaymentStatus::VERIFIED->value);
+        $pendingPaymentQuery = Payment::query()->where('status', PaymentStatus::PENDING->value);
 
         if ($billingPeriodId) {
             $invoiceQuery->where('billing_period_id', $billingPeriodId);
             $paymentQuery->whereHas('invoice', function ($q) use ($billingPeriodId) {
+                $q->where('billing_period_id', $billingPeriodId);
+            });
+            $pendingPaymentQuery->whereHas('invoice', function ($q) use ($billingPeriodId) {
                 $q->where('billing_period_id', $billingPeriodId);
             });
         }
@@ -68,6 +76,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
             'total_dues' => (float) $invoiceQuery->sum('total_amount'),
             'total_collections' => (float) $paymentQuery->sum('amount'),
             'outstanding_balance' => (float) $invoiceQuery->sum('balance'),
+            'pending_proofs' => $pendingPaymentQuery->count(),
         ];
     }
 
@@ -125,9 +134,37 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     /**
      * @inheritDoc
      */
+    public function updateInvoice(Invoice $invoice, array $data): Invoice
+    {
+        $invoice->update($data);
+
+        return $invoice->refresh();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function createPayment(array $data): Payment
     {
         return Payment::create($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findPayment(int $id, array $relations = []): Payment
+    {
+        return Payment::query()->with($relations)->findOrFail($id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function updatePayment(Payment $payment, array $data): Payment
+    {
+        $payment->update($data);
+
+        return $payment->refresh();
     }
 
     /**
