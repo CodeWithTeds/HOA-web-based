@@ -42,7 +42,7 @@ class EloquentFacilityRepository extends BaseRepository implements FacilityRepos
 
     public function getAllBookings(): Collection
     {
-        return FacilityBooking::with(['resident', 'facility'])->get();
+        return FacilityBooking::with(['resident', 'facility', 'invoice'])->get();
     }
 
     public function createBooking(array $data): FacilityBooking
@@ -58,6 +58,6 @@ class EloquentFacilityRepository extends BaseRepository implements FacilityRepos
 
     public function findBookingById(int $id): ?FacilityBooking
     {
-        return FacilityBooking::with(['resident', 'facility'])->find($id);
+        return FacilityBooking::with(['resident', 'facility', 'invoice'])->find($id);
     }
 }

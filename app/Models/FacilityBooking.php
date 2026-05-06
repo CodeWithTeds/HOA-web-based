@@ -21,6 +21,7 @@ class FacilityBooking extends Model
         'purpose',
         'attendees',
         'special_requests',
+        'invoice_id',
     ];
 
     protected $casts = [
@@ -36,5 +37,10 @@ class FacilityBooking extends Model
     public function facility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 }

@@ -1,6 +1,6 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, Tag, CheckCircle2, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Users, Tag, CheckCircle2, Loader2, Sparkles, AlertCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,10 @@ interface Facility {
     image_path: string | null;
 }
 
+const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
+
 export default function FacilityBooking() {
-    const { facilities, flash, errors: pageErrors } = usePage<any>().props;
+    const { facilities, flash, errors: pageErrors, hasPendingBooking } = usePage<any>().props;
     const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -42,9 +44,16 @@ export default function FacilityBooking() {
                 title: 'Success!',
                 text: flash.success,
                 confirmButtonColor: '#10b981',
+                confirmButtonText: 'Go to Billing',
+                showCancelButton: true,
+                cancelButtonText: 'Close',
                 background: '#ffffff',
                 customClass: {
                     popup: 'rounded-3xl shadow-2xl',
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/billing';
                 }
             });
             setIsDialogOpen(false);
@@ -63,20 +72,6 @@ export default function FacilityBooking() {
         e.preventDefault();
         post('/facilities/book', {
             preserveScroll: true,
-            onError: (errs) => {
-                if (errs.conflict) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Booking Conflict',
-                        text: errs.conflict,
-                        confirmButtonColor: '#ef4444',
-                        background: '#ffffff',
-                        customClass: {
-                            popup: 'rounded-3xl shadow-2xl',
-                        }
-                    });
-                }
-            }
         });
     };
 
@@ -109,6 +104,19 @@ export default function FacilityBooking() {
                         </p>
                     </div>
                 </div>
+
+                {hasPendingBooking && (
+                    <div className="flex items-center gap-4 rounded-3xl bg-amber-500/10 p-6 border border-amber-500/20 shadow-lg relative overflow-hidden mt-2">
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-amber-500"></div>
+                        <AlertCircle className="h-8 w-8 text-amber-500 shrink-0" />
+                        <div>
+                            <h3 className="text-lg font-bold text-amber-600 dark:text-amber-400">Pending Booking Found</h3>
+                            <p className="text-sm font-medium text-amber-700/80 dark:text-amber-500/80">
+                                You already have a pending facility booking. You can only book another facility once your previous request has been approved or completed.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Facilities Grid */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -172,10 +180,10 @@ export default function FacilityBooking() {
                             <CardFooter className="relative z-20 pt-4 pb-4 mt-auto">
                                 <Button 
                                     onClick={() => handleBookClick(facility)}
-                                    disabled={facility.status !== 'Active'}
-                                    className="w-full rounded-xl bg-white text-black hover:bg-neutral-200 font-bold tracking-wide h-10 text-sm shadow-lg transition-all"
+                                    disabled={facility.status !== 'Active' || hasPendingBooking}
+                                    className={cn("w-full rounded-xl bg-white text-black hover:bg-neutral-200 font-bold tracking-wide h-10 text-sm shadow-lg transition-all", hasPendingBooking && "opacity-50 cursor-not-allowed")}
                                 >
-                                    {facility.status === 'Active' ? 'Book This Space' : 'Currently Unavailable'}
+                                    {facility.status === 'Active' ? (hasPendingBooking ? 'Pending Booking Exists' : 'Book This Space') : 'Currently Unavailable'}
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -245,122 +253,122 @@ export default function FacilityBooking() {
                     </div>
 
                     {/* Right Column: Form */}
-                    <form onSubmit={submitBooking} className="md:col-span-3 p-8 flex flex-col justify-between bg-neutral-50 dark:bg-black/50">
-                        <div className="space-y-6">
-                            {pageErrors.conflict && (
-                                <div className="flex items-start gap-3 rounded-2xl bg-red-50 dark:bg-red-900/20 p-4 border border-red-100 dark:border-red-900/50">
-                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                                    <div className="text-sm font-medium text-red-800 dark:text-red-300">
-                                        {pageErrors.conflict}
-                                    </div>
+                    <form onSubmit={submitBooking} className="md:col-span-3 flex flex-col justify-between bg-white dark:bg-[#0c0c0c] max-h-[85vh]" style={{ fontFamily: fontStack }}>
+                        {/* ─── HEADER ─── */}
+                        <div className="shrink-0 px-8 py-6 border-b border-neutral-100 dark:border-neutral-800/60 bg-neutral-50/30 dark:bg-neutral-900/40">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-center size-10 rounded-xl bg-blue-600 shadow-lg shadow-blue-500/20">
+                                    <Calendar className="size-5 text-white" strokeWidth={2.5} />
                                 </div>
-                            )}
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="start_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
-                                        <Clock className="h-3 w-3" /> Start Date & Time
-                                    </Label>
-                                    <Input
-                                        id="start_time"
-                                        type="datetime-local"
-                                        value={data.start_time}
-                                        onChange={e => setData('start_time', e.target.value)}
-                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.start_time && "border-red-500")}
-                                        required
-                                    />
-                                    {errors.start_time && <p className="text-xs text-red-500 font-medium px-1">{errors.start_time}</p>}
+                                <div>
+                                    <h1 className="text-[20px] font-black tracking-tight text-[#0A2540] dark:text-white">
+                                        New Reservation Request
+                                    </h1>
+                                    <p className="text-[12px] text-neutral-400 font-bold tracking-wide uppercase mt-0.5">
+                                        {selectedFacility?.name}
+                                    </p>
                                 </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="end_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
-                                        <CheckCircle2 className="h-3 w-3" /> End Date & Time
-                                    </Label>
-                                    <Input
-                                        id="end_time"
-                                        type="datetime-local"
-                                        value={data.end_time}
-                                        onChange={e => setData('end_time', e.target.value)}
-                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.end_time && "border-red-500")}
-                                        required
-                                    />
-                                    {errors.end_time && <p className="text-xs text-red-500 font-medium px-1">{errors.end_time}</p>}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="purpose" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
-                                        Event Purpose
-                                    </Label>
-                                    <Input
-                                        id="purpose"
-                                        placeholder="e.g. Birthday Party"
-                                        value={data.purpose}
-                                        onChange={e => setData('purpose', e.target.value)}
-                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.purpose && "border-red-500")}
-                                        required
-                                    />
-                                    {errors.purpose && <p className="text-xs text-red-500 font-medium px-1">{errors.purpose}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="attendees" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
-                                        Expected Attendees
-                                    </Label>
-                                    <Input
-                                        id="attendees"
-                                        type="number"
-                                        min="1"
-                                        placeholder="e.g. 50"
-                                        value={data.attendees}
-                                        onChange={e => setData('attendees', e.target.value)}
-                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.attendees && "border-red-500")}
-                                        required
-                                    />
-                                    {errors.attendees && <p className="text-xs text-red-500 font-medium px-1">{errors.attendees}</p>}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="special_requests" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
-                                    Special Requests (Optional)
-                                </Label>
-                                <textarea
-                                    id="special_requests"
-                                    placeholder="Any specific layout or setup needed?"
-                                    value={data.special_requests}
-                                    onChange={e => setData('special_requests', e.target.value)}
-                                    className={cn("w-full h-24 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 text-sm focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white outline-none resize-none transition-all", errors.special_requests && "border-red-500 focus:ring-red-500")}
-                                />
-                                {errors.special_requests && <p className="text-xs text-red-500 font-medium px-1">{errors.special_requests}</p>}
                             </div>
                         </div>
 
-                        <DialogFooter className="mt-8 flex gap-3">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={() => setIsDialogOpen(false)}
-                                className="h-12 rounded-xl font-bold border-neutral-200 dark:border-neutral-700 flex-1"
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                type="submit" 
-                                disabled={processing}
-                                className="h-12 rounded-xl font-bold bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 flex-[2] flex items-center justify-center gap-2 shadow-xl"
-                            >
-                                {processing ? (
-                                    <>
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    'Submit Reservation'
-                                )}
-                            </Button>
-                        </DialogFooter>
+                        {/* ─── SCROLLABLE FORM ─── */}
+                        <div className="flex-1 overflow-y-auto px-8 py-8 space-y-8">
+                            {pageErrors.conflict && (
+                                <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3">
+                                    <AlertCircle className="size-5 text-red-600 shrink-0" />
+                                    <p className="text-[12px] font-black text-red-600 tracking-tight">{pageErrors.conflict}</p>
+                                </div>
+                            )}
+
+                            {/* SCHEDULE */}
+                            <div className="space-y-6">
+                                <div className="flex items-start gap-4 mb-6 relative pl-4">
+                                    <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-blue-600 rounded-full" />
+                                    <div className="flex items-center justify-center size-8 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                                        <Clock className="size-4.5" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[15px] font-black tracking-tight text-[#0A2540] dark:text-white uppercase">Schedule & Details</h2>
+                                        <p className="text-[12px] text-neutral-400 font-bold mt-0.5">Define interval and purpose for usage.</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Start Date & Time <span className="text-red-500">*</span></Label>
+                                        <Input type="datetime-local" value={data.start_time} onChange={e => setData('start_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        {errors.start_time && <p className="text-[10px] font-bold text-red-500">⚠ {errors.start_time}</p>}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">End Date & Time <span className="text-red-500">*</span></Label>
+                                        <Input type="datetime-local" value={data.end_time} onChange={e => setData('end_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        {errors.end_time && <p className="text-[10px] font-bold text-red-500">⚠ {errors.end_time}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Purpose / Occasion <span className="text-red-500">*</span></Label>
+                                        <Input value={data.purpose} onChange={e => setData('purpose', e.target.value)} placeholder="e.g. Birthday Party" className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        {errors.purpose && <p className="text-[10px] font-bold text-red-500">⚠ {errors.purpose}</p>}
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Attendees <span className="text-red-500">*</span></Label>
+                                        <Input type="number" min="1" value={data.attendees} onChange={e => setData('attendees', e.target.value)} placeholder="e.g. 50" className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        {errors.attendees && <p className="text-[10px] font-bold text-red-500">⚠ {errors.attendees}</p>}
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-1.5 pt-2">
+                                    <Label className="text-[11px] font-black uppercase text-neutral-400">Additional Remarks</Label>
+                                    <textarea 
+                                        value={data.special_requests} 
+                                        onChange={e => setData('special_requests', e.target.value)}
+                                        rows={3}
+                                        placeholder="Any special requests or notes for the admin..."
+                                        className="w-full mt-1.5 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-4 focus:ring-blue-500/5 transition-all resize-none"
+                                    />
+                                    {errors.special_requests && <p className="text-[10px] font-bold text-red-500">⚠ {errors.special_requests}</p>}
+                                </div>
+                            </div>
+
+                            <div className="mt-8 p-6 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 flex gap-4">
+                                <AlertCircle className="size-5 text-amber-600 shrink-0 mt-0.5" />
+                                <div className="text-[12px] font-bold text-amber-800 dark:text-amber-500 leading-relaxed">
+                                    <p className="uppercase text-[10px] font-black mb-1 tracking-wider">Conflict Notice</p>
+                                    The system will automatically check for overlapping schedules upon submission. If the facility is already booked for the selected time, the request will be rejected to prevent double-booking.
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ─── STICKY FOOTER ─── */}
+                        <div className="shrink-0 bg-white dark:bg-[#0c0c0c] border-t border-neutral-100 dark:border-neutral-800/60 px-8 py-5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-neutral-400">
+                                    <Info className="size-4" />
+                                    <p className="text-[12px] font-bold uppercase tracking-wider">Subject to approval</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-10 rounded-xl px-6 text-[13px] font-black text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-800">
+                                        Discard
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="h-10 rounded-xl px-8 text-[13px] font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center"
+                                    >
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                                Processing...
+                                            </>
+                                        ) : (
+                                            'Secure Booking'
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </DialogContent>
             </Dialog>

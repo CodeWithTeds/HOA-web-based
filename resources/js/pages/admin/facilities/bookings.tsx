@@ -183,6 +183,7 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                     <th className="px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60">Facility</th>
                                     <th className="px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60">Date & Time</th>
                                     <th className="px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60">Fee</th>
+                                    <th className="px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60">Payment</th>
                                     <th className="px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60 text-center">Status</th>
                                     <th className="pr-8 px-3 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800/60 text-right">Actions</th>
                                 </tr>
@@ -219,6 +220,20 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                         </td>
                                         <td className="px-3 py-4 text-[13px] font-black text-blue-600">
                                             ₱{booking.total_fee}
+                                        </td>
+                                        <td className="px-3 py-4">
+                                            {booking.total_fee > 0 ? (
+                                                <Badge variant="outline" className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${booking.invoice?.status === 'Paid'
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                    : booking.invoice?.status === 'Partially Paid'
+                                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                                                    }`}>
+                                                    {booking.invoice?.status || 'Unpaid'}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-[11px] font-bold text-neutral-400">FREE</span>
+                                            )}
                                         </td>
                                         <td className="px-3 py-4 text-center">
                                             <Badge className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${booking.status === 'Confirmed'
