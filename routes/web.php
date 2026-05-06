@@ -16,6 +16,8 @@ use App\Http\Controllers\Resident\BillingController as ResidentBillingController
 use App\Models\Announcement;
 use App\Enums\AnnouncementStatus;
 use App\Http\Controllers\Resident\ChatController;
+use App\Http\Controllers\Resident\ComplaintController as ResidentComplaintController;
+use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
 use App\Http\Resources\AnnouncementResource;
 use App\Repositories\Announcement\AnnouncementRepositoryInterface;
 use Inertia\Inertia;
@@ -134,6 +136,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Facilities (Resident)
         Route::get('facilities', [\App\Http\Controllers\Resident\FacilityController::class, 'index'])->name('resident.facilities.index');
         Route::post('facilities/book', [\App\Http\Controllers\Resident\FacilityController::class, 'storeBooking'])->name('resident.facilities.book');
+
+        // Complaints (Resident)
+        Route::get('complaints', [ResidentComplaintController::class, 'index'])->name('resident.complaints.index');
+        Route::post('complaints', [ResidentComplaintController::class, 'store'])->name('resident.complaints.store');
+
+        // Announcements (Resident)
+        Route::get('announcements', [ResidentAnnouncementController::class, 'index'])->name('resident.announcements.index');
     });
 
     Route::middleware('role:staff')->group(function () {

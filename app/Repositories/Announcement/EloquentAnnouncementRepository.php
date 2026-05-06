@@ -49,4 +49,17 @@ class EloquentAnnouncementRepository extends BaseRepository implements Announcem
             ->latest()
             ->paginate($perPage);
     }
+
+    public function getForResidents(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model->newQuery()
+            ->whereIn('status', [
+                AnnouncementStatus::PUBLISHED->value,
+                AnnouncementStatus::PRIVATE->value,
+            ])
+            ->with('author')
+            ->latest('published_at')
+            ->latest()
+            ->paginate($perPage);
+    }
 }

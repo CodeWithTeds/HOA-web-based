@@ -9,4 +9,5 @@ interface AnnouncementRepositoryInterface extends BaseRepositoryInterface
 {
     public function getPaginated(int $perPage = 10, array $filters = []): LengthAwarePaginator;
     public function getPublished(int $perPage = 10): LengthAwarePaginator;
+    public function getForResidents(int $perPage = 15): LengthAwarePaginator;
 }
