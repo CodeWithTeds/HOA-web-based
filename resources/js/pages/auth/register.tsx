@@ -20,7 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-const accountErrorFields = [
+const identityErrorFields = [
     'first_name',
     'middle_name',
     'last_name',
@@ -29,6 +29,9 @@ const accountErrorFields = [
     'birth_date',
     'civil_status',
     'nationality',
+];
+
+const accountErrorFields = [
     'mobile_number',
     'alternate_number',
     'email',
@@ -117,19 +120,33 @@ export default function Register() {
 
         post(store.url(), {
             onError: (formErrors) => {
+                const fields = Object.keys(formErrors);
+
                 if (
-                    Object.keys(formErrors).some((field) =>
-                        accountErrorFields.includes(field),
-                    )
+                    fields.some((field) => identityErrorFields.includes(field))
                 ) {
                     setStep(1);
+
+                    return;
                 }
+
+                if (
+                    fields.some((field) => accountErrorFields.includes(field))
+                ) {
+                    setStep(2);
+
+                    return;
+                }
+
+                setStep(3);
             },
         });
     };
 
-    const nextStep = () => setStep(2);
-    const previousStep = () => setStep(1);
+    const nextStep = () =>
+        setStep((currentStep) => Math.min(currentStep + 1, 3));
+    const previousStep = () =>
+        setStep((currentStep) => Math.max(currentStep - 1, 1));
 
     return (
         <>
@@ -137,17 +154,23 @@ export default function Register() {
 
             <form onSubmit={submit} className="space-y-6">
                 <div className="flex items-center justify-center gap-5 border-b border-neutral-100 pb-5 dark:border-neutral-800">
-                    <StepBadge active={step === 1} value={1} label="Account" />
+                    <StepBadge active={step === 1} value={1} label="Identity" />
                     <div className="h-px w-12 bg-border" />
                     <StepBadge
                         active={step === 2}
                         value={2}
+                        label="Account & Contact"
+                    />
+                    <div className="h-px w-12 bg-border" />
+                    <StepBadge
+                        active={step === 3}
+                        value={3}
                         label="Residence"
                     />
                 </div>
 
                 {step === 1 && (
-                    <div className="grid gap-8 lg:grid-cols-2">
+                    <div className="mx-auto max-w-2xl">
                         <section>
                             <SectionHeader icon={User} title="Identity" />
                             <div className="grid grid-cols-2 gap-4">
@@ -306,7 +329,11 @@ export default function Register() {
                                 </div>
                             </div>
                         </section>
+                    </div>
+                )}
 
+                {step === 2 && (
+                    <div className="mx-auto max-w-2xl">
                         <section>
                             <SectionHeader
                                 icon={Mail}
@@ -414,7 +441,7 @@ export default function Register() {
                     </div>
                 )}
 
-                {step === 2 && (
+                {step === 3 && (
                     <div className="grid gap-8 lg:grid-cols-2">
                         <section>
                             <SectionHeader icon={Home} title="Address" />
@@ -625,7 +652,7 @@ export default function Register() {
                         Required fields are marked with *
                     </div>
                     <div className="flex gap-3">
-                        {step === 2 && (
+                        {step > 1 && (
                             <Button
                                 type="button"
                                 variant="outline"
@@ -635,7 +662,7 @@ export default function Register() {
                                 Back
                             </Button>
                         )}
-                        {step === 1 ? (
+                        {step < 3 ? (
                             <Button
                                 type="button"
                                 onClick={nextStep}
@@ -668,6 +695,7 @@ export default function Register() {
 
 Register.layout = {
     title: 'Create an account',
-    description: 'Step 1: account details. Step 2: resident profile.',
+    description:
+        'Step 1: identity. Step 2: account and contact. Step 3: residence.',
     wide: true,
 };
