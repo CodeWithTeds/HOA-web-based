@@ -11,6 +11,7 @@ use App\Models\Resident;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ResidentController extends Controller
 {
@@ -127,9 +128,9 @@ class ResidentController extends Controller
      * Export residents to CSV.
      *
      * @param GetResidentsRequest $request
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * @return StreamedResponse
      */
-    public function exportCsv(GetResidentsRequest $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportCsv(GetResidentsRequest $request): StreamedResponse
     {
         $filters = $request->validated();
         $residents = Resident::when($filters['search'] ?? null, function ($query, $search) {

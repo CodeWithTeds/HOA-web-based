@@ -2,11 +2,14 @@
 
 namespace App\Services\Staff;
 
+use App\Exceptions\StaffNotFoundException;
 use App\Models\Staff;
 use App\Repositories\Staff\StaffRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Exception;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class StaffService
 {
@@ -50,7 +53,7 @@ class StaffService
         $staff = $this->staffRepository->find($id);
 
         if (!$staff) {
-            throw new \App\Exceptions\StaffNotFoundException("Staff member with ID {$id} could not be found.");
+            throw new StaffNotFoundException("Staff member with ID {$id} could not be found.");
         }
 
         return $staff;
@@ -88,8 +91,8 @@ class StaffService
         $updated = $this->staffRepository->update($staff, $attributes);
 
         if (!$updated) {
-            \Illuminate\Support\Facades\Log::error("Failed to update staff", ['staff_id' => $id]);
-            throw new \Exception("Failed to update staff member.");
+            Log::error("Failed to update staff", ['staff_id' => $id]);
+            throw new Exception("Failed to update staff member.");
         }
 
         return $staff->refresh();
@@ -102,10 +105,10 @@ class StaffService
         $newStatus = $staff->status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
         
         $updated = $this->staffRepository->update($staff, ['status' => $newStatus]);
-        
+
         if (!$updated) {
-            \Illuminate\Support\Facades\Log::error("Failed to toggle staff status", ['staff_id' => $id]);
-            throw new \Exception("Failed to toggle staff status.");
+            Log::error("Failed to toggle staff status", ['staff_id' => $id]);
+            throw new Exception("Failed to toggle staff status.");
         }
         
         return $staff->refresh();
@@ -121,10 +124,10 @@ class StaffService
         }
 
         $deleted = $this->staffRepository->delete($staff);
-        
+
         if (!$deleted) {
-            \Illuminate\Support\Facades\Log::error("Failed to delete staff", ['staff_id' => $id]);
-            throw new \Exception("Failed to delete staff member.");
+            Log::error("Failed to delete staff", ['staff_id' => $id]);
+            throw new Exception("Failed to delete staff member.");
         }
         
         return true;

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Chat\Contracts\ChatRepositoryInterface;
+use App\Repositories\Chat\Eloquent\EloquentChatRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +17,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(
-            \App\Repositories\Chat\Contracts\ChatRepositoryInterface::class,
-            \App\Repositories\Chat\Eloquent\EloquentChatRepository::class
+        $this->app->singleton(
+            ChatRepositoryInterface::class,
+            EloquentChatRepository::class
         );
     }
 

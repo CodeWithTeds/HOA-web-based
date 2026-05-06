@@ -38,7 +38,8 @@ class AnnouncementController extends Controller
             'announcements' => AnnouncementResource::collection($announcements),
             'filters' => $filters,
         ]);
-    }
+    }   
+    
 
     /**
      * Show the form for creating a new announcement.

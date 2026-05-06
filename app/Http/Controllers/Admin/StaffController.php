@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStaffRequest;
+use App\Http\Requests\Admin\UpdateStaffRequest;
+use App\Models\User;
 use App\Services\Staff\StaffService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Enums\UserRole;
 
 class StaffController extends Controller
 {
@@ -17,7 +23,7 @@ class StaffController extends Controller
     /**
      * Display a listing of staff.
      */
-    public function index(\Illuminate\Http\Request $request): Response
+    public function index(Request $request): Response
     {
         $staff = $this->staffService->getPaginatedStaff(10, $request->input('search'));
         return Inertia::render('admin/user/index', [
@@ -37,7 +43,7 @@ class StaffController extends Controller
     /**
      * Store a newly created staff member in storage.
      */
-    public function store(StoreStaffRequest $request): \Illuminate\Http\RedirectResponse
+    public function store(StoreStaffRequest $request): RedirectResponse
     {
         $this->staffService->createStaff($request->validated());
 
@@ -65,7 +71,7 @@ class StaffController extends Controller
     /**
      * Update the specified staff member.
      */
-    public function update(\App\Http\Requests\Admin\UpdateStaffRequest $request, string $id): \Illuminate\Http\RedirectResponse
+    public function update(UpdateStaffRequest $request, string $id): RedirectResponse
     {
         $this->staffService->updateStaff($id, $request->validated());
         return redirect()->route('admin.user.index')->with('success', 'Staff member updated successfully.');
@@ -74,7 +80,7 @@ class StaffController extends Controller
     /**
      * Toggle the status of the specified staff member.
      */
-    public function toggleStatus(string $id): \Illuminate\Http\RedirectResponse
+    public function toggleStatus(string $id): RedirectResponse
     {
         $this->staffService->toggleStaffStatus($id);
         return redirect()->back()->with('success', 'Staff status updated successfully.');
@@ -83,7 +89,7 @@ class StaffController extends Controller
     /**
      * Remove the specified staff member from storage.
      */
-    public function destroy(string $id): \Illuminate\Http\RedirectResponse
+    public function destroy(string $id): RedirectResponse
     {
         $this->staffService->deleteStaff($id);
         return redirect()->route('admin.user.index')->with('success', 'Staff member removed successfully.');
@@ -92,9 +98,9 @@ class StaffController extends Controller
     /**
      * Export staff list to CSV.
      */
-    public function exportCsv(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportCsv(Request $request): StreamedResponse
     {
-        $staff = \App\Models\User::where('role', \App\Enums\UserRole::STAFF)
+        $staff = User::where('role', UserRole::STAFF)
             ->when($request->input('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");

@@ -7,12 +7,14 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 use App\Enums\UserRole;
+use App\Models\ResidentMessage;
 
 #[Fillable(['name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -42,7 +44,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function residentMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function residentMessages(): HasMany
     {
         return $this->hasMany(ResidentMessage::class, 'resident_id');
     }

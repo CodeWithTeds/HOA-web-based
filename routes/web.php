@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ComplaintController;
 use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\BookingController;
+use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Models\Announcement;
 use App\Enums\AnnouncementStatus;
@@ -114,9 +115,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['role:admin,staff'])->group(function () {
         // Chat Support (Management)
-        Route::get('admin/chat', [\App\Http\Controllers\Admin\ChatController::class, 'index'])->name('admin.chat.index');
-        Route::get('admin/chat/{residentId}', [\App\Http\Controllers\Admin\ChatController::class, 'show'])->name('admin.chat.show');
-        Route::post('admin/chat', [\App\Http\Controllers\Admin\ChatController::class, 'store'])->name('admin.chat.store');
+        Route::get('admin/chat', [AdminChatController::class, 'index'])->name('admin.chat.index');
+        Route::get('admin/chat/{residentId}', [AdminChatController::class, 'show'])->name('admin.chat.show');
+        Route::post('admin/chat', [AdminChatController::class, 'store'])->name('admin.chat.store');
     });
 
     Route::middleware('role:homeowner')->group(function () {

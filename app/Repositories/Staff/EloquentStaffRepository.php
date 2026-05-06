@@ -4,6 +4,7 @@ namespace App\Repositories\Staff;
 
 use App\Models\Staff;
 use App\Repositories\BaseRepository;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class EloquentStaffRepository extends BaseRepository implements StaffRepositoryInterface
 {
@@ -12,7 +13,7 @@ class EloquentStaffRepository extends BaseRepository implements StaffRepositoryI
         parent::__construct($model);
     }
 
-    public function paginateWithSearch(int $perPage = 10, ?string $search = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function paginateWithSearch(int $perPage = 10, ?string $search = null): LengthAwarePaginator
     {
         $query = $this->model->query();
 
