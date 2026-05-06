@@ -52,7 +52,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     /**
      * @inheritDoc
      */
-    public function getSummaries(int $billingPeriodId = null): array
+    public function getSummaries(?int $billingPeriodId = null): array
     {
         $invoiceQuery = $this->model->newQuery();
         $paymentQuery = Payment::query()->where('status', PaymentStatus::VERIFIED->value);
@@ -128,6 +128,41 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     public function createPayment(array $data): Payment
     {
         return Payment::create($data);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResidentInvoices(int $residentId): Collection
+    {
+        return $this->model->newQuery()
+            ->with('billingPeriod')
+            ->where('resident_id', $residentId)
+            ->latest('due_date')
+            ->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getResidentPayments(int $residentId): Collection
+    {
+        return Payment::query()
+            ->with(['invoice.billingPeriod'])
+            ->whereHas('invoice', fn ($query) => $query->where('resident_id', $residentId))
+            ->latest('payment_date')
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findResidentInvoice(int $invoiceId, int $residentId): Invoice
+    {
+        return $this->model->newQuery()
+            ->where('resident_id', $residentId)
+            ->findOrFail($invoiceId);
     }
 
     /**

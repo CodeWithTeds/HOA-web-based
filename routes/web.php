@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\FacilityController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Resident\BillingController as ResidentBillingController;
 use App\Models\Announcement;
 use App\Enums\AnnouncementStatus;
 use App\Http\Controllers\Resident\ChatController;
@@ -121,6 +122,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:homeowner')->group(function () {
+        Route::get('billing', [ResidentBillingController::class, 'index'])->name('resident.billing.index');
+        Route::post('billing/proof', [ResidentBillingController::class, 'uploadProof'])->name('resident.billing.proof');
+
         // Chat Support (Resident)
         Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
         Route::post('chat', [ChatController::class, 'store'])->name('chat.store');

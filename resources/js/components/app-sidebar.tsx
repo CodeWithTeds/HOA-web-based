@@ -1,7 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid,
-    Users,
     Home,
     CreditCard,
     BarChart3,
@@ -25,9 +24,9 @@ import {
     SidebarFooter,
     SidebarHeader,
 } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import type { NavItem } from '@/types';
 import { UserRole } from '@/types';
-import { cn } from '@/lib/utils';
 
 // ─── Theme palettes ───────────────────────────────────────────────────────────
 
@@ -46,18 +45,6 @@ const staffSidebarStyle = {
     '--sidebar-ring': '#10B981',
 } as React.CSSProperties;
 
-// Homeowner: clean white — landing page aesthetic, no background
-const homeownerSidebarStyle = {
-    '--sidebar': '#2563EB',
-    '--sidebar-foreground': '#FFFFFF',
-    '--sidebar-primary': '#FFFFFF',
-    '--sidebar-primary-foreground': '#2563EB',
-    '--sidebar-accent': '#1D4ED8',
-    '--sidebar-accent-foreground': '#FFFFFF',
-    '--sidebar-border': '#1E40AF',
-    '--sidebar-ring': '#FFFFFF',
-} as React.CSSProperties;
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AppSidebar() {
@@ -65,8 +52,14 @@ export function AppSidebar() {
     const role = auth?.user?.role as UserRole | undefined;
 
     let dashLink = '/dashboard';
-    if (role === UserRole.ADMIN) dashLink = '/admin/dashboard';
-    if (role === UserRole.STAFF) dashLink = '/staff/dashboard';
+
+    if (role === UserRole.ADMIN) {
+        dashLink = '/admin/dashboard';
+    }
+
+    if (role === UserRole.STAFF) {
+        dashLink = '/staff/dashboard';
+    }
 
     // ── Nav items ──────────────────────────────────────────────────────────────
 
@@ -77,22 +70,45 @@ export function AppSidebar() {
     if (role === UserRole.ADMIN) {
         mainNavItems.push(
             { title: 'User Management', href: '/admin/user', icon: BookUser },
-            { title: 'Resident Management', href: '/admin/residents', icon: Home },
-            { title: 'Billing and Collection', href: '/admin/billing', icon: CreditCard },
-            { title: 'Reports and Analytics', href: '/admin/reports', icon: BarChart3 },
-            { 
-                title: 'Facility Management', 
-                href: '/admin/facilities', 
+            {
+                title: 'Resident Management',
+                href: '/admin/residents',
+                icon: Home,
+            },
+            {
+                title: 'Billing and Collection',
+                href: '/admin/billing',
+                icon: CreditCard,
+            },
+            {
+                title: 'Reports and Analytics',
+                href: '/admin/reports',
+                icon: BarChart3,
+            },
+            {
+                title: 'Facility Management',
+                href: '/admin/facilities',
                 icon: Settings2,
                 items: [
                     { title: 'Facilities List', href: '/admin/facilities' },
                     { title: 'Reservations', href: '/admin/bookings' },
-                    { title: 'Calendar Schedule', href: '/admin/facilities/calendar' },
-                ]
+                    {
+                        title: 'Calendar Schedule',
+                        href: '/admin/facilities/calendar',
+                    },
+                ],
             },
 
-            { title: 'Announcements', href: '/admin/announcements', icon: Megaphone },
-            { title: 'Complaints Management', href: '/admin/complaints', icon: AlertCircle },
+            {
+                title: 'Announcements',
+                href: '/admin/announcements',
+                icon: Megaphone,
+            },
+            {
+                title: 'Complaints Management',
+                href: '/admin/complaints',
+                icon: AlertCircle,
+            },
             { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
             { title: 'System Settings', href: '#', icon: ShieldCheck },
         );
@@ -100,13 +116,33 @@ export function AppSidebar() {
 
     if (role === UserRole.STAFF) {
         mainNavItems.push(
-            { title: 'Resident Management', href: '/staff/residents', icon: BookUser },
-            { title: 'Billing and Payments', href: '/staff/billing', icon: CreditCard },
-            { title: 'Facility Reservations', href: '/staff/facilities', icon: CalendarCheck },
-            { title: 'Complaints', href: '/staff/complaints', icon: AlertCircle },
+            {
+                title: 'Resident Management',
+                href: '/staff/residents',
+                icon: BookUser,
+            },
+            {
+                title: 'Billing and Payments',
+                href: '/staff/billing',
+                icon: CreditCard,
+            },
+            {
+                title: 'Facility Reservations',
+                href: '/staff/facilities',
+                icon: CalendarCheck,
+            },
+            {
+                title: 'Complaints',
+                href: '/staff/complaints',
+                icon: AlertCircle,
+            },
             { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
             { title: 'Reports', href: '/staff/reports', icon: BarChart3 },
-            { title: 'Announcements', href: '/staff/announcements', icon: Megaphone },
+            {
+                title: 'Announcements',
+                href: '/staff/announcements',
+                icon: Megaphone,
+            },
             { title: 'Logout', href: '/logout', icon: LogOut },
         );
     }
@@ -114,7 +150,11 @@ export function AppSidebar() {
     if (role === UserRole.HOMEOWNER) {
         mainNavItems.push(
             { title: 'My Bills', href: '/billing', icon: Receipt },
-            { title: 'Facility Booking', href: '/facilities', icon: CalendarCheck },
+            {
+                title: 'Facility Booking',
+                href: '/facilities',
+                icon: CalendarCheck,
+            },
             { title: 'Complaints', href: '/complaints', icon: AlertCircle },
             { title: 'Announcements', href: '/announcements', icon: Megaphone },
             { title: 'Documents', href: '/documents', icon: FileText },
@@ -128,51 +168,48 @@ export function AppSidebar() {
     const isStaff = role === UserRole.STAFF;
     const isHomeowner = role === UserRole.HOMEOWNER;
 
-    const sidebarStyle = isStaff
-        ? staffSidebarStyle
-        : isHomeowner
-            ? homeownerSidebarStyle
-            : adminSidebarStyle;
+    const sidebarStyle = isStaff ? staffSidebarStyle : adminSidebarStyle;
 
-    const accentColor = isStaff ? 'emerald' : isHomeowner ? 'white' : 'blue';
-
-    // Logo icon & header text color differ per role
-    const logoIconClass = isStaff
-        ? 'text-emerald-600'
-        : 'text-blue-600';
+    const accentColor = isStaff ? 'emerald' : 'blue';
 
     const brandNameClass = 'text-white';
     const brandSubClass = 'text-white/60';
     const footerClass = 'p-4 mt-auto border-t border-white/10 bg-black/5';
 
-    const logoBoxClass = 'h-11 w-11 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 group-hover:scale-110 transition-all duration-500';
+    const logoBoxClass =
+        'h-11 w-11 bg-white rounded-2xl flex items-center justify-center shadow-2xl shadow-black/20 group-hover:scale-110 transition-all duration-500';
 
     const portalLabel = isStaff
         ? 'Staff Portal'
         : isHomeowner
-            ? 'Resident Portal'
-            : 'Management Pro';
+          ? 'Resident Portal'
+          : 'Management Pro';
 
     return (
         <Sidebar
             collapsible="icon"
             variant="inset"
-            className={cn(
-                "border-none transition-colors duration-300",
-                isHomeowner && "bg-[#2563EB] [&_[data-sidebar=sidebar]]:bg-[#2563EB]"
-            )}
+            className={cn('transition-colors duration-300', 'border-none')}
             style={sidebarStyle}
         >
-            <SidebarHeader className="pt-10 px-6 pb-6">
-                <Link href={dashLink} prefetch className="flex items-center gap-4 group">
+            <SidebarHeader className="px-6 pt-10 pb-6">
+                <Link
+                    href={dashLink}
+                    prefetch
+                    className="group flex items-center gap-4"
+                >
                     <div className={logoBoxClass}>
                         <AppLogoIcon className="size-7" />
                     </div>
                     <div className="flex flex-col">
-                        <span className={`font-black text-base tracking-tighter leading-none ${brandNameClass}`}>
+                        <span
+                            className={`text-base leading-none font-black tracking-tighter ${brandNameClass}`}
+                        >
                             Smart HOA
                         </span>
-                        <span className={`text-[10px] uppercase font-bold tracking-widest mt-1.5 ${brandSubClass}`}>
+                        <span
+                            className={`mt-1.5 text-[10px] font-bold tracking-widest uppercase ${brandSubClass}`}
+                        >
                             {portalLabel}
                         </span>
                     </div>
@@ -180,7 +217,11 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent className="mt-2">
-                <NavMain items={mainNavItems} accentColor={accentColor} isLight={false} />
+                <NavMain
+                    items={mainNavItems}
+                    accentColor={accentColor}
+                    isLight={false}
+                />
             </SidebarContent>
 
             <SidebarFooter className={footerClass}>

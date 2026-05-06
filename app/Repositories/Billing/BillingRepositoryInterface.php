@@ -26,7 +26,7 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
      * @param int|null $billingPeriodId
      * @return array
      */
-    public function getSummaries(int $billingPeriodId = null): array;
+    public function getSummaries(?int $billingPeriodId = null): array;
 
     /**
      * Get all billing periods.
@@ -84,6 +84,31 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
      * @return Payment
      */
     public function createPayment(array $data): Payment;
+
+    /**
+     * Get all invoices owned by a resident.
+     *
+     * @param int $residentId
+     * @return Collection
+     */
+    public function getResidentInvoices(int $residentId): Collection;
+
+    /**
+     * Get all payments attached to a resident's invoices.
+     *
+     * @param int $residentId
+     * @return Collection
+     */
+    public function getResidentPayments(int $residentId): Collection;
+
+    /**
+     * Find an invoice that belongs to a resident.
+     *
+     * @param int $invoiceId
+     * @param int $residentId
+     * @return Invoice
+     */
+    public function findResidentInvoice(int $invoiceId, int $residentId): Invoice;
 
     /**
      * Get invoices for export.

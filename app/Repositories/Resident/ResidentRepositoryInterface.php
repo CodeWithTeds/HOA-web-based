@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Resident;
 
+use App\Models\Resident;
 use App\Repositories\BaseRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,6 +24,14 @@ interface ResidentRepositoryInterface extends BaseRepositoryInterface
      * @return Collection
      */
     public function getActiveResidents(): Collection;
+
+    /**
+     * Find a resident by email address.
+     *
+     * @param string $email
+     * @return Resident|null
+     */
+    public function findByEmail(string $email): ?Resident;
 
     /**
      * Get residents by IDs.

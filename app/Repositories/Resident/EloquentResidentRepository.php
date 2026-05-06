@@ -62,6 +62,16 @@ class EloquentResidentRepository extends BaseRepository implements ResidentRepos
     /**
      * @inheritDoc
      */
+    public function findByEmail(string $email): ?Resident
+    {
+        return $this->model->newQuery()
+            ->where('email', $email)
+            ->first();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getByIds(array $ids): Collection
     {
         return $this->model->newQuery()->whereIn('id', $ids)->get();
