@@ -42,6 +42,34 @@ const accountErrorFields = [
 const fieldClass = 'h-10 rounded-lg text-[13px] font-bold';
 const selectClass =
     'h-10 w-full rounded-lg border border-input bg-background px-3 text-[13px] font-bold shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]';
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type RegisterField =
+    | 'first_name'
+    | 'middle_name'
+    | 'last_name'
+    | 'suffix'
+    | 'gender'
+    | 'birth_date'
+    | 'civil_status'
+    | 'nationality'
+    | 'mobile_number'
+    | 'alternate_number'
+    | 'email'
+    | 'password'
+    | 'password_confirmation'
+    | 'phase'
+    | 'block'
+    | 'lot'
+    | 'street'
+    | 'unit'
+    | 'resident_type'
+    | 'is_head_of_household'
+    | 'move_in_date'
+    | 'emergency_contact_name'
+    | 'emergency_contact_number';
+
+type RegisterErrors = Partial<Record<RegisterField, string>>;
 
 function StepBadge({
     active,
@@ -89,6 +117,7 @@ function SectionHeader({
 
 export default function Register() {
     const [step, setStep] = useState(1);
+    const [clientErrors, setClientErrors] = useState<RegisterErrors>({});
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
         middle_name: '',
@@ -115,8 +144,113 @@ export default function Register() {
         emergency_contact_number: '',
     });
 
+    const errorFor = (field: RegisterField) =>
+        clientErrors[field] || errors[field];
+    const clearClientError = (field: RegisterField) => {
+        setClientErrors((currentErrors) => {
+            if (!currentErrors[field]) {
+                return currentErrors;
+            }
+
+            const nextErrors = { ...currentErrors };
+
+            delete nextErrors[field];
+
+            return nextErrors;
+        });
+    };
+    const updateField = <Field extends RegisterField>(
+        field: Field,
+        value: (typeof data)[Field],
+    ) => {
+        clearClientError(field);
+        setData(field, value);
+    };
+    const requireField = (
+        nextErrors: RegisterErrors,
+        field: RegisterField,
+        label: string,
+    ) => {
+        const value = data[field];
+
+        if (typeof value === 'string' && value.trim() === '') {
+            nextErrors[field] = `${label} is required.`;
+        }
+    };
+    const validateStep = (targetStep: number) => {
+        const nextErrors: RegisterErrors = {};
+
+        if (targetStep === 1) {
+            requireField(nextErrors, 'first_name', 'First name');
+            requireField(nextErrors, 'last_name', 'Last name');
+            requireField(nextErrors, 'gender', 'Gender');
+            requireField(nextErrors, 'birth_date', 'Birth date');
+            requireField(nextErrors, 'civil_status', 'Civil status');
+            requireField(nextErrors, 'nationality', 'Nationality');
+        }
+
+        if (targetStep === 2) {
+            requireField(nextErrors, 'email', 'Email address');
+            requireField(nextErrors, 'mobile_number', 'Mobile number');
+            requireField(nextErrors, 'password', 'Password');
+            requireField(
+                nextErrors,
+                'password_confirmation',
+                'Password confirmation',
+            );
+
+            if (data.email.trim() && !emailPattern.test(data.email)) {
+                nextErrors.email = 'Enter a valid email address.';
+            }
+
+            if (data.password && data.password.length < 8) {
+                nextErrors.password = 'Password must be at least 8 characters.';
+            }
+
+            if (
+                data.password &&
+                data.password_confirmation &&
+                data.password !== data.password_confirmation
+            ) {
+                nextErrors.password_confirmation = 'Passwords do not match.';
+            }
+        }
+
+        if (targetStep === 3) {
+            requireField(nextErrors, 'phase', 'Phase');
+            requireField(nextErrors, 'block', 'Block');
+            requireField(nextErrors, 'lot', 'Lot');
+            requireField(nextErrors, 'street', 'Street name');
+            requireField(nextErrors, 'resident_type', 'Resident type');
+            requireField(nextErrors, 'move_in_date', 'Move-in date');
+            requireField(
+                nextErrors,
+                'emergency_contact_name',
+                'Emergency contact name',
+            );
+            requireField(
+                nextErrors,
+                'emergency_contact_number',
+                'Emergency contact number',
+            );
+
+            if (data.is_head_of_household && data.resident_type !== 'Owner') {
+                nextErrors.is_head_of_household =
+                    'Head of household can only be selected for Owners.';
+            }
+        }
+
+        setClientErrors(nextErrors);
+
+        return Object.keys(nextErrors).length === 0;
+    };
+
     const submit = (event: FormEvent) => {
         event.preventDefault();
+
+        if (!validateStep(3)) {
+            return;
+        }
 
         post(store.url(), {
             onError: (formErrors) => {
@@ -143,8 +277,13 @@ export default function Register() {
         });
     };
 
-    const nextStep = () =>
+    const nextStep = () => {
+        if (!validateStep(step)) {
+            return;
+        }
+
         setStep((currentStep) => Math.min(currentStep + 1, 3));
+    };
     const previousStep = () =>
         setStep((currentStep) => Math.max(currentStep - 1, 1));
 
@@ -183,7 +322,7 @@ export default function Register() {
                                         id="first_name"
                                         value={data.first_name}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'first_name',
                                                 event.target.value,
                                             )
@@ -192,7 +331,9 @@ export default function Register() {
                                         autoComplete="given-name"
                                         autoFocus
                                     />
-                                    <InputError message={errors.first_name} />
+                                    <InputError
+                                        message={errorFor('first_name')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="middle_name">
@@ -202,7 +343,7 @@ export default function Register() {
                                         id="middle_name"
                                         value={data.middle_name}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'middle_name',
                                                 event.target.value,
                                             )
@@ -210,7 +351,9 @@ export default function Register() {
                                         className={fieldClass}
                                         autoComplete="additional-name"
                                     />
-                                    <InputError message={errors.middle_name} />
+                                    <InputError
+                                        message={errorFor('middle_name')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="last_name">
@@ -221,7 +364,7 @@ export default function Register() {
                                         id="last_name"
                                         value={data.last_name}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'last_name',
                                                 event.target.value,
                                             )
@@ -229,7 +372,9 @@ export default function Register() {
                                         className={fieldClass}
                                         autoComplete="family-name"
                                     />
-                                    <InputError message={errors.last_name} />
+                                    <InputError
+                                        message={errorFor('last_name')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="suffix">Suffix</Label>
@@ -237,7 +382,7 @@ export default function Register() {
                                         id="suffix"
                                         value={data.suffix}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'suffix',
                                                 event.target.value,
                                             )
@@ -245,15 +390,18 @@ export default function Register() {
                                         className={fieldClass}
                                         placeholder="Jr."
                                     />
-                                    <InputError message={errors.suffix} />
+                                    <InputError message={errorFor('suffix')} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="gender">Gender</Label>
+                                    <Label htmlFor="gender">
+                                        Gender{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <select
                                         id="gender"
                                         value={data.gender}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'gender',
                                                 event.target.value,
                                             )
@@ -265,35 +413,39 @@ export default function Register() {
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
-                                    <InputError message={errors.gender} />
+                                    <InputError message={errorFor('gender')} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="birth_date">
-                                        Birth Date
+                                        Birth Date{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="birth_date"
                                         type="date"
                                         value={data.birth_date}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'birth_date',
                                                 event.target.value,
                                             )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.birth_date} />
+                                    <InputError
+                                        message={errorFor('birth_date')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="civil_status">
-                                        Civil Status
+                                        Civil Status{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <select
                                         id="civil_status"
                                         value={data.civil_status}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'civil_status',
                                                 event.target.value,
                                             )
@@ -308,24 +460,29 @@ export default function Register() {
                                             Separated
                                         </option>
                                     </select>
-                                    <InputError message={errors.civil_status} />
+                                    <InputError
+                                        message={errorFor('civil_status')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="nationality">
-                                        Nationality
+                                        Nationality{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="nationality"
                                         value={data.nationality}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'nationality',
                                                 event.target.value,
                                             )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.nationality} />
+                                    <InputError
+                                        message={errorFor('nationality')}
+                                    />
                                 </div>
                             </div>
                         </section>
@@ -350,22 +507,26 @@ export default function Register() {
                                         type="email"
                                         value={data.email}
                                         onChange={(event) =>
-                                            setData('email', event.target.value)
+                                            updateField(
+                                                'email',
+                                                event.target.value,
+                                            )
                                         }
                                         className={fieldClass}
                                         autoComplete="email"
                                     />
-                                    <InputError message={errors.email} />
+                                    <InputError message={errorFor('email')} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="mobile_number">
-                                        Mobile Number
+                                        Mobile Number{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="mobile_number"
                                         value={data.mobile_number}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'mobile_number',
                                                 event.target.value,
                                             )
@@ -374,7 +535,7 @@ export default function Register() {
                                         autoComplete="tel"
                                     />
                                     <InputError
-                                        message={errors.mobile_number}
+                                        message={errorFor('mobile_number')}
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -385,7 +546,7 @@ export default function Register() {
                                         id="alternate_number"
                                         value={data.alternate_number}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'alternate_number',
                                                 event.target.value,
                                             )
@@ -393,7 +554,7 @@ export default function Register() {
                                         className={fieldClass}
                                     />
                                     <InputError
-                                        message={errors.alternate_number}
+                                        message={errorFor('alternate_number')}
                                     />
                                 </div>
                                 <div className="grid gap-2">
@@ -405,7 +566,7 @@ export default function Register() {
                                         id="password"
                                         value={data.password}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'password',
                                                 event.target.value,
                                             )
@@ -413,7 +574,9 @@ export default function Register() {
                                         className={fieldClass}
                                         autoComplete="new-password"
                                     />
-                                    <InputError message={errors.password} />
+                                    <InputError
+                                        message={errorFor('password')}
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="password_confirmation">
@@ -424,7 +587,7 @@ export default function Register() {
                                         id="password_confirmation"
                                         value={data.password_confirmation}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'password_confirmation',
                                                 event.target.value,
                                             )
@@ -433,7 +596,9 @@ export default function Register() {
                                         autoComplete="new-password"
                                     />
                                     <InputError
-                                        message={errors.password_confirmation}
+                                        message={errorFor(
+                                            'password_confirmation',
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -447,55 +612,76 @@ export default function Register() {
                             <SectionHeader icon={Home} title="Address" />
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="phase">Phase</Label>
+                                    <Label htmlFor="phase">
+                                        Phase{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="phase"
                                         value={data.phase}
                                         onChange={(event) =>
-                                            setData('phase', event.target.value)
+                                            updateField(
+                                                'phase',
+                                                event.target.value,
+                                            )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.phase} />
+                                    <InputError message={errorFor('phase')} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="block">Block</Label>
+                                    <Label htmlFor="block">
+                                        Block{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="block"
                                         value={data.block}
                                         onChange={(event) =>
-                                            setData('block', event.target.value)
+                                            updateField(
+                                                'block',
+                                                event.target.value,
+                                            )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.block} />
+                                    <InputError message={errorFor('block')} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="lot">Lot</Label>
+                                    <Label htmlFor="lot">
+                                        Lot{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="lot"
                                         value={data.lot}
                                         onChange={(event) =>
-                                            setData('lot', event.target.value)
+                                            updateField(
+                                                'lot',
+                                                event.target.value,
+                                            )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.lot} />
+                                    <InputError message={errorFor('lot')} />
                                 </div>
                                 <div className="col-span-2 grid gap-2">
-                                    <Label htmlFor="street">Street Name</Label>
+                                    <Label htmlFor="street">
+                                        Street Name{' '}
+                                        <span className="text-red-500">*</span>
+                                    </Label>
                                     <Input
                                         id="street"
                                         value={data.street}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'street',
                                                 event.target.value,
                                             )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.street} />
+                                    <InputError message={errorFor('street')} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="unit">Unit</Label>
@@ -503,11 +689,14 @@ export default function Register() {
                                         id="unit"
                                         value={data.unit}
                                         onChange={(event) =>
-                                            setData('unit', event.target.value)
+                                            updateField(
+                                                'unit',
+                                                event.target.value,
+                                            )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.unit} />
+                                    <InputError message={errorFor('unit')} />
                                 </div>
                                 <div className="col-span-2 grid gap-2">
                                     <Label htmlFor="resident_type">
@@ -520,6 +709,10 @@ export default function Register() {
                                         onChange={(event) => {
                                             const residentType =
                                                 event.target.value;
+                                            clearClientError('resident_type');
+                                            clearClientError(
+                                                'is_head_of_household',
+                                            );
                                             setData((current) => ({
                                                 ...current,
                                                 resident_type: residentType,
@@ -539,7 +732,7 @@ export default function Register() {
                                         <option value="Helper">Helper</option>
                                     </select>
                                     <InputError
-                                        message={errors.resident_type}
+                                        message={errorFor('resident_type')}
                                     />
                                 </div>
                                 <div className="flex items-end pb-2">
@@ -551,7 +744,7 @@ export default function Register() {
                                                 data.resident_type !== 'Owner'
                                             }
                                             onChange={(event) =>
-                                                setData(
+                                                updateField(
                                                     'is_head_of_household',
                                                     event.target.checked,
                                                 )
@@ -560,6 +753,11 @@ export default function Register() {
                                         />
                                         H.O.H
                                     </label>
+                                    <InputError
+                                        message={errorFor(
+                                            'is_head_of_household',
+                                        )}
+                                    />
                                 </div>
                             </div>
                         </section>
@@ -572,21 +770,24 @@ export default function Register() {
                                 />
                                 <div className="grid gap-2">
                                     <Label htmlFor="move_in_date">
-                                        Move-in Date
+                                        Move-in Date{' '}
+                                        <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                         id="move_in_date"
                                         type="date"
                                         value={data.move_in_date}
                                         onChange={(event) =>
-                                            setData(
+                                            updateField(
                                                 'move_in_date',
                                                 event.target.value,
                                             )
                                         }
                                         className={fieldClass}
                                     />
-                                    <InputError message={errors.move_in_date} />
+                                    <InputError
+                                        message={errorFor('move_in_date')}
+                                    />
                                 </div>
                             </div>
 
@@ -598,13 +799,16 @@ export default function Register() {
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="emergency_contact_name">
-                                            Contact Person Name
+                                            Contact Person Name{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="emergency_contact_name"
                                             value={data.emergency_contact_name}
                                             onChange={(event) =>
-                                                setData(
+                                                updateField(
                                                     'emergency_contact_name',
                                                     event.target.value,
                                                 )
@@ -612,14 +816,17 @@ export default function Register() {
                                             className={fieldClass}
                                         />
                                         <InputError
-                                            message={
-                                                errors.emergency_contact_name
-                                            }
+                                            message={errorFor(
+                                                'emergency_contact_name',
+                                            )}
                                         />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="emergency_contact_number">
-                                            Contact Number
+                                            Contact Number{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="emergency_contact_number"
@@ -627,7 +834,7 @@ export default function Register() {
                                                 data.emergency_contact_number
                                             }
                                             onChange={(event) =>
-                                                setData(
+                                                updateField(
                                                     'emergency_contact_number',
                                                     event.target.value,
                                                 )
@@ -635,9 +842,9 @@ export default function Register() {
                                             className={fieldClass}
                                         />
                                         <InputError
-                                            message={
-                                                errors.emergency_contact_number
-                                            }
+                                            message={errorFor(
+                                                'emergency_contact_number',
+                                            )}
                                         />
                                     </div>
                                 </div>
