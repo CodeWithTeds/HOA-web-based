@@ -211,81 +211,51 @@ export default function ResidentComplaints() {
 
             {/* ─── CREATE COMPLAINT DIALOG ─── */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[860px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-neutral-900 grid grid-cols-1 md:grid-cols-5">
+                <DialogContent className="w-[440px] max-w-[94vw] rounded-2xl p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-neutral-900 flex flex-col max-h-[90vh]">
 
-                    {/* Left Panel */}
-                    <div className="md:col-span-2 bg-neutral-900 p-8 text-white relative flex flex-col justify-between">
-                        <div className="absolute top-0 right-0 w-48 h-48 bg-rose-600/20 rounded-full blur-3xl -mr-10 -mt-10" />
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-500/15 rounded-full blur-3xl -ml-10 -mb-10" />
-                        <div className="relative z-10">
-                            <Badge variant="outline" className="mb-4 bg-white/10 text-white border-white/20 text-[10px] uppercase tracking-widest font-bold">
-                                Grievance Ticket
-                            </Badge>
-                            <DialogHeader>
-                                <DialogTitle className="text-3xl font-black tracking-tight text-white leading-tight">
-                                    File a Complaint
-                                </DialogTitle>
-                            </DialogHeader>
-                            <p className="text-neutral-400 text-sm mt-3 font-medium leading-relaxed">
-                                All complaints are reviewed by the HOA management team. Please provide clear and accurate details to help us resolve your concern quickly.
-                            </p>
-                            <div className="mt-8 space-y-4">
-                                {[
-                                    { icon: Clock, label: 'Response Time', value: 'Within 24–48 hours' },
-                                    { icon: Eye, label: 'Visibility', value: 'Admin-only (private)' },
-                                ].map(({ icon: Icon, label, value }) => (
-                                    <div key={label} className="flex items-center gap-3">
-                                        <div className="rounded-xl bg-white/10 p-2 border border-white/10">
-                                            <Icon className="size-4 text-rose-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] uppercase font-black text-neutral-400 tracking-wider">{label}</p>
-                                            <p className="text-sm font-bold">{value}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Compact Header */}
+                    <div className="shrink-0 flex items-center gap-3 px-6 py-4 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/60">
+                        <div className="flex items-center justify-center size-9 rounded-xl bg-rose-600 shadow-md shadow-rose-500/20">
+                            <ShieldAlert className="size-4 text-white" strokeWidth={2.5} />
                         </div>
-                        <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
-                            <p className="text-xs text-neutral-400 italic">* False or malicious complaints may be subject to sanctions per the HOA community guidelines.</p>
+                        <div className="flex-1">
+                            <DialogTitle className="text-[16px] font-black tracking-tight text-[#0A2540] dark:text-white leading-none">
+                                File a Complaint
+                            </DialogTitle>
+                            <p className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">Resident Grievance Form</p>
+                        </div>
+                        <div className="flex items-center gap-3 text-neutral-400">
+                            <div className="flex items-center gap-1.5">
+                                <Clock className="size-3.5 text-rose-400" />
+                                <span className="text-[10px] font-black uppercase tracking-wider">24–48h Response</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Eye className="size-3.5 text-blue-400" />
+                                <span className="text-[10px] font-black uppercase tracking-wider">Admin-only</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Right Form Panel */}
-                    <form onSubmit={handleSubmit} className="md:col-span-3 flex flex-col bg-white dark:bg-[#0c0c0c] max-h-[85vh]" encType="multipart/form-data" style={{ fontFamily: fontStack }}>
-
-                        {/* Form Header */}
-                        <div className="shrink-0 px-8 py-5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/40">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center justify-center size-10 rounded-xl bg-rose-600 shadow-lg shadow-rose-500/20">
-                                    <ShieldAlert className="size-5 text-white" strokeWidth={2.5} />
-                                </div>
-                                <div>
-                                    <h2 className="text-[18px] font-black tracking-tight text-[#0A2540] dark:text-white">New Complaint</h2>
-                                    <p className="text-[11px] text-neutral-400 font-bold tracking-wide uppercase mt-0.5">Resident Grievance Form</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Scrollable Body */}
-                        <div className="flex-1 overflow-y-auto px-8 py-7 space-y-6">
+                    {/* Scrollable Form Body */}
+                    <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden" encType="multipart/form-data" style={{ fontFamily: fontStack }}>
+                        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
 
                             {/* Subject */}
                             <div className="space-y-1.5">
                                 <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
-                                    Complaint Subject <span className="text-rose-500">*</span>
+                                    Subject <span className="text-rose-500">*</span>
                                 </Label>
                                 <Input
                                     value={data.subject}
                                     onChange={e => setData('subject', e.target.value)}
                                     placeholder="e.g. Loud music from Unit 4B at midnight"
-                                    className="h-10 rounded-xl text-[13px] font-semibold border-neutral-200 dark:border-neutral-700"
+                                    className="h-9 rounded-xl text-[13px] font-semibold border-neutral-200 dark:border-neutral-700"
                                 />
                                 {errors.subject && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.subject}</p>}
                             </div>
 
                             {/* Category & Priority */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
                                         Category <span className="text-rose-500">*</span>
@@ -293,7 +263,7 @@ export default function ResidentComplaints() {
                                     <select
                                         value={data.category}
                                         onChange={e => setData('category', e.target.value)}
-                                        className="w-full h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500/30"
+                                        className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
                                     >
                                         {CATEGORIES.map(c => (
                                             <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
@@ -301,7 +271,6 @@ export default function ResidentComplaints() {
                                     </select>
                                     {errors.category && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.category}</p>}
                                 </div>
-
                                 <div className="space-y-1.5">
                                     <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
                                         Priority <span className="text-rose-500">*</span>
@@ -309,7 +278,7 @@ export default function ResidentComplaints() {
                                     <select
                                         value={data.priority}
                                         onChange={e => setData('priority', e.target.value)}
-                                        className="w-full h-10 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500/30"
+                                        className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
                                     >
                                         {PRIORITIES.map(p => (
                                             <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -322,14 +291,14 @@ export default function ResidentComplaints() {
                             {/* Description */}
                             <div className="space-y-1.5">
                                 <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
-                                    Detailed Description <span className="text-rose-500">*</span>
+                                    Description <span className="text-rose-500">*</span>
                                 </Label>
                                 <textarea
                                     value={data.description}
                                     onChange={e => setData('description', e.target.value)}
                                     rows={4}
-                                    placeholder="Describe the issue in detail — include date, time, location, and any relevant context..."
-                                    className="w-full rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-[13px] font-medium focus:outline-none focus:ring-4 focus:ring-rose-500/5 transition-all resize-none"
+                                    placeholder="Describe the issue clearly — include date, time, location, and relevant context..."
+                                    className="w-full rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all resize-none"
                                 />
                                 {errors.description && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.description}</p>}
                             </div>
@@ -337,54 +306,35 @@ export default function ResidentComplaints() {
                             {/* Image Upload */}
                             <div className="space-y-1.5">
                                 <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
-                                    Attach Evidence (Optional)
+                                    Evidence Photo (Optional)
                                 </Label>
-                                <label className="flex flex-col items-center justify-center w-full h-28 rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 cursor-pointer hover:border-rose-400 hover:bg-rose-50/30 transition-all group">
+                                <label className="flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 cursor-pointer hover:border-rose-400 hover:bg-rose-50/30 transition-all group overflow-hidden">
                                     {previewUrl ? (
-                                        <img src={previewUrl} alt="preview" className="h-full w-full object-cover rounded-2xl" />
+                                        <img src={previewUrl} alt="preview" className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="flex flex-col items-center gap-1 text-neutral-400 group-hover:text-rose-500 transition-colors">
-                                            <Upload className="size-6" />
-                                            <p className="text-[12px] font-bold">Click to upload an image</p>
-                                            <p className="text-[10px] text-neutral-400">PNG, JPG, JPEG up to 5MB</p>
+                                            <Upload className="size-5" />
+                                            <p className="text-[11px] font-bold">Click to upload</p>
+                                            <p className="text-[10px]">PNG, JPG up to 5MB</p>
                                         </div>
                                     )}
                                     <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                                 </label>
                                 {errors.image && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.image}</p>}
                             </div>
-
-                            {/* Info notice */}
-                            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 flex gap-3">
-                                <Info className="size-4 text-amber-600 shrink-0 mt-0.5" />
-                                <p className="text-[11px] font-bold text-amber-800 dark:text-amber-400 leading-relaxed">
-                                    <span className="uppercase tracking-wider text-[10px] block mb-1">Please Note</span>
-                                    Your complaint will be logged under your resident profile and reviewed by HOA management. You will be notified of status changes.
-                                </p>
-                            </div>
                         </div>
 
                         {/* Sticky Footer */}
-                        <div className="shrink-0 bg-white dark:bg-[#0c0c0c] border-t border-neutral-100 dark:border-neutral-800 px-8 py-5">
+                        <div className="shrink-0 bg-white dark:bg-[#0c0c0c] border-t border-neutral-100 dark:border-neutral-800 px-6 py-4">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-neutral-400">
-                                    <Info className="size-4" />
-                                    <p className="text-[12px] font-bold uppercase tracking-wider">Submitted confidentially</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => setIsDialogOpen(false)}
-                                        className="h-10 rounded-xl px-6 text-[13px] font-black text-neutral-500 hover:bg-neutral-50"
-                                    >
+                                <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <Info className="size-3.5" /> Submitted confidentially
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="h-9 rounded-xl px-5 text-[13px] font-black text-neutral-500">
                                         Discard
                                     </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="h-10 rounded-xl px-8 text-[13px] font-black bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-600/20 flex items-center gap-2"
-                                    >
+                                    <Button type="submit" disabled={processing} className="h-9 rounded-xl px-6 text-[13px] font-black bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 flex items-center gap-2">
                                         {processing ? <><Loader2 className="size-4 animate-spin" /> Submitting...</> : 'Submit Complaint'}
                                     </Button>
                                 </div>
