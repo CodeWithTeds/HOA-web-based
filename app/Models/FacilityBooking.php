@@ -18,6 +18,9 @@ class FacilityBooking extends Model
         'total_fee',
         'status',
         'admin_notes',
+        'purpose',
+        'attendees',
+        'special_requests',
     ];
 
     protected $casts = [

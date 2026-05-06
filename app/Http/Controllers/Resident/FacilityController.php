@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Resident;
 
 use App\Http\Controllers\Controller;
 use App\Services\Facility\FacilityService;
+use App\Http\Requests\StoreResidentBookingRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -23,15 +24,9 @@ class FacilityController extends Controller
         ]);
     }
 
-    public function storeBooking(Request $request)
+    public function storeBooking(StoreResidentBookingRequest $request)
     {
-        $request->validate([
-            'facility_id' => 'required|exists:facilities,id',
-            'start_time' => 'required|date|after_or_equal:now',
-            'end_time' => 'required|date|after:start_time',
-        ]);
-
-        $data = $request->only(['facility_id', 'start_time', 'end_time']);
+        $data = $request->validated();
         $data['resident_id'] = Auth::id();
         $data['status'] = 'Pending';
         $data['admin_notes'] = '';

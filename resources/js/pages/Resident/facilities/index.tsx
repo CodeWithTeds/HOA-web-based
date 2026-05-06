@@ -30,6 +30,9 @@ export default function FacilityBooking() {
         facility_id: '',
         start_time: '',
         end_time: '',
+        purpose: '',
+        attendees: '',
+        special_requests: '',
     });
 
     useEffect(() => {
@@ -190,91 +193,163 @@ export default function FacilityBooking() {
 
             {/* Booking Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-neutral-900">
-                    <div className="bg-neutral-900 p-8 text-white relative">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                        <DialogHeader className="relative z-10">
-                            <DialogTitle className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                                <Calendar className="h-6 w-6 text-emerald-400" />
+                <DialogContent className="sm:max-w-[900px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-neutral-900 grid grid-cols-1 md:grid-cols-5">
+                    
+                    {/* Left Column: Facility Details */}
+                    <div className="md:col-span-2 bg-neutral-900 p-8 text-white relative flex flex-col justify-between">
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl -ml-10 -mb-10"></div>
+                        
+                        <div className="relative z-10">
+                            <Badge variant="outline" className="mb-4 bg-white/10 text-white border-white/20 px-3 py-1 text-[10px] uppercase tracking-widest font-bold backdrop-blur-md">
                                 Reservation
-                            </DialogTitle>
-                            <DialogDescription className="text-neutral-400 text-sm mt-2 font-medium">
-                                Book {selectedFacility?.name} for your upcoming event.
-                            </DialogDescription>
-                        </DialogHeader>
+                            </Badge>
+                            <DialogHeader>
+                                <DialogTitle className="text-3xl font-black tracking-tight text-white leading-tight">
+                                    {selectedFacility?.name}
+                                </DialogTitle>
+                                <DialogDescription className="text-neutral-300 text-sm mt-3 font-medium leading-relaxed">
+                                    {selectedFacility?.description}
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            {selectedFacility && (
+                                <div className="mt-8 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="rounded-xl bg-white/10 p-2 backdrop-blur-md border border-white/10">
+                                            <Users className="h-4 w-4 text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Capacity</p>
+                                            <p className="text-sm font-bold">{selectedFacility.capacity} Guests Max</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="rounded-xl bg-white/10 p-2 backdrop-blur-md border border-white/10">
+                                            <Tag className="h-4 w-4 text-blue-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Pricing ({selectedFacility.price_type})</p>
+                                            <p className="text-sm font-bold">{formatCurrency(selectedFacility.base_price)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
+                            <p className="text-xs text-neutral-400 italic">
+                                * Final total fee will be calculated based on your selected schedule upon confirmation. By booking, you agree to our terms of service.
+                            </p>
+                        </div>
                     </div>
 
-                    <form onSubmit={submitBooking} className="p-8 pt-6 space-y-6">
-                        {pageErrors.conflict && (
-                            <div className="flex items-start gap-3 rounded-2xl bg-red-50 dark:bg-red-900/20 p-4 border border-red-100 dark:border-red-900/50">
-                                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                                <div className="text-sm font-medium text-red-800 dark:text-red-300">
-                                    {pageErrors.conflict}
+                    {/* Right Column: Form */}
+                    <form onSubmit={submitBooking} className="md:col-span-3 p-8 flex flex-col justify-between bg-neutral-50 dark:bg-black/50">
+                        <div className="space-y-6">
+                            {pageErrors.conflict && (
+                                <div className="flex items-start gap-3 rounded-2xl bg-red-50 dark:bg-red-900/20 p-4 border border-red-100 dark:border-red-900/50">
+                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                    <div className="text-sm font-medium text-red-800 dark:text-red-300">
+                                        {pageErrors.conflict}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="start_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
+                                        <Clock className="h-3 w-3" /> Start Date & Time
+                                    </Label>
+                                    <Input
+                                        id="start_time"
+                                        type="datetime-local"
+                                        value={data.start_time}
+                                        onChange={e => setData('start_time', e.target.value)}
+                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.start_time && "border-red-500")}
+                                        required
+                                    />
+                                    {errors.start_time && <p className="text-xs text-red-500 font-medium px-1">{errors.start_time}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="end_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
+                                        <CheckCircle2 className="h-3 w-3" /> End Date & Time
+                                    </Label>
+                                    <Input
+                                        id="end_time"
+                                        type="datetime-local"
+                                        value={data.end_time}
+                                        onChange={e => setData('end_time', e.target.value)}
+                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.end_time && "border-red-500")}
+                                        required
+                                    />
+                                    {errors.end_time && <p className="text-xs text-red-500 font-medium px-1">{errors.end_time}</p>}
                                 </div>
                             </div>
-                        )}
 
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="start_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
-                                    <Clock className="h-3 w-3" /> Start Date & Time
-                                </Label>
-                                <Input
-                                    id="start_time"
-                                    type="datetime-local"
-                                    value={data.start_time}
-                                    onChange={e => setData('start_time', e.target.value)}
-                                    className="h-14 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 px-4 shadow-inner"
-                                    required
-                                />
-                                {errors.start_time && <p className="text-xs text-red-500 font-medium px-2">{errors.start_time}</p>}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="purpose" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
+                                        Event Purpose
+                                    </Label>
+                                    <Input
+                                        id="purpose"
+                                        placeholder="e.g. Birthday Party"
+                                        value={data.purpose}
+                                        onChange={e => setData('purpose', e.target.value)}
+                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.purpose && "border-red-500")}
+                                        required
+                                    />
+                                    {errors.purpose && <p className="text-xs text-red-500 font-medium px-1">{errors.purpose}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="attendees" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
+                                        Expected Attendees
+                                    </Label>
+                                    <Input
+                                        id="attendees"
+                                        type="number"
+                                        min="1"
+                                        placeholder="e.g. 50"
+                                        value={data.attendees}
+                                        onChange={e => setData('attendees', e.target.value)}
+                                        className={cn("h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 px-4", errors.attendees && "border-red-500")}
+                                        required
+                                    />
+                                    {errors.attendees && <p className="text-xs text-red-500 font-medium px-1">{errors.attendees}</p>}
+                                </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="end_time" className="text-xs uppercase tracking-wider font-bold text-neutral-500 flex items-center gap-2">
-                                    <CheckCircle2 className="h-3 w-3" /> End Date & Time
+                                <Label htmlFor="special_requests" className="text-xs uppercase tracking-wider font-bold text-neutral-500">
+                                    Special Requests (Optional)
                                 </Label>
-                                <Input
-                                    id="end_time"
-                                    type="datetime-local"
-                                    value={data.end_time}
-                                    onChange={e => setData('end_time', e.target.value)}
-                                    className="h-14 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 px-4 shadow-inner"
-                                    required
+                                <textarea
+                                    id="special_requests"
+                                    placeholder="Any specific layout or setup needed?"
+                                    value={data.special_requests}
+                                    onChange={e => setData('special_requests', e.target.value)}
+                                    className={cn("w-full h-24 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 text-sm focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white outline-none resize-none transition-all", errors.special_requests && "border-red-500 focus:ring-red-500")}
                                 />
-                                {errors.end_time && <p className="text-xs text-red-500 font-medium px-2">{errors.end_time}</p>}
+                                {errors.special_requests && <p className="text-xs text-red-500 font-medium px-1">{errors.special_requests}</p>}
                             </div>
                         </div>
 
-                        {selectedFacility && (
-                            <div className="rounded-2xl bg-neutral-50 dark:bg-neutral-800 p-5 mt-6 border border-neutral-100 dark:border-neutral-700">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="font-bold text-neutral-500">Base Price</span>
-                                    <span className="font-black text-lg">{formatCurrency(selectedFacility.base_price)}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs text-neutral-400 mt-1">
-                                    <span>Rate Type</span>
-                                    <span className="uppercase font-bold tracking-wider">{selectedFacility.price_type}</span>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700 text-xs text-neutral-500 italic">
-                                    Final total fee will be calculated based on your selected schedule upon confirmation.
-                                </div>
-                            </div>
-                        )}
-
-                        <DialogFooter className="pt-2 gap-3">
+                        <DialogFooter className="mt-8 flex gap-3">
                             <Button 
                                 type="button" 
                                 variant="outline" 
                                 onClick={() => setIsDialogOpen(false)}
-                                className="h-14 rounded-2xl font-bold border-neutral-200 dark:border-neutral-700 w-full"
+                                className="h-12 rounded-xl font-bold border-neutral-200 dark:border-neutral-700 flex-1"
                             >
                                 Cancel
                             </Button>
                             <Button 
                                 type="submit" 
                                 disabled={processing}
-                                className="h-14 rounded-2xl font-bold bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 w-full flex items-center justify-center gap-2"
+                                className="h-12 rounded-xl font-bold bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 flex-[2] flex items-center justify-center gap-2 shadow-xl"
                             >
                                 {processing ? (
                                     <>
@@ -282,7 +357,7 @@ export default function FacilityBooking() {
                                         Processing...
                                     </>
                                 ) : (
-                                    'Confirm Booking'
+                                    'Submit Reservation'
                                 )}
                             </Button>
                         </DialogFooter>
