@@ -130,6 +130,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Chat Support (Resident)
         Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
         Route::post('chat', [ChatController::class, 'store'])->name('chat.store');
+
+        // Facilities (Resident)
+        Route::get('facilities', [\App\Http\Controllers\Resident\FacilityController::class, 'index'])->name('resident.facilities.index');
+        Route::post('facilities/book', [\App\Http\Controllers\Resident\FacilityController::class, 'storeBooking'])->name('resident.facilities.book');
     });
 
     Route::middleware('role:staff')->group(function () {
