@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('admin/billing/periods/{id}/generate', [BillingController::class, 'generateInvoices'])->name('admin.billing.periods.generate');
         Route::post('admin/billing/payments', [BillingController::class, 'recordPayment'])->name('admin.billing.payments.store');
         Route::patch('admin/billing/payments/{payment}/verify', [BillingController::class, 'verifyPayment'])->name('admin.billing.payments.verify');
+        Route::patch('admin/billing/payments/{payment}/reject', [BillingController::class, 'rejectPayment'])->name('admin.billing.payments.reject');
         Route::get('admin/billing/invoices/{id}', [BillingController::class, 'showInvoice'])->name('admin.billing.invoices.show');
 
         // Reports & Analytics

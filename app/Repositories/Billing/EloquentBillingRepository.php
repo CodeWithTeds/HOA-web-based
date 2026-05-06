@@ -173,7 +173,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     public function getResidentInvoices(int $residentId): Collection
     {
         return $this->model->newQuery()
-            ->with('billingPeriod')
+            ->with(['billingPeriod', 'payments'])
             ->where('resident_id', $residentId)
             ->latest('due_date')
             ->get();
@@ -200,6 +200,17 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
         return $this->model->newQuery()
             ->where('resident_id', $residentId)
             ->findOrFail($invoiceId);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasPendingPaymentForInvoice(int $invoiceId): bool
+    {
+        return Payment::query()
+            ->where('invoice_id', $invoiceId)
+            ->where('status', PaymentStatus::PENDING->value)
+            ->exists();
     }
 
     /**

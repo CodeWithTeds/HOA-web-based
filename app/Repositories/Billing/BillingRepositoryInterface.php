@@ -138,6 +138,14 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
     public function findResidentInvoice(int $invoiceId, int $residentId): Invoice;
 
     /**
+     * Check if an invoice already has a pending payment proof.
+     *
+     * @param int $invoiceId
+     * @return bool
+     */
+    public function hasPendingPaymentForInvoice(int $invoiceId): bool;
+
+    /**
      * Get invoices for export.
      *
      * @param array $filters

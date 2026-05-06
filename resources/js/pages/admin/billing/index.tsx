@@ -177,6 +177,21 @@ export default function BillingIndex({
         );
     };
 
+    const rejectProof = (paymentId: number) => {
+        router.patch(
+            `/admin/billing/payments/${paymentId}/reject`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    if (selectedInvoice) {
+                        void handleViewDetails(selectedInvoice);
+                    }
+                },
+            },
+        );
+    };
+
     const hasPendingPayment = (invoice: Invoice) =>
         invoice.payments?.some((payment) => payment.status === 'Pending') ||
         false;
@@ -895,18 +910,30 @@ export default function BillingIndex({
                                                                     </span>
                                                                     {payment.status ===
                                                                         'Pending' && (
-                                                                        <Button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                verifyProof(
-                                                                                    payment.id,
-                                                                                )
-                                                                            }
-                                                                            className="h-8 rounded-lg bg-violet-600 px-3 text-[10px] font-black text-white uppercase hover:bg-violet-700"
-                                                                        >
-                                                                            Verify
-                                                                            Proof
-                                                                        </Button>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    rejectProof(
+                                                                                        payment.id,
+                                                                                    )
+                                                                                }
+                                                                                className="h-8 rounded-lg bg-red-600 px-3 text-[10px] font-black text-white uppercase hover:bg-red-700"
+                                                                            >
+                                                                                Reject
+                                                                            </Button>
+                                                                            <Button
+                                                                                type="button"
+                                                                                onClick={() =>
+                                                                                    verifyProof(
+                                                                                        payment.id,
+                                                                                    )
+                                                                                }
+                                                                                className="h-8 rounded-lg bg-violet-600 px-3 text-[10px] font-black text-white uppercase hover:bg-violet-700"
+                                                                            >
+                                                                                Verify
+                                                                            </Button>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </div>

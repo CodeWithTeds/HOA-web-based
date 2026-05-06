@@ -196,6 +196,27 @@ class BillingService
     }
 
     /**
+     * Reject a homeowner-uploaded proof of payment.
+     *
+     * @param int $paymentId
+     * @return Payment
+     *
+     * @throws AuthorizationException
+     */
+    public function rejectPayment(int $paymentId): Payment
+    {
+        $payment = $this->billingRepository->findPayment($paymentId);
+
+        if ($payment->status !== PaymentStatus::PENDING) {
+            throw new AuthorizationException('Only pending payments can be rejected.');
+        }
+
+        return $this->billingRepository->updatePayment($payment, [
+            'status' => PaymentStatus::REJECTED,
+        ]);
+    }
+
+    /**
      * Get invoice details with items and payments.
      *
      * @param int $id

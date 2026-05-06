@@ -7,6 +7,7 @@ use App\Repositories\Billing\BillingRepositoryInterface;
 use App\Repositories\Resident\ResidentRepositoryInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class ResidentBillingService
 {
@@ -36,6 +37,7 @@ class ResidentBillingService
 
     /**
      * @throws AuthorizationException
+     * @throws ValidationException
      */
     public function uploadProof(?string $email, array $data): void
     {
@@ -46,6 +48,13 @@ class ResidentBillingService
         }
 
         $invoice = $this->billingRepository->findResidentInvoice((int) $data['invoice_id'], $resident->id);
+
+        if ($this->billingRepository->hasPendingPaymentForInvoice($invoice->id)) {
+            throw ValidationException::withMessages([
+                'invoice_id' => 'This invoice already has a pending proof of payment. Please wait for admin approval or rejection before uploading again.',
+            ]);
+        }
+
         $proofPath = $data['proof']->store('payment-proofs', 'public');
 
         $this->billingRepository->createPayment([

@@ -26,6 +26,8 @@ type Invoice = {
     paid_amount: number;
     balance: number;
     status: string;
+    display_status?: string;
+    has_pending_payment: boolean;
     due_date: string | null;
 };
 
@@ -68,7 +70,11 @@ export default function ResidentBilling({
     } as const;
 
     const payableInvoices = useMemo(
-        () => invoices.filter((invoice) => invoice.balance > 0),
+        () =>
+            invoices.filter(
+                (invoice) =>
+                    invoice.balance > 0 && !invoice.has_pending_payment,
+            ),
         [invoices],
     );
 
@@ -102,10 +108,18 @@ export default function ResidentBilling({
     const submitProof = (event: React.FormEvent) => {
         event.preventDefault();
 
+        const selectedInvoice = payableInvoices.find(
+            (invoice) => invoice.id.toString() === data.invoice_id,
+        );
+
+        if (!selectedInvoice) {
+            return;
+        }
+
         post('/billing/proof', {
             forceFormData: true,
             onSuccess: () => {
-                reset('reference_number', 'proof');
+                reset('invoice_id', 'amount', 'reference_number', 'proof');
             },
         });
     };
@@ -296,6 +310,7 @@ export default function ResidentBilling({
                                                             </p>
                                                             <StatusBadge
                                                                 status={
+                                                                    invoice.display_status ||
                                                                     invoice.status
                                                                 }
                                                             />
@@ -309,6 +324,9 @@ export default function ResidentBilling({
                                                                       invoice.due_date,
                                                                   ).toLocaleDateString()
                                                                 : 'N/A'}
+                                                            {invoice.has_pending_payment
+                                                                ? ' • Proof pending review'
+                                                                : ''}
                                                         </p>
                                                     </div>
                                                     <div className="text-left md:text-right">
@@ -342,7 +360,7 @@ export default function ResidentBilling({
                                     className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
                                 >
                                     {payableInvoices.length === 0 ? (
-                                        <EmptyState text="No unpaid invoice available for proof upload." />
+                                        <EmptyState text="No invoice available for upload. Please wait until the pending proof is approved or rejected." />
                                     ) : (
                                         <div className="space-y-5">
                                             <div className="space-y-2">
@@ -358,6 +376,9 @@ export default function ResidentBilling({
                                                     }
                                                     className="h-11 w-full rounded-xl border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:border-neutral-800 dark:bg-neutral-950"
                                                 >
+                                                    <option value="">
+                                                        Select invoice
+                                                    </option>
                                                     {payableInvoices.map(
                                                         (invoice) => (
                                                             <option
@@ -528,7 +549,10 @@ export default function ResidentBilling({
 
                                             <Button
                                                 type="submit"
-                                                disabled={processing}
+                                                disabled={
+                                                    processing ||
+                                                    !data.invoice_id
+                                                }
                                                 className="h-11 w-full rounded-xl bg-blue-600 text-[13px] font-black text-white uppercase shadow-xl shadow-blue-500/20 hover:bg-blue-700"
                                             >
                                                 {processing

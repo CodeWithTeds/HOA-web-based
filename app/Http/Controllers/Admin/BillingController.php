@@ -89,6 +89,16 @@ class BillingController extends Controller
     }
 
     /**
+     * Reject a pending homeowner payment proof.
+     */
+    public function rejectPayment(int $payment): RedirectResponse
+    {
+        $this->billingService->rejectPayment($payment);
+
+        return redirect()->back()->with('success', 'Payment proof rejected. The homeowner can upload a new proof.');
+    }
+
+    /**
      * Get invoice details as JSON.
      */
     public function showInvoice(int $id): InvoiceResource

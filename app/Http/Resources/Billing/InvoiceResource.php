@@ -16,7 +16,7 @@ class InvoiceResource extends JsonResource
     public function toArray(Request $request): array
     {
         $hasPendingPayment = $this->relationLoaded('payments')
-            && $this->payments->contains('status', PaymentStatus::PENDING);
+            && $this->payments->contains(fn ($payment) => $payment->status === PaymentStatus::PENDING);
 
         return [
             'id' => $this->id,
