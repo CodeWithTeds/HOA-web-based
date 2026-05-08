@@ -18,6 +18,7 @@ use App\Enums\AnnouncementStatus;
 use App\Http\Controllers\Resident\ChatController;
 use App\Http\Controllers\Resident\ComplaintController as ResidentComplaintController;
 use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
+use App\Http\Controllers\Resident\DashboardController as ResidentDashboardController;
 use App\Http\Controllers\Resident\TransparencyController;
 use App\Http\Resources\AnnouncementResource;
 use App\Repositories\Announcement\AnnouncementRepositoryInterface;
@@ -46,7 +47,7 @@ Route::get('/announcements/{announcement}', function (Announcement $announcement
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard', ['portalType' => 'homeowner'])->name('dashboard');
+    Route::get('dashboard', [ResidentDashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('role:admin')->group(function () {
         Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');

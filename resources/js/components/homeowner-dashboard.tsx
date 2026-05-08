@@ -1,29 +1,103 @@
+import { Link, usePage } from '@inertiajs/react';
 import {
-    Calendar,
-    Home,
-    FileText,
-    MessageSquare,
+    ArrowRight,
     Bell,
-    Settings,
-    Edit3,
-    CheckCircle2,
     CalendarDays,
-    Sun,
-    TreePine,
-    Droplet,
-    MoreHorizontal,
-    Plus
+    CheckCircle2,
+    FileText,
+    Home,
+    Megaphone,
+    Receipt,
+    Settings,
+    ShieldCheck,
+    Wallet,
 } from 'lucide-react';
-import { usePage } from '@inertiajs/react';
 import {
-    AreaChart, Area,
-    LineChart, Line,
-    PieChart, Pie, Cell,
+    Area,
+    AreaChart,
+    Cell,
+    Pie,
+    PieChart,
     ResponsiveContainer,
 } from 'recharts';
 
+type ResidentSummary = {
+    current_balance: number;
+    total_billed: number;
+    total_paid: number;
+    pending_proofs: number;
+};
+
+type ResidentInfo = {
+    id: number;
+    name: string;
+    address: string;
+} | null;
+
+type Invoice = {
+    id: number;
+    invoice_number: string;
+    period: string | null;
+    total_amount: number;
+    paid_amount: number;
+    balance: number;
+    status: string;
+    display_status?: string;
+    has_pending_payment: boolean;
+    due_date: string | null;
+};
+
+type Payment = {
+    id: number;
+    invoice_number: string | null;
+    period: string | null;
+    amount: number;
+    payment_date: string | null;
+    payment_method: string;
+    reference_number: string | null;
+    status: string;
+};
+
+type Update = {
+    id: number;
+    title: string;
+    content: string;
+    category: string;
+    priority: string;
+    published_at: string | null;
+    created_at: string | null;
+};
+
+type HomeownerDashboardProps = {
+    auth?: {
+        user?: {
+            name?: string;
+            email?: string;
+        };
+    };
+    resident?: ResidentInfo;
+    summary?: ResidentSummary;
+    invoices?: Invoice[];
+    payments?: Payment[];
+    updates?: Update[];
+};
+
+const emptySummary: ResidentSummary = {
+    current_balance: 0,
+    total_billed: 0,
+    total_paid: 0,
+    pending_proofs: 0,
+};
+
 export function HomeownerDashboard() {
-    const { auth } = usePage<any>().props;
+    const {
+        auth,
+        resident = null,
+        summary = emptySummary,
+        invoices = [],
+        payments = [],
+        updates = [],
+    } = usePage<HomeownerDashboardProps>().props;
     const { user } = auth || {};
 
     const currentDate = new Date().toLocaleDateString('en-US', {
@@ -31,360 +105,613 @@ export function HomeownerDashboard() {
         day: 'numeric',
         year: 'numeric',
     });
-    
+
     const currentTime = new Date().toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
     });
 
-    const billsPie = [{ name: 'Paid', value: 100, color: '#10B981' }, { name: 'Unpaid', value: 0, color: '#E5E7EB' }];
-    const requestsPie = [{ name: 'Pending', value: 2, color: '#3B82F6' }, { name: 'Resolved', value: 8, color: '#EFF6FF' }];
-    const eventsPie = [{ name: 'Upcoming', value: 4, color: '#8B5CF6' }, { name: 'Past', value: 12, color: '#F3E8FF' }];
-    
-    const pieData = [
-        { name: 'Amenities', value: 25, color: '#3B82F6' },
-        { name: 'Requests', value: 10, color: '#8B5CF6' },
-        { name: 'Events', value: 3, color: '#F43F5E' },
-    ];
+    const firstName = user?.name?.split(' ')[0] || 'Neighbor';
+    const nextInvoice = [...invoices]
+        .filter((invoice) => invoice.balance > 0)
+        .sort((a, b) => {
+            if (!a.due_date) {
+                return 1;
+            }
+
+            if (!b.due_date) {
+                return -1;
+            }
+
+            return (
+                new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+            );
+        })[0];
+    const recentPayments = payments.slice(0, 3);
+    const paymentRate =
+        summary.total_billed > 0
+            ? Math.round((summary.total_paid / summary.total_billed) * 100)
+            : summary.current_balance > 0
+              ? 0
+              : 100;
+    const paidSlice = Math.max(Math.min(paymentRate, 100), 0);
+    const balancePie = [
+        { name: 'Paid', value: paidSlice, color: '#10B981' },
+        {
+            name: 'Balance',
+            value: Math.max(100 - paidSlice, 0),
+            color: '#F59E0B',
+        },
+    ].filter((item) => item.value > 0);
+    const paymentTrend = buildPaymentTrend(payments);
 
     return (
-        <div className="w-full max-w-[1440px] mx-auto p-4 md:p-8 space-y-6 text-[#1D1D1F] font-sans bg-[#F5F5F7] min-h-screen">
-            
-            {/* Top Toolbar (Search, Notifications, Settings) */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-                <div className="relative w-full md:w-96">
-                    <input
-                        type="text"
-                        placeholder="Search for rules, facilities, neighbors..."
-                        className="w-full pl-5 pr-10 py-3 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 bg-white text-sm outline-none"
-                    />
-                    <div className="absolute right-3 top-3 text-blue-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div className="min-h-screen w-full bg-[#F5F5F7] p-4 font-sans text-[#1D1D1F] md:p-8">
+            <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6">
+                <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+                    <div className="relative w-full md:w-96">
+                        <input
+                            type="text"
+                            placeholder="Search billing, updates, facilities..."
+                            className="w-full rounded-2xl border-none bg-white py-3 pr-10 pl-5 text-sm shadow-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <FileText className="absolute top-3 right-3 size-5 text-blue-400" />
                     </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <button className="flex items-center justify-center w-11 h-11 bg-white rounded-2xl shadow-sm hover:shadow text-blue-500 relative">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-                    </button>
-                    <button className="flex items-center justify-center w-11 h-11 bg-white rounded-2xl shadow-sm hover:shadow text-blue-500">
-                        <Settings className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                {/* ─── LEFT MAIN COLUMN (Spans 8 cols) ─── */}
-                <div className="lg:col-span-8 flex flex-col gap-6">
-                    
-                    {/* BANNER */}
-                    <div className="bg-[#3B82F6] rounded-[2rem] p-8 shadow-xl shadow-blue-500/20 relative overflow-hidden flex flex-col justify-between min-h-[240px]">
-                        {/* Decorative Background Elements */}
-                        <div className="absolute inset-0 opacity-10 pointer-events-none">
-                            <svg className="absolute w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                <path d="M0,50 Q25,20 50,50 T100,50 L100,100 L0,100 Z" fill="#ffffff" />
-                            </svg>
-                            <Sun className="absolute top-8 left-1/4 w-16 h-16 text-white rotate-45" />
-                            <TreePine className="absolute bottom-4 right-1/3 w-24 h-24 text-white -rotate-12" />
-                            <Home className="absolute top-12 right-12 w-20 h-20 text-white" />
-                        </div>
-
-                        <div className="relative z-10 flex items-center justify-between w-max bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-semibold tracking-wide border border-white/10 mb-8">
-                            <CalendarDays className="w-4 h-4 mr-2" />
-                            {currentDate} • {currentTime}
-                        </div>
-                        
-                        <div className="relative z-10">
-                            <h1 className="text-4xl text-white font-black tracking-tight mb-2">Good Day, {user?.name.split(' ')[0] || 'Neighbor'}!</h1>
-                            <p className="text-blue-100 font-medium">Have a fantastic day in our community!</p>
-                        </div>
-                    </div>
-
-                    {/* 3 STAT CARDS */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Stat Card 1 */}
-                        <div className="bg-white rounded-[20px] py-3 px-4 shadow-sm border border-gray-100 flex flex-col items-center relative h-fit">
-                            <div className="absolute top-3 right-3">
-                                <MoreHorizontal className="w-3.5 h-3.5 text-gray-300" />
-                            </div>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">Pending Bills</span>
-                            
-                            <div className="w-14 h-14 mb-2.5 relative flex items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
-                                    <PieChart>
-                                        <Pie data={billsPie} innerRadius={18} outerRadius={28} dataKey="value" stroke="none">
-                                            {billsPie.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <span className="text-base font-black tracking-tighter text-[#0A2540] relative z-10 leading-none">$0</span>
-                            </div>
-                            
-                            <span className="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3" /> All clear
-                            </span>
-                        </div>
-
-                        {/* Stat Card 2 */}
-                        <div className="bg-white rounded-[20px] py-3 px-4 shadow-sm border border-gray-100 flex flex-col items-center relative h-fit">
-                            <div className="absolute top-3 right-3">
-                                <MoreHorizontal className="w-3.5 h-3.5 text-gray-300" />
-                            </div>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">Active Requests</span>
-                            
-                            <div className="w-14 h-14 mb-2.5 relative flex items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
-                                    <PieChart>
-                                        <Pie data={requestsPie} innerRadius={18} outerRadius={28} dataKey="value" stroke="none" startAngle={90} endAngle={450}>
-                                            {requestsPie.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <span className="text-base font-black tracking-tighter text-[#0A2540] relative z-10 leading-none">2</span>
-                            </div>
-                            
-                            <span className="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full flex items-center">
-                                +1 this week
-                            </span>
-                        </div>
-
-                        {/* Stat Card 3 */}
-                        <div className="bg-white rounded-[20px] py-3 px-4 shadow-sm border border-gray-100 flex flex-col items-center relative h-fit">
-                            <div className="absolute top-3 right-3">
-                                <MoreHorizontal className="w-3.5 h-3.5 text-gray-300" />
-                            </div>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">Upcoming Events</span>
-                            
-                            <div className="w-14 h-14 mb-2.5 relative flex items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%" className="absolute inset-0">
-                                    <PieChart>
-                                        <Pie data={eventsPie} innerRadius={18} outerRadius={28} dataKey="value" stroke="none" startAngle={90} endAngle={450}>
-                                            {eventsPie.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <span className="text-base font-black tracking-tighter text-[#0A2540] relative z-10 leading-none">4</span>
-                            </div>
-                            
-                            <span className="text-[9px] font-bold text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full flex items-center">
-                                In April
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* TWO MODULES: COMMUNITY ACTIVITY & MY PLANS DONE */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                        
-                        {/* DONUT CHART */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col">
-                            <div className="flex justify-between items-center mb-8">
-                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Community Activity</span>
-                                <div className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer hover:bg-blue-100 transition-colors">
-                                    Today
-                                    <svg className="w-3 h-3 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
-                                </div>
-                            </div>
-                            
-                            <div className="flex justify-between items-center flex-1">
-                                <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
-                                    <ResponsiveContainer width="100%" height="100%" className="-ml-1 absolute inset-0 z-0">
-                                        <PieChart>
-                                            <Pie
-                                                data={pieData}
-                                                innerRadius={45}
-                                                outerRadius={60}
-                                                paddingAngle={5}
-                                                dataKey="value"
-                                                stroke="none"
-                                                startAngle={90}
-                                                endAngle={-270}
-                                            >
-                                                {pieData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                                ))}
-                                            </Pie>
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                    <div className="relative z-10 flex flex-col items-center">
-                                        <span className="text-3xl font-black tracking-tighter text-[#0A2540] leading-none mb-1">95<span className="text-lg text-gray-400">%</span></span>
-                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Active</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-5 pl-4">
-                                    <div>
-                                        <span className="text-xl font-black text-[#0A2540] block mb-0.5">25</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase">Amenities</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span className="text-xl font-black text-[#0A2540] block mb-0.5">10</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase">Requests</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span className="text-xl font-black text-[#0A2540] block mb-0.5">3</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                                            <span className="text-[10px] text-gray-400 font-bold uppercase">Events</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* PROGRESS BARS */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex flex-col">
-                            <div className="flex justify-between items-center mb-8">
-                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">My Plans Done</span>
-                                <div className="bg-blue-50 text-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer hover:bg-blue-100 transition-colors">
-                                    Today
-                                    <svg className="w-3 h-3 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6 flex-1">
-                                <div>
-                                    <div className="flex justify-between text-[11px] font-bold mb-2">
-                                        <span className="text-[#0A2540]">Payments</span>
-                                        <span className="text-[#0A2540]">100%</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-[#3B82F6] rounded-full w-full"></div>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <div className="flex justify-between text-[11px] font-bold mb-2">
-                                        <span className="text-[#0A2540]">Maintenance Fixes</span>
-                                        <span className="text-[#0A2540]">50%</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-orange-400 rounded-full w-1/2"></div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div className="flex justify-between text-[11px] font-bold mb-2">
-                                        <span className="text-[#0A2540]">Meetings Attended</span>
-                                        <span className="text-[#0A2540]">33%</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-pink-400 rounded-full w-1/3"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button className="w-full mt-6 py-3 border-2 border-dashed border-blue-200 text-blue-600 hover:bg-blue-50 rounded-2xl text-[13px] font-bold transition-colors flex items-center justify-center gap-2">
-                                <span>Add plan</span>
-                                <Plus className="w-4 h-4" />
-                            </button>
-                        </div>
+                    <div className="flex items-center gap-4">
+                        <button className="relative flex size-11 items-center justify-center rounded-2xl bg-white text-blue-500 shadow-sm hover:shadow">
+                            <Bell className="size-5" />
+                            {updates.length > 0 && (
+                                <span className="absolute top-3 right-3 size-2 rounded-full border-2 border-white bg-rose-500" />
+                            )}
+                        </button>
+                        <button className="flex size-11 items-center justify-center rounded-2xl bg-white text-blue-500 shadow-sm hover:shadow">
+                            <Settings className="size-5" />
+                        </button>
                     </div>
                 </div>
 
-                {/* ─── RIGHT SIDEBAR COLUMN (Spans 4 cols) ─── */}
-                <div className="lg:col-span-4 flex flex-col gap-6">
-                    
-                    {/* PROFILE CARD */}
-                    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden flex flex-col relative border border-gray-100">
-                        <div className="bg-[#3B82F6] px-6 py-4 flex justify-between items-center h-16">
-                            <span className="text-white text-xs font-bold tracking-widest uppercase">My Profile</span>
-                            <button className="w-7 h-7 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-white transition-colors">
-                                <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                        
-                        <div className="p-6 flex flex-col items-center flex-1">
-                            <img 
-                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'HOA')}&background=E0F2FE&color=0284C7&size=128`}
-                                alt="Profile" 
-                                className="w-20 h-20 rounded-full border-4 border-white shadow-lg -mt-16 mb-4 bg-white"
+                <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+                    <div className="flex flex-col gap-6 lg:col-span-8">
+                        <section className="relative flex min-h-[280px] flex-col justify-between overflow-hidden rounded-[2rem] bg-[#3B82F6] p-8 shadow-xl shadow-blue-500/20">
+                            <div className="pointer-events-none absolute inset-0 opacity-10">
+                                <ShieldCheck className="absolute top-10 right-10 size-28 text-white" />
+                                <Home className="absolute right-44 bottom-8 size-20 -rotate-12 text-white" />
+                                <Wallet className="absolute top-20 left-1/3 size-20 rotate-12 text-white" />
+                            </div>
+
+                            <div className="relative z-10 flex w-max items-center rounded-full border border-white/10 bg-white/20 px-4 py-2 text-xs font-semibold tracking-wide text-white backdrop-blur-md">
+                                <CalendarDays className="mr-2 size-4" />
+                                {currentDate} • {currentTime}
+                            </div>
+
+                            <div className="relative z-10 mt-8 grid grid-cols-1 gap-6 md:grid-cols-[1fr_auto] md:items-end">
+                                <div>
+                                    <p className="mb-3 text-xs font-black tracking-[0.2em] text-blue-100 uppercase">
+                                        Personal Overview
+                                    </p>
+                                    <h1 className="text-4xl font-black tracking-tight text-white">
+                                        Good Day, {firstName}!
+                                    </h1>
+                                    <p className="mt-2 max-w-xl font-medium text-blue-100">
+                                        Your balance, latest notices, payment
+                                        progress, and HOA account updates are
+                                        gathered here.
+                                    </p>
+                                </div>
+                                <div className="rounded-3xl bg-white/15 p-5 text-white backdrop-blur-md">
+                                    <p className="text-[11px] font-black tracking-widest text-blue-100 uppercase">
+                                        Current Balance
+                                    </p>
+                                    <p className="mt-2 text-4xl font-black tracking-tight">
+                                        {formatCurrency(
+                                            summary.current_balance,
+                                        )}
+                                    </p>
+                                    <p className="mt-2 text-xs font-bold text-blue-100">
+                                        {nextInvoice
+                                            ? `Next due: ${formatDate(nextInvoice.due_date)}`
+                                            : 'No open invoice due'}
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            <OverviewCard
+                                title="Outstanding Balance"
+                                value={formatCurrency(summary.current_balance)}
+                                description={
+                                    nextInvoice
+                                        ? `${nextInvoice.invoice_number} due ${formatDate(nextInvoice.due_date)}`
+                                        : 'All invoices are settled'
+                                }
+                                icon={Wallet}
+                                tone="blue"
                             />
-                            <h2 className="text-xl font-bold tracking-tight text-[#0A2540]">{user?.name}</h2>
-                            <p className="text-xs font-bold text-[#86868B] uppercase tracking-widest mt-1 mb-2">Resident</p>
-                            
-                            <div className="flex items-center gap-1 text-[11px] text-[#86868B] font-semibold mb-6">
-                                <Home className="w-3.5 h-3.5 text-blue-500" />
-                                Block 4, Lot 12
-                            </div>
-
-                            <div className="grid grid-cols-3 w-full gap-4 pt-6 border-t border-gray-100 mt-auto">
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Status</span>
-                                    <span className="text-xs font-bold text-[#0A2540]">Active</span>
-                                </div>
-                                <div className="flex flex-col items-center border-l border-r border-gray-100">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Move In</span>
-                                    <span className="text-xs font-bold text-[#0A2540]">12.04.22</span>
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Dues</span>
-                                    <span className="text-xs font-bold text-emerald-500">Paid</span>
-                                </div>
-                            </div>
+                            <OverviewCard
+                                title="Paid to Date"
+                                value={formatCurrency(summary.total_paid)}
+                                description={`${paymentRate}% of billed amount paid`}
+                                icon={CheckCircle2}
+                                tone="emerald"
+                            />
+                            <OverviewCard
+                                title="Pending Updates"
+                                value={`${summary.pending_proofs + updates.length}`}
+                                description={`${summary.pending_proofs} proof review, ${updates.length} notices`}
+                                icon={Bell}
+                                tone="amber"
+                            />
                         </div>
+
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <section className="flex flex-col rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                                <CardHeader
+                                    title="Payment Progress"
+                                    action={`${paymentRate}%`}
+                                />
+                                <div className="flex flex-1 items-center justify-between gap-6">
+                                    <div className="relative flex size-36 shrink-0 items-center justify-center">
+                                        <ResponsiveContainer
+                                            width="100%"
+                                            height="100%"
+                                            className="absolute inset-0"
+                                        >
+                                            <PieChart>
+                                                <Pie
+                                                    data={balancePie}
+                                                    innerRadius={48}
+                                                    outerRadius={66}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                >
+                                                    {balancePie.map((entry) => (
+                                                        <Cell
+                                                            key={entry.name}
+                                                            fill={entry.color}
+                                                        />
+                                                    ))}
+                                                </Pie>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                        <div className="relative z-10 text-center">
+                                            <span className="block text-3xl leading-none font-black tracking-tighter text-[#0A2540]">
+                                                {paymentRate}%
+                                            </span>
+                                            <span className="text-[8px] font-bold tracking-widest text-gray-400 uppercase">
+                                                Paid
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full space-y-4">
+                                        <ProgressRow
+                                            label="Total billed"
+                                            value={formatCurrency(
+                                                summary.total_billed,
+                                            )}
+                                            width="100%"
+                                            color="bg-blue-500"
+                                        />
+                                        <ProgressRow
+                                            label="Paid amount"
+                                            value={formatCurrency(
+                                                summary.total_paid,
+                                            )}
+                                            width={`${paidSlice}%`}
+                                            color="bg-emerald-500"
+                                        />
+                                        <ProgressRow
+                                            label="Remaining"
+                                            value={formatCurrency(
+                                                summary.current_balance,
+                                            )}
+                                            width={`${Math.max(100 - paidSlice, 4)}%`}
+                                            color="bg-amber-400"
+                                        />
+                                    </div>
+                                </div>
+                                <Link
+                                    href="/billing"
+                                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-blue-200 py-3 text-[13px] font-bold text-blue-600 transition-colors hover:bg-blue-50"
+                                >
+                                    View billing details
+                                    <ArrowRight className="size-4" />
+                                </Link>
+                            </section>
+
+                            <section className="flex flex-col rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                                <CardHeader
+                                    title="Payment Activity"
+                                    action="Recent"
+                                />
+                                <div className="h-36">
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height="100%"
+                                    >
+                                        <AreaChart data={paymentTrend}>
+                                            <Area
+                                                type="monotone"
+                                                dataKey="amount"
+                                                stroke="#3B82F6"
+                                                strokeWidth={4}
+                                                fill="#DBEAFE"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="mt-4 space-y-3">
+                                    {recentPayments.length > 0 ? (
+                                        recentPayments.map((payment) => (
+                                            <ActivityItem
+                                                key={payment.id}
+                                                title={
+                                                    payment.invoice_number ||
+                                                    'Payment received'
+                                                }
+                                                meta={`${payment.payment_method} • ${formatDate(payment.payment_date)}`}
+                                                value={formatCurrency(
+                                                    payment.amount,
+                                                )}
+                                            />
+                                        ))
+                                    ) : (
+                                        <EmptyState text="No payment activity yet." />
+                                    )}
+                                </div>
+                            </section>
+                        </div>
+
+                        <section className="rounded-[2rem] border border-gray-100 bg-white p-6 shadow-sm">
+                            <CardHeader
+                                title="Open Invoices"
+                                action={`${invoices.length} records`}
+                            />
+                            <div className="space-y-3">
+                                {invoices.length > 0 ? (
+                                    invoices
+                                        .slice(0, 4)
+                                        .map((invoice) => (
+                                            <InvoiceRow
+                                                key={invoice.id}
+                                                invoice={invoice}
+                                            />
+                                        ))
+                                ) : (
+                                    <EmptyState text="No billing records found." />
+                                )}
+                            </div>
+                        </section>
                     </div>
 
-                    {/* CALENDAR CARD */}
-                    <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden flex flex-col border border-gray-100 relative">
-                        <div className="bg-[#3B82F6] px-6 py-4 flex justify-between items-center">
-                            <span className="text-white text-xs font-bold tracking-widest uppercase">My Calendar</span>
-                            <div className="bg-white/20 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer hover:bg-white/30 transition-colors">
-                                April
-                                <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </div>
-                        <div className="p-6 flex-1">
-                            <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-4">
-                                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                            </div>
-                            <div className="flex justify-between items-center font-bold text-sm text-[#0A2540]">
-                                <span className="w-8 h-8 flex items-center justify-center">12</span>
-                                <span className="w-10 h-10 flex items-center justify-center bg-[#3B82F6] text-white rounded-xl shadow-lg shadow-blue-500/30 -translate-y-1">13</span>
-                                <span className="w-8 h-8 flex items-center justify-center">14</span>
-                                <span className="w-8 h-8 flex items-center justify-center">15</span>
-                                <span className="w-8 h-8 flex items-center justify-center">16</span>
-                                <span className="w-8 h-8 flex items-center justify-center">17</span>
-                                <span className="w-8 h-8 flex items-center justify-center">18</span>
+                    <aside className="flex flex-col gap-6 lg:col-span-4">
+                        <section className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                            <div className="flex h-16 items-center justify-between bg-[#3B82F6] px-6 py-4">
+                                <span className="text-xs font-bold tracking-widest text-white uppercase">
+                                    My Profile
+                                </span>
+                                <span className="rounded-lg bg-white/20 px-3 py-1 text-[10px] font-black tracking-wide text-white uppercase">
+                                    Active
+                                </span>
                             </div>
 
-                            <div className="mt-8">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-[10px] tracking-widest text-[#86868B] font-bold uppercase">April, 13</span>
-                                    <MoreHorizontal className="w-4 h-4 text-gray-300" />
+                            <div className="flex flex-col items-center p-6">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'HOA')}&background=E0F2FE&color=0284C7&size=128`}
+                                    alt="Profile"
+                                    className="-mt-16 mb-4 size-20 rounded-full border-4 border-white bg-white shadow-lg"
+                                />
+                                <h2 className="text-xl font-bold tracking-tight text-[#0A2540]">
+                                    {resident?.name || user?.name || 'Resident'}
+                                </h2>
+                                <p className="mt-1 mb-3 text-xs font-bold tracking-widest text-[#86868B] uppercase">
+                                    Resident
+                                </p>
+                                <div className="mb-6 flex items-center gap-1 text-center text-[11px] font-semibold text-[#86868B]">
+                                    <Home className="size-3.5 text-blue-500" />
+                                    {resident?.address ||
+                                        'Resident profile pending'}
                                 </div>
-                                <div className="space-y-4 relative before:absolute before:inset-y-0 before:left-3 before:w-px before:bg-gray-100">
-                                    {/* Event 1 */}
-                                    <div className="flex items-start gap-4 relative z-10">
-                                        <div className="text-[10px] font-bold text-gray-400 w-12 pt-1 text-right">2:00 pm</div>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-rose-400 mt-1.5 ring-4 ring-white shrink-0"></div>
-                                        <div className="text-[13px] font-semibold text-[#0A2540] flex-1 leading-snug">Meeting with HOA President Mr. Williams</div>
-                                    </div>
-                                    {/* Event 2 */}
-                                    <div className="flex items-start gap-4 relative z-10">
-                                        <div className="text-[10px] font-bold text-gray-400 w-12 pt-1 text-right">2:30 pm</div>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500 mt-1.5 ring-4 ring-white shrink-0"></div>
-                                        <div className="text-[13px] font-semibold text-[#0A2540] flex-1 leading-snug">Clubhouse Reservation</div>
-                                    </div>
-                                    {/* Event 3 */}
-                                    <div className="flex items-start gap-4 relative z-10 opacity-60">
-                                        <div className="text-[10px] font-bold text-gray-400 w-12 pt-1 text-right">3:00 pm</div>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 ring-4 ring-white shrink-0"></div>
-                                        <div className="text-[13px] font-semibold text-[#0A2540] flex-1 leading-snug">Plumbing Maintenance Visit</div>
-                                    </div>
+
+                                <div className="grid w-full grid-cols-3 gap-4 border-t border-gray-100 pt-6">
+                                    <ProfileMetric
+                                        label="Balance"
+                                        value={formatCurrency(
+                                            summary.current_balance,
+                                        )}
+                                        tone={
+                                            summary.current_balance > 0
+                                                ? 'text-amber-500'
+                                                : 'text-emerald-500'
+                                        }
+                                    />
+                                    <ProfileMetric
+                                        label="Proofs"
+                                        value={`${summary.pending_proofs}`}
+                                    />
+                                    <ProfileMetric
+                                        label="Invoices"
+                                        value={`${invoices.length}`}
+                                    />
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </section>
+
+                        <section className="overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-sm">
+                            <div className="flex items-center justify-between bg-[#3B82F6] px-6 py-4">
+                                <span className="text-xs font-bold tracking-widest text-white uppercase">
+                                    Community Updates
+                                </span>
+                                <Megaphone className="size-4 text-white" />
+                            </div>
+                            <div className="space-y-4 p-6">
+                                {updates.length > 0 ? (
+                                    updates.map((update) => (
+                                        <UpdateItem
+                                            key={update.id}
+                                            update={update}
+                                        />
+                                    ))
+                                ) : (
+                                    <EmptyState text="No community updates yet." />
+                                )}
+                            </div>
+                            <div className="border-t border-gray-100 px-6 py-4">
+                                <Link
+                                    href="/announcements"
+                                    className="flex items-center justify-between text-[12px] font-black tracking-wide text-blue-600 uppercase"
+                                >
+                                    View all updates
+                                    <ArrowRight className="size-4" />
+                                </Link>
+                            </div>
+                        </section>
+                    </aside>
                 </div>
-
             </div>
         </div>
     );
+}
+
+function OverviewCard({
+    title,
+    value,
+    description,
+    icon: Icon,
+    tone,
+}: {
+    title: string;
+    value: string;
+    description: string;
+    icon: React.ElementType;
+    tone: 'blue' | 'emerald' | 'amber';
+}) {
+    const tones = {
+        blue: 'bg-blue-50 text-blue-600',
+        emerald: 'bg-emerald-50 text-emerald-600',
+        amber: 'bg-amber-50 text-amber-600',
+    };
+
+    return (
+        <div className="relative flex min-h-36 flex-col rounded-[20px] border border-gray-100 bg-white px-5 py-4 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <span className="mb-2 block text-[9px] font-bold tracking-widest text-gray-400 uppercase">
+                        {title}
+                    </span>
+                    <span className="block text-2xl font-black tracking-tight text-[#0A2540]">
+                        {value}
+                    </span>
+                </div>
+                <div className={`rounded-xl p-2.5 ${tones[tone]}`}>
+                    <Icon className="size-5" />
+                </div>
+            </div>
+            <p className="mt-auto pt-5 text-[11px] font-bold text-gray-400">
+                {description}
+            </p>
+        </div>
+    );
+}
+
+function CardHeader({ title, action }: { title: string; action: string }) {
+    return (
+        <div className="mb-6 flex items-center justify-between gap-4">
+            <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                {title}
+            </span>
+            <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-[10px] font-bold text-blue-600">
+                {action}
+            </span>
+        </div>
+    );
+}
+
+function ProgressRow({
+    label,
+    value,
+    width,
+    color,
+}: {
+    label: string;
+    value: string;
+    width: string;
+    color: string;
+}) {
+    return (
+        <div>
+            <div className="mb-2 flex justify-between gap-3 text-[11px] font-bold">
+                <span className="text-[#0A2540]">{label}</span>
+                <span className="text-[#0A2540]">{value}</span>
+            </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                <div
+                    className={`h-full rounded-full ${color}`}
+                    style={{ width }}
+                />
+            </div>
+        </div>
+    );
+}
+
+function ActivityItem({
+    title,
+    meta,
+    value,
+}: {
+    title: string;
+    meta: string;
+    value: string;
+}) {
+    return (
+        <div className="flex items-center justify-between gap-4 rounded-2xl bg-gray-50 px-4 py-3">
+            <div>
+                <p className="text-[13px] font-black text-[#0A2540]">{title}</p>
+                <p className="mt-1 text-[11px] font-bold text-gray-400">
+                    {meta}
+                </p>
+            </div>
+            <p className="text-[13px] font-black text-emerald-600">{value}</p>
+        </div>
+    );
+}
+
+function InvoiceRow({ invoice }: { invoice: Invoice }) {
+    const isPaid = invoice.balance <= 0;
+    const status = invoice.display_status || invoice.status;
+
+    return (
+        <div className="grid grid-cols-1 gap-4 rounded-2xl bg-gray-50 px-5 py-4 md:grid-cols-[1fr_auto]">
+            <div>
+                <div className="flex flex-wrap items-center gap-2">
+                    <Receipt className="size-4 text-blue-500" />
+                    <p className="text-[13px] font-black text-[#0A2540]">
+                        {invoice.invoice_number}
+                    </p>
+                    <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-black tracking-wide uppercase ${
+                            isPaid
+                                ? 'bg-emerald-50 text-emerald-600'
+                                : invoice.has_pending_payment
+                                  ? 'bg-blue-50 text-blue-600'
+                                  : 'bg-amber-50 text-amber-600'
+                        }`}
+                    >
+                        {status}
+                    </span>
+                </div>
+                <p className="mt-1 text-[11px] font-bold text-gray-400">
+                    {invoice.period || 'Billing period'} • Due{' '}
+                    {formatDate(invoice.due_date)}
+                </p>
+            </div>
+            <div className="text-left md:text-right">
+                <p className="text-[13px] font-black text-[#0A2540]">
+                    {formatCurrency(invoice.total_amount)}
+                </p>
+                <p
+                    className={`mt-1 text-[11px] font-black uppercase ${
+                        isPaid ? 'text-emerald-600' : 'text-amber-600'
+                    }`}
+                >
+                    Balance {formatCurrency(invoice.balance)}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function ProfileMetric({
+    label,
+    value,
+    tone = 'text-[#0A2540]',
+}: {
+    label: string;
+    value: string;
+    tone?: string;
+}) {
+    return (
+        <div className="flex flex-col items-center text-center">
+            <span className="mb-1 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                {label}
+            </span>
+            <span className={`text-xs font-bold ${tone}`}>{value}</span>
+        </div>
+    );
+}
+
+function UpdateItem({ update }: { update: Update }) {
+    return (
+        <div className="relative pl-5">
+            <span className="absolute top-1.5 left-0 size-2.5 rounded-full bg-blue-500 ring-4 ring-blue-50" />
+            <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[13px] leading-snug font-black text-[#0A2540]">
+                    {update.title}
+                </p>
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[8px] font-black tracking-wide text-blue-600 uppercase">
+                    {update.category}
+                </span>
+            </div>
+            <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed font-semibold text-gray-400">
+                {stripHtml(update.content)}
+            </p>
+            <p className="mt-2 text-[10px] font-bold tracking-wide text-gray-300 uppercase">
+                {formatDate(update.published_at || update.created_at)}
+            </p>
+        </div>
+    );
+}
+
+function EmptyState({ text }: { text: string }) {
+    return (
+        <div className="flex min-h-24 items-center justify-center rounded-2xl bg-gray-50 px-4 py-6 text-center text-[12px] font-bold text-gray-400">
+            {text}
+        </div>
+    );
+}
+
+function buildPaymentTrend(payments: Payment[]) {
+    const recent = [...payments].slice(0, 6).reverse();
+
+    if (recent.length === 0) {
+        return [
+            { name: 'Start', amount: 0 },
+            { name: 'Now', amount: 0 },
+        ];
+    }
+
+    return recent.map((payment) => ({
+        name: payment.payment_date
+            ? new Date(payment.payment_date).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+              })
+            : payment.invoice_number || 'Payment',
+        amount: payment.amount,
+    }));
+}
+
+function formatCurrency(amount: number) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 0,
+    }).format(amount || 0);
+}
+
+function formatDate(date: string | null) {
+    if (!date) {
+        return 'N/A';
+    }
+
+    return new Date(date).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+}
+
+function stripHtml(value: string) {
+    return value.replace(/<[^>]*>/g, '').trim();
 }
