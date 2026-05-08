@@ -18,6 +18,7 @@ use App\Enums\AnnouncementStatus;
 use App\Http\Controllers\Resident\ChatController;
 use App\Http\Controllers\Resident\ComplaintController as ResidentComplaintController;
 use App\Http\Controllers\Resident\AnnouncementController as ResidentAnnouncementController;
+use App\Http\Controllers\Resident\TransparencyController;
 use App\Http\Resources\AnnouncementResource;
 use App\Repositories\Announcement\AnnouncementRepositoryInterface;
 use Inertia\Inertia;
@@ -143,6 +144,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Announcements (Resident)
         Route::get('announcements', [ResidentAnnouncementController::class, 'index'])->name('resident.announcements.index');
+
+        // Community Transparency (Resident)
+        Route::get('transparency', [TransparencyController::class, 'index'])->name('resident.transparency.index');
     });
 
     Route::middleware('role:staff')->group(function () {

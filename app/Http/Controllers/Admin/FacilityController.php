@@ -15,7 +15,7 @@ class FacilityController extends Controller
         protected FacilityService $service
     ) {}
 
-    public function index(): Response
+    public function index(): Response 
     {
         return Inertia::render('admin/facilities/index', [
             'facilities' => $this->service->getFacilities(),

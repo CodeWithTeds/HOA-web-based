@@ -151,6 +151,11 @@ export function AppSidebar() {
         mainNavItems.push(
             { title: 'My Bills', href: '/billing', icon: Receipt },
             {
+                title: 'Community Transparency',
+                href: '/transparency',
+                icon: BarChart3,
+            },
+            {
                 title: 'Facility Booking',
                 href: '/facilities',
                 icon: CalendarCheck,
