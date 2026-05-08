@@ -146,6 +146,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Announcements (Resident)
         Route::get('announcements', [ResidentAnnouncementController::class, 'index'])->name('resident.announcements.index');
 
+        // Documents (Resident)
+        Route::inertia('documents', 'Resident/documents/index')->name('resident.documents.index');
+
         // Community Transparency (Resident)
         Route::get('transparency', [TransparencyController::class, 'index'])->name('resident.transparency.index');
     });
