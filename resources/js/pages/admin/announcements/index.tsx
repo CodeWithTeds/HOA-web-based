@@ -8,15 +8,14 @@ import {
     Plus,
     Pencil,
     Trash2,
-    Eye,
     ArrowUpDown,
     Megaphone,
     Calendar,
     User,
     AlertTriangle,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,29 +24,23 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 export default function AnnouncementIndex({ announcements, filters }: { announcements: any, filters?: any }) {
-    const { flash } = usePage<any>().props;
+    const { auth, flash } = usePage<any>().props;
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
-
-    const [alert, setAlert] = useState<{
-        show: boolean;
-        type: 'success' | 'error' | 'warning' | 'info';
-        title: string;
-        message?: string;
-    }>({ show: false, type: 'success', title: '' });
-
-    useEffect(() => {
-        if (flash?.success) {
-            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
-        }
-        if (flash?.error) {
-            setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
-        }
-    }, [flash]);
+    const [dismissedAlertKey, setDismissedAlertKey] = useState<string | null>(null);
+    const canDelete = auth?.user?.role === 'admin';
+    const flashAlert = flash?.success
+        ? { type: 'success' as const, title: 'Operation Successful', message: flash.success }
+        : flash?.error
+            ? { type: 'error' as const, title: 'Something went wrong', message: flash.error }
+            : null;
+    const alertKey = flashAlert ? `${flashAlert.type}:${flashAlert.message}` : null;
+    const alert = flashAlert && alertKey !== dismissedAlertKey
+        ? { ...flashAlert, show: true }
+        : { show: false, type: 'success' as const, title: '' };
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -65,7 +58,7 @@ export default function AnnouncementIndex({ announcements, filters }: { announce
         }, 400);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]);
+    }, [searchQuery, filters?.search]);
 
     const items = announcements?.data || [];
     const totalItems = announcements?.meta?.total || announcements?.total || 0;
@@ -108,7 +101,7 @@ export default function AnnouncementIndex({ announcements, filters }: { announce
                 title={alert.title}
                 message={alert.message}
                 show={alert.show}
-                onClose={() => setAlert(prev => ({ ...prev, show: false }))}
+                onClose={() => alertKey && setDismissedAlertKey(alertKey)}
             />
 
             <div
@@ -254,13 +247,17 @@ export default function AnnouncementIndex({ announcements, filters }: { announce
                                                             <Pencil className="size-3.5 text-neutral-400" /> Edit
                                                         </DropdownMenuItem>
                                                     </Link>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem 
-                                                        className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600"
-                                                        onClick={() => handleDelete(announcement.id)}
-                                                    >
-                                                        <Trash2 className="size-3.5" /> Delete
-                                                    </DropdownMenuItem>
+                                                    {canDelete && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600"
+                                                                onClick={() => handleDelete(announcement.id)}
+                                                            >
+                                                                <Trash2 className="size-3.5" /> Delete
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </td>

@@ -52,6 +52,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
+        // User Management
+        Route::get('admin/user/export', [StaffController::class, 'exportCsv'])->name('admin.user.export');
+        Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
+        Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
+        Route::post('admin/user', [StaffController::class, 'store'])->name('admin.user.store');
+        Route::get('admin/user/{user}', [StaffController::class, 'show'])->name('admin.user.show');
+        Route::get('admin/user/{user}/edit', [StaffController::class, 'edit'])->name('admin.user.edit');
+        Route::put('admin/user/{user}', [StaffController::class, 'update'])->name('admin.user.update');
+        Route::patch('admin/user/{user}/status', [StaffController::class, 'toggleStatus'])->name('admin.user.status');
+        Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
+
+        // Admin-only destructive actions
+        Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
+        Route::delete('admin/facilities/{id}', [FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
+        Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
+        Route::delete('admin/complaints/{id}', [ComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
+    });
+
+    Route::middleware('role:staff')->group(function () {
+        Route::get('staff/dashboard', [DashboardController::class, 'index'])->name('staff.dashboard');
+    });
+
+    Route::middleware('role:admin,staff')->group(function () {
         // Residents
         Route::get('admin/residents/export', [ResidentController::class, 'exportCsv'])->name('admin.residents.export');
         Route::get('admin/residents', [ResidentController::class, 'index'])->name('admin.residents.index');
@@ -60,7 +83,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/residents/{resident}', [ResidentController::class, 'show'])->name('admin.residents.show');
         Route::get('admin/residents/{resident}/edit', [ResidentController::class, 'edit'])->name('admin.residents.edit');
         Route::put('admin/residents/{resident}', [ResidentController::class, 'update'])->name('admin.residents.update');
-        Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
 
         // Billing & Collection
         Route::get('admin/billing/export', [BillingController::class, 'exportCsv'])->name('admin.billing.export');
@@ -77,16 +99,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/reports/export', [ReportController::class, 'exportCsv'])->name('admin.reports.export');
         Route::get('admin/reports', [ReportController::class, 'index'])->name('admin.reports.index');
 
-        Route::get('admin/user/export', [StaffController::class, 'exportCsv'])->name('admin.user.export');
-        Route::get('admin/user', [StaffController::class, 'index'])->name('admin.user.index');
-        Route::get('admin/user/create', [StaffController::class, 'create'])->name('admin.user.create');
-        Route::post('admin/user', [StaffController::class, 'store'])->name('admin.user.store');
-        Route::get('admin/user/{user}', [StaffController::class, 'show'])->name('admin.user.show');
-        Route::get('admin/user/{user}/edit', [StaffController::class, 'edit'])->name('admin.user.edit');
-        Route::put('admin/user/{user}', [StaffController::class, 'update'])->name('admin.user.update');
-        Route::patch('admin/user/{user}/status', [StaffController::class, 'toggleStatus'])->name('admin.user.status');
-        Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
-
         // Facility Management
         Route::get('admin/facilities', [FacilityController::class, 'index'])->name('admin.facilities.index');
         Route::get('admin/facilities/create', [FacilityController::class, 'create'])->name('admin.facilities.create');
@@ -94,7 +106,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/facilities/calendar', [FacilityController::class, 'calendar'])->name('admin.facilities.calendar');
         Route::post('admin/facilities', [FacilityController::class, 'store'])->name('admin.facilities.store');
         Route::put('admin/facilities/{id}', [FacilityController::class, 'update'])->name('admin.facilities.update');
-        Route::delete('admin/facilities/{id}', [FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
 
         // Facility Bookings
         Route::get('admin/bookings', [BookingController::class, 'index'])->name('admin.bookings.index');
@@ -108,7 +119,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('admin/announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
         Route::get('admin/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('admin.announcements.edit');
         Route::put('admin/announcements/{id}', [AnnouncementController::class, 'update'])->name('admin.announcements.update');
-        Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
 
         // Complaints
         Route::get('admin/complaints', [ComplaintController::class, 'index'])->name('admin.complaints.index');
@@ -117,10 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/complaints/{id}', [ComplaintController::class, 'show'])->name('admin.complaints.show');
         Route::get('admin/complaints/{id}/edit', [ComplaintController::class, 'edit'])->name('admin.complaints.edit');
         Route::put('admin/complaints/{id}', [ComplaintController::class, 'update'])->name('admin.complaints.update');
-        Route::delete('admin/complaints/{id}', [ComplaintController::class, 'destroy'])->name('admin.complaints.destroy');
-    });
 
-    Route::middleware(['role:admin,staff'])->group(function () {
         // Chat Support (Management)
         Route::get('admin/chat', [AdminChatController::class, 'index'])->name('admin.chat.index');
         Route::get('admin/chat/{residentId}', [AdminChatController::class, 'show'])->name('admin.chat.show');
@@ -153,9 +160,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('transparency', [TransparencyController::class, 'index'])->name('resident.transparency.index');
     });
 
-    Route::middleware('role:staff')->group(function () {
-        Route::get('staff/dashboard', [DashboardController::class, 'index'])->name('staff.dashboard');
-    });
 });
 
 require __DIR__ . '/settings.php';

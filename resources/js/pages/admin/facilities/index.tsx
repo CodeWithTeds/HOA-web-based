@@ -1,51 +1,32 @@
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import {
     Search,
-    Filter,
     Plus,
-    MoreHorizontal,
     Pencil,
     Trash2,
-    Home,
-    Users,
-    DollarSign,
     Box,
-    LayoutGrid,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 export default function FacilityIndex({ facilities }: { facilities: any[] }) {
-    const { flash } = usePage<any>().props;
+    const { auth, flash } = usePage<any>().props;
     const [searchQuery, setSearchQuery] = useState('');
-
-    const [alert, setAlert] = useState<{
-        show: boolean;
-        type: 'success' | 'error' | 'warning' | 'info';
-        title: string;
-        message?: string;
-    }>({ show: false, type: 'success', title: '' });
-
-    useEffect(() => {
-        if (flash?.success) {
-            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
-        }
-        if (flash?.error) {
-            setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
-        }
-    }, [flash]);
+    const [dismissedAlertKey, setDismissedAlertKey] = useState<string | null>(null);
+    const canDelete = auth?.user?.role === 'admin';
+    const flashAlert = flash?.success
+        ? { type: 'success' as const, title: 'Operation Successful', message: flash.success }
+        : flash?.error
+            ? { type: 'error' as const, title: 'Something went wrong', message: flash.error }
+            : null;
+    const alertKey = flashAlert ? `${flashAlert.type}:${flashAlert.message}` : null;
+    const alert = flashAlert && alertKey !== dismissedAlertKey
+        ? { ...flashAlert, show: true }
+        : { show: false, type: 'success' as const, title: '' };
 
     const filteredFacilities = facilities.filter(f => 
         f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,7 +41,7 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
                 title={alert.title}
                 message={alert.message}
                 show={alert.show}
-                onClose={() => setAlert(prev => ({ ...prev, show: false }))}
+                onClose={() => alertKey && setDismissedAlertKey(alertKey)}
             />
 
             <div
@@ -164,17 +145,19 @@ export default function FacilityIndex({ facilities }: { facilities: any[] }) {
                                                     <Pencil className="size-3 text-neutral-400" />
                                                 </Button>
                                             </Link>
-                                            <Button 
-                                                variant="ghost" 
-                                                className="size-7 p-0 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg group/del"
-                                                onClick={() => {
-                                                    if (confirm('Are you sure you want to delete this facility?')) {
-                                                        router.delete(`/admin/facilities/${facility.id}`);
-                                                    }
-                                                }}
-                                            >
-                                                <Trash2 className="size-3 text-neutral-400 group-hover/del:text-rose-600 transition-colors" />
-                                            </Button>
+                                            {canDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    className="size-7 p-0 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg group/del"
+                                                    onClick={() => {
+                                                        if (confirm('Are you sure you want to delete this facility?')) {
+                                                            router.delete(`/admin/facilities/${facility.id}`);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Trash2 className="size-3 text-neutral-400 group-hover/del:text-rose-600 transition-colors" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

@@ -1,13 +1,11 @@
 import { Head, usePage, Link } from '@inertiajs/react';
-import { HomeownerDashboard } from '@/components/homeowner-dashboard';
-import { UserRole } from '@/types';
+import { format } from 'date-fns';
 import {
     Users,
     Wallet,
     AlertCircle,
     Calendar,
     TrendingUp,
-    ArrowUpRight,
     ReceiptText,
     Clock,
     CheckCircle2,
@@ -17,21 +15,15 @@ import {
 import {
     AreaChart,
     Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
     ResponsiveContainer,
-    BarChart,
-    Bar,
-    Cell
 } from 'recharts';
-import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { HomeownerDashboard } from '@/components/homeowner-dashboard';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { UserRole } from '@/types';
 
 interface StatCardProps {
     title: string;
@@ -126,6 +118,12 @@ export default function Dashboard() {
     const { user } = auth || {};
 
     const role = user?.role as string | undefined;
+    const isStaffPortal = portalType === 'staff';
+    const pageTitle = isStaffPortal ? 'Staff Dashboard' : 'Admin Dashboard';
+    const dashboardTitle = isStaffPortal ? 'Staff Operations' : 'Command Center';
+    const dashboardDescription = isStaffPortal
+        ? 'Here is your assigned community operations overview.'
+        : 'Here is your community overview.';
 
     if (role === 'homeowner' || role === UserRole.HOMEOWNER) {
         return (
@@ -147,16 +145,16 @@ export default function Dashboard() {
 
     return (
         <>
-            <Head title={`Admin Dashboard | HOA 2026`} />
+            <Head title={`${pageTitle} | HOA 2026`} />
             <div className="flex h-full flex-1 flex-col gap-8 p-4 md:p-8 animate-in fade-in duration-700">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-col gap-1">
                         <h1 className="text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white sm:text-5xl">
-                            Command Center
+                            {dashboardTitle}
                         </h1>
                         <p className="text-lg font-medium text-neutral-500 dark:text-neutral-400">
-                            Welcome back, <span className="text-neutral-900 dark:text-white">{user?.name}</span>. Here is your community overview.
+                            Welcome back, <span className="text-neutral-900 dark:text-white">{user?.name}</span>. {dashboardDescription}
                         </p>
                     </div>
                     <div className="flex items-center gap-3">

@@ -2,25 +2,20 @@ import { Head, Link, usePage, router } from '@inertiajs/react';
 import {
     Search,
     Filter,
-    Download,
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
-    UserPlus,
     Home,
     Pencil,
     Trash2,
     Eye,
     ArrowUpDown,
     Plus,
-    MapPin,
-    Phone,
-    UserCheck,
     FileSpreadsheet,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,8 +24,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -45,28 +38,24 @@ const avatarGradients = [
 
 function getGradient(name: string) {
     const code = (name?.charCodeAt(0) || 0) + (name?.charCodeAt(1) || 0);
+
     return avatarGradients[code % avatarGradients.length];
 }
 
 export default function ResidentIndex({ residents, filters }: { residents: any, filters?: any }) {
-    const { flash } = usePage<any>().props;
+    const { auth, flash } = usePage<any>().props;
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
-
-    const [alert, setAlert] = useState<{
-        show: boolean;
-        type: 'success' | 'error' | 'warning' | 'info';
-        title: string;
-        message?: string;
-    }>({ show: false, type: 'success', title: '' });
-
-    useEffect(() => {
-        if (flash?.success) {
-            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
-        }
-        if (flash?.error) {
-            setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
-        }
-    }, [flash]);
+    const [dismissedAlertKey, setDismissedAlertKey] = useState<string | null>(null);
+    const canDelete = auth?.user?.role === 'admin';
+    const flashAlert = flash?.success
+        ? { type: 'success' as const, title: 'Operation Successful', message: flash.success }
+        : flash?.error
+            ? { type: 'error' as const, title: 'Something went wrong', message: flash.error }
+            : null;
+    const alertKey = flashAlert ? `${flashAlert.type}:${flashAlert.message}` : null;
+    const alert = flashAlert && alertKey !== dismissedAlertKey
+        ? { ...flashAlert, show: true }
+        : { show: false, type: 'success' as const, title: '' };
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -84,7 +73,7 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
         }, 400);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]);
+    }, [searchQuery, filters?.search]);
 
     const users = residents?.data || [];
     const totalResidents = residents?.total || 0;
@@ -97,7 +86,7 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                 title={alert.title}
                 message={alert.message}
                 show={alert.show}
-                onClose={() => setAlert(prev => ({ ...prev, show: false }))}
+                onClose={() => alertKey && setDismissedAlertKey(alertKey)}
             />
 
             <div
@@ -279,10 +268,14 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                                                             <Pencil className="size-3.5 text-neutral-400" /> Edit
                                                         </DropdownMenuItem>
                                                     </Link>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600">
-                                                        <Trash2 className="size-3.5" /> Archive
-                                                    </DropdownMenuItem>
+                                                    {canDelete && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600">
+                                                                <Trash2 className="size-3.5" /> Archive
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </td>

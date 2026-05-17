@@ -1,7 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Search,
-    Filter,
     Plus,
     MoreHorizontal,
     MessageSquare,
@@ -9,43 +8,37 @@ import {
     CheckCircle2,
     AlertCircle,
     ShieldAlert,
-    User,
-    Calendar,
-    ArrowRight,
     Trash2,
     Eye,
     Edit3,
-    ArrowUpDown,
-    CheckCircle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 export default function ComplaintIndex({ complaints, filters }: { complaints: any, filters: any }) {
-    const { flash } = usePage<any>().props;
+    const { auth, flash } = usePage<any>().props;
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
-    const [alert, setAlert] = useState<{
-        show: boolean;
-        type: 'success' | 'error' | 'warning' | 'info';
-        title: string;
-        message?: string;
-    }>({ show: false, type: 'success', title: '' });
-
-    useEffect(() => {
-        if (flash?.success) {
-            setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
-        }
-    }, [flash?.success]);
+    const [dismissedAlertKey, setDismissedAlertKey] = useState<string | null>(null);
+    const canDelete = auth?.user?.role === 'admin';
+    const flashAlert = flash?.success
+        ? { type: 'success' as const, title: 'Operation Successful', message: flash.success }
+        : flash?.error
+            ? { type: 'error' as const, title: 'Something went wrong', message: flash.error }
+            : null;
+    const alertKey = flashAlert ? `${flashAlert.type}:${flashAlert.message}` : null;
+    const alert = flashAlert && alertKey !== dismissedAlertKey
+        ? { ...flashAlert, show: true }
+        : { show: false, type: 'success' as const, title: '' };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,7 +87,7 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                 title={alert.title}
                 message={alert.message}
                 show={alert.show}
-                onClose={() => setAlert(prev => ({ ...prev, show: false }))}
+                onClose={() => alertKey && setDismissedAlertKey(alertKey)}
             />
 
             <div
@@ -251,12 +244,14 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                                                         >
                                                             <Edit3 className="size-4" /> Manage Ticket
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem 
-                                                            onClick={() => deleteComplaint(complaint.id)}
-                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-rose-600 hover:bg-rose-50 focus:bg-rose-50 cursor-pointer transition-colors"
-                                                        >
-                                                            <Trash2 className="size-4" /> Delete Record
-                                                        </DropdownMenuItem>
+                                                        {canDelete && (
+                                                            <DropdownMenuItem
+                                                                onClick={() => deleteComplaint(complaint.id)}
+                                                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-bold text-rose-600 hover:bg-rose-50 focus:bg-rose-50 cursor-pointer transition-colors"
+                                                            >
+                                                                <Trash2 className="size-4" /> Delete Record
+                                                            </DropdownMenuItem>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
