@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\StaffRole;
 use App\Enums\StaffStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class StoreStaffRequest extends FormRequest
@@ -28,7 +29,13 @@ class StoreStaffRequest extends FormRequest
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
             'firstName' => ['required', 'string', 'min:2'],
             'lastName' => ['required', 'string', 'min:2'],
-            'email' => ['required', 'string', 'email', 'unique:staff,email'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'unique:staff,email',
+                Rule::unique('users', 'email'),
+            ],
             'password' => ['required', 'string', 'min:8'],
             'phone' => ['nullable', 'string', 'digits:11'],
             'role' => ['required', new Enum(StaffRole::class)],

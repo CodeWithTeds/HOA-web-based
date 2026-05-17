@@ -4,7 +4,10 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\StaffRole;
 use App\Enums\StaffStatus;
+use App\Models\Staff;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class UpdateStaffRequest extends FormRequest
@@ -26,12 +29,20 @@ class UpdateStaffRequest extends FormRequest
     {
         // we can access the route parameter 'staff' or 'id'
         $staffId = $this->route('user') ?? $this->route('staff') ?? $this->route('id');
+        $staff = Staff::find($staffId);
+        $loginUser = $staff ? User::where('email', $staff->email)->first() : null;
 
         return [
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:1024'],
             'firstName' => ['required', 'string', 'min:2'],
             'lastName' => ['required', 'string', 'min:2'],
-            'email' => ['required', 'string', 'email', 'unique:staff,email,' . $staffId],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'unique:staff,email,' . $staffId,
+                Rule::unique('users', 'email')->ignore($loginUser?->role?->value === 'staff' ? $loginUser->id : null),
+            ],
             'password' => ['nullable', 'string', 'min:8'],
             'phone' => ['nullable', 'string', 'digits:11'],
             'role' => ['required', new Enum(StaffRole::class)],
