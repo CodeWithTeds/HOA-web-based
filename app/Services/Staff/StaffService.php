@@ -2,19 +2,23 @@
 
 namespace App\Services\Staff;
 
+use App\Enums\UserRole;
 use App\Exceptions\StaffNotFoundException;
 use App\Models\Staff;
 use App\Repositories\Staff\StaffRepositoryInterface;
+use App\Repositories\User\UserRepositoryInterface;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class StaffService
 {
     public function __construct(
-        protected StaffRepositoryInterface $staffRepository
+        protected StaffRepositoryInterface $staffRepository,
+        protected UserRepositoryInterface $userRepository
     ) {}
 
     public function getPaginatedStaff(int $perPage = 10, ?string $search = null)
@@ -24,28 +28,12 @@ class StaffService
 
     public function createStaff(array $data): Staff
     {
-        // Handle photo upload if present
-        $photoPath = null;
-        if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {
-            $photoPath = $this->handlePhotoUpload($data['photo']);
-        }
+        return DB::transaction(function () use ($data) {
+            $staff = $this->staffRepository->create($this->staffAttributes($data));
+            $this->createOrUpdateStaffLogin($staff, $data['password']);
 
-        // Map camelCase DTO/Request fields to snake_case database columns
-        $attributes = [
-            'profile_picture' => $photoPath,
-            'first_name' => $data['firstName'],
-            'last_name' => $data['lastName'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'phone' => $data['phone'] ?? null,
-            'role' => $data['role'],
-            'department' => $data['department'] ?? null,
-            'status' => $data['status'],
-            'hire_date' => $data['hireDate'],
-            'created_by' => Auth::id(),
-        ];
-
-        return $this->staffRepository->create($attributes);
+            return $staff;
+        });
     }
 
     public function getStaffById(string $id): Staff
@@ -62,6 +50,7 @@ class StaffService
     public function updateStaff(string $id, array $data): Staff
     {
         $staff = $this->getStaffById($id);
+        $previousEmail = $staff->email;
 
         $attributes = [
             'first_name' => $data['firstName'],
@@ -88,12 +77,16 @@ class StaffService
             $attributes['profile_picture'] = $this->handlePhotoUpload($data['photo']);
         }
 
-        $updated = $this->staffRepository->update($staff, $attributes);
+        DB::transaction(function () use ($staff, $attributes, $data, $previousEmail) {
+            $updated = $this->staffRepository->update($staff, $attributes);
 
-        if (!$updated) {
-            Log::error("Failed to update staff", ['staff_id' => $id]);
-            throw new Exception("Failed to update staff member.");
-        }
+            if (!$updated) {
+                Log::error("Failed to update staff", ['staff_id' => $staff->id]);
+                throw new Exception("Failed to update staff member.");
+            }
+
+            $this->createOrUpdateStaffLogin($staff->refresh(), $data['password'] ?? null, $previousEmail);
+        });
 
         return $staff->refresh();
     }
@@ -123,7 +116,16 @@ class StaffService
             Storage::disk('public')->delete(str_replace('/storage/', '', $staff->profile_picture));
         }
 
-        $deleted = $this->staffRepository->delete($staff);
+        $deleted = DB::transaction(function () use ($staff) {
+            $loginUser = $this->userRepository->findByEmail($staff->email);
+            $deleted = $this->staffRepository->delete($staff);
+
+            if ($deleted && $loginUser?->role === UserRole::STAFF) {
+                $this->userRepository->delete($loginUser);
+            }
+
+            return $deleted;
+        });
 
         if (!$deleted) {
             Log::error("Failed to delete staff", ['staff_id' => $id]);
@@ -140,5 +142,62 @@ class StaffService
     {
         $path = $file->store('staff/avatars', 'public');
         return Storage::url($path);
+    }
+
+    protected function staffAttributes(array $data): array
+    {
+        $photoPath = null;
+        if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {
+            $photoPath = $this->handlePhotoUpload($data['photo']);
+        }
+
+        return [
+            'profile_picture' => $photoPath,
+            'first_name' => $data['firstName'],
+            'last_name' => $data['lastName'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'] ?? null,
+            'role' => $data['role'],
+            'department' => $data['department'] ?? null,
+            'status' => $data['status'],
+            'hire_date' => $data['hireDate'],
+            'created_by' => Auth::id(),
+        ];
+    }
+
+    protected function createOrUpdateStaffLogin(Staff $staff, ?string $password = null, ?string $previousEmail = null): void
+    {
+        $loginUser = $this->userRepository->findByEmail($previousEmail ?? $staff->email);
+
+        if ($loginUser && $loginUser->role !== UserRole::STAFF) {
+            if ($previousEmail && $previousEmail !== $staff->email) {
+                $loginUser = $this->userRepository->findByEmail($staff->email);
+            }
+
+            if ($loginUser && $loginUser->role !== UserRole::STAFF) {
+                throw new Exception('This email already belongs to another login account.');
+            }
+        }
+
+        $attributes = [
+            'name' => "{$staff->first_name} {$staff->last_name}",
+            'email' => $staff->email,
+            'role' => UserRole::STAFF,
+            'email_verified_at' => now(),
+        ];
+
+        if ($password) {
+            $attributes['password'] = $password;
+        }
+
+        if ($loginUser) {
+            $this->userRepository->update($loginUser, $attributes);
+            return;
+        }
+
+        $attributes['password'] = $password ?? $staff->password;
+
+        $this->userRepository->create($attributes);
     }
 }

@@ -118,31 +118,43 @@ export function AppSidebar() {
         mainNavItems.push(
             {
                 title: 'Resident Management',
-                href: '/staff/residents',
-                icon: BookUser,
+                href: '/admin/residents',
+                icon: Home,
             },
             {
-                title: 'Billing and Payments',
-                href: '/staff/billing',
+                title: 'Billing and Collection',
+                href: '/admin/billing',
                 icon: CreditCard,
             },
             {
-                title: 'Facility Reservations',
-                href: '/staff/facilities',
-                icon: CalendarCheck,
+                title: 'Reports and Analytics',
+                href: '/admin/reports',
+                icon: BarChart3,
             },
             {
-                title: 'Complaints',
-                href: '/staff/complaints',
+                title: 'Facility Management',
+                href: '/admin/facilities',
+                icon: Settings2,
+                items: [
+                    { title: 'Facilities List', href: '/admin/facilities' },
+                    { title: 'Reservations', href: '/admin/bookings' },
+                    {
+                        title: 'Calendar Schedule',
+                        href: '/admin/facilities/calendar',
+                    },
+                ],
+            },
+            {
+                title: 'Announcements',
+                href: '/admin/announcements',
+                icon: Megaphone,
+            },
+            {
+                title: 'Complaints Management',
+                href: '/admin/complaints',
                 icon: AlertCircle,
             },
             { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
-            { title: 'Reports', href: '/staff/reports', icon: BarChart3 },
-            {
-                title: 'Announcements',
-                href: '/staff/announcements',
-                icon: Megaphone,
-            },
             { title: 'Logout', href: '/logout', icon: LogOut },
         );
     }
