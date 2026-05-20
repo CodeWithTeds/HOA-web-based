@@ -5,26 +5,26 @@ namespace App\Models;
 use App\Enums\ComplaintCategory;
 use App\Enums\ComplaintPriority;
 use App\Enums\ComplaintStatus;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable([
-    'subject',
-    'description',
-    'resident_id',
-    'assigned_to',
-    'category',
-    'priority',
-    'status',
-    'attachment_path',
-    'resolution_notes',
-    'resolved_at'
-])]
 class Complaint extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'subject',
+        'description',
+        'resident_id',
+        'assigned_to',
+        'category',
+        'priority',
+        'status',
+        'attachment_path',
+        'resolution_notes',
+        'resolved_at',
+    ];
 
     protected function casts(): array
     {

@@ -5,25 +5,25 @@ namespace App\Models;
 use App\Enums\AnnouncementCategory;
 use App\Enums\AnnouncementPriority;
 use App\Enums\AnnouncementStatus;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable([
-    'title',
-    'content',
-    'author_id',
-    'category',
-    'priority',
-    'status',
-    'published_at',
-    'image_path'
-])]
 class Announcement extends Model
 {
     /** @use HasFactory<\Database\Factories\AnnouncementFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'content',
+        'author_id',
+        'category',
+        'priority',
+        'status',
+        'published_at',
+        'image_path',
+    ];
 
     protected function casts(): array
     {
