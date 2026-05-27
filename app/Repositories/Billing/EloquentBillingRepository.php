@@ -170,14 +170,14 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     /**
      * @inheritDoc
      */
-    public function getResidentInvoices(int $residentId, ?string $period = null, ?int $year = null): Collection
+    public function getResidentInvoices(int $residentId, ?int $month = null, ?int $year = null): Collection
     {
         $query = $this->model->newQuery()
             ->with(['billingPeriod', 'payments'])
             ->where('resident_id', $residentId);
 
-        if ($period) {
-            $query->where('billing_period_id', $period);
+        if ($month) {
+            $query->whereMonth('due_date', $month);
         }
 
         if ($year) {
@@ -190,15 +190,15 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     /**
      * @inheritDoc
      */
-    public function getResidentPayments(int $residentId, ?string $period = null, ?int $year = null): Collection
+    public function getResidentPayments(int $residentId, ?int $month = null, ?int $year = null): Collection
     {
         $query = Payment::query()
             ->with(['invoice.billingPeriod'])
-            ->whereHas('invoice', function ($q) use ($residentId, $period, $year) {
+            ->whereHas('invoice', function ($q) use ($residentId, $month, $year) {
                 $q->where('resident_id', $residentId);
 
-                if ($period) {
-                    $q->where('billing_period_id', $period);
+                if ($month) {
+                    $q->whereMonth('due_date', $month);
                 }
 
                 if ($year) {

@@ -19,13 +19,13 @@ class BillingController extends Controller
     {
         $data = $this->billingService->getBillingPageData(
             $request->user()?->email,
-            $request->get('period'),
+            $request->get('month') ? (int) $request->get('month') : null,
             $request->get('year') ? (int) $request->get('year') : null,
         );
 
         return Inertia::render('Resident/billing/index', [
             ...BillingPageResource::make($data)->resolve($request),
-            'filters' => $request->only(['period', 'year']),
+            'filters' => $request->only(['month', 'year']),
         ]);
     }
 

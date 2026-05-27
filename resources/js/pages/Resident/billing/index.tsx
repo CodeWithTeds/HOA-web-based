@@ -49,6 +49,8 @@ export default function ResidentBilling({
     summary,
     invoices,
     payments,
+    available_years,
+    filters,
 }: {
     resident: { id: number; name: string; address: string } | null;
     summary: {
@@ -59,6 +61,8 @@ export default function ResidentBilling({
     };
     invoices: Invoice[];
     payments: Payment[];
+    available_years: number[];
+    filters?: { month?: string; year?: string };
 }) {
     const { flash } = usePage<any>().props;
     const flashMessage = flash?.success || flash?.error;
@@ -69,6 +73,47 @@ export default function ResidentBilling({
         title: flash?.error ? 'Upload Failed' : 'Proof Uploaded',
         message: flashMessage ? String(flashMessage) : undefined,
     } as const;
+
+    const [selectedMonth, setSelectedMonth] = useState(filters?.month || '');
+    const [selectedYear, setSelectedYear] = useState(filters?.year || '');
+
+    const months = [
+        { value: '1', label: 'January' },
+        { value: '2', label: 'February' },
+        { value: '3', label: 'March' },
+        { value: '4', label: 'April' },
+        { value: '5', label: 'May' },
+        { value: '6', label: 'June' },
+        { value: '7', label: 'July' },
+        { value: '8', label: 'August' },
+        { value: '9', label: 'September' },
+        { value: '10', label: 'October' },
+        { value: '11', label: 'November' },
+        { value: '12', label: 'December' },
+    ];
+
+    const applyFilters = (month: string, year: string) => {
+        const params: Record<string, string> = {};
+        if (month) params.month = month;
+        if (year) params.year = year;
+        router.get('/billing', params, { preserveState: true, preserveScroll: true });
+    };
+
+    const handleMonthChange = (value: string) => {
+        setSelectedMonth(value);
+        applyFilters(value, selectedYear);
+    };
+
+    const handleYearChange = (value: string) => {
+        setSelectedYear(value);
+        applyFilters(selectedMonth, value);
+    };
+
+    const clearFilters = () => {
+        setSelectedMonth('');
+        setSelectedYear('');
+        router.get('/billing', {}, { preserveState: true, preserveScroll: true });
+    };
 
     const payableInvoices = useMemo(
         () =>
@@ -190,7 +235,7 @@ export default function ResidentBilling({
                     </div>
                 ) : (
                     <div className="flex-1 overflow-y-auto px-8 py-8">
-                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
                             <SummaryCard
                                 title="Current Balance"
                                 description="Displays outstanding dues"
@@ -212,6 +257,50 @@ export default function ResidentBilling({
                                 icon={Clock3}
                                 tone="amber"
                             />
+                        </div>
+
+                        {/* ─── FILTER BAR ─── */}
+                        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-neutral-100 bg-neutral-50/50 px-5 py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
+                            <div className="flex items-center gap-2 text-neutral-500">
+                                <Filter className="size-4" />
+                                <span className="text-[11px] font-black uppercase tracking-widest">View By</span>
+                            </div>
+                            <select
+                                value={selectedMonth}
+                                onChange={(e) => handleMonthChange(e.target.value)}
+                                className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-[12px] font-bold dark:border-neutral-700 dark:bg-neutral-900"
+                            >
+                                <option value="">All Months</option>
+                                {months.map((m) => (
+                                    <option key={m.value} value={m.value}>{m.label}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={selectedYear}
+                                onChange={(e) => handleYearChange(e.target.value)}
+                                className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-[12px] font-bold dark:border-neutral-700 dark:bg-neutral-900"
+                            >
+                                <option value="">All Years</option>
+                                {available_years.map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                            {(selectedMonth || selectedYear) && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={clearFilters}
+                                    className="h-9 rounded-lg px-3 text-[11px] font-black text-neutral-500 hover:text-red-600"
+                                >
+                                    Clear
+                                </Button>
+                            )}
+                            {(selectedMonth || selectedYear) && (
+                                <span className="ml-auto text-[11px] font-bold text-neutral-400">
+                                    Showing {invoices.length} invoice{invoices.length !== 1 ? 's' : ''}
+                                    {selectedMonth ? ` for ${months.find(m => m.value === selectedMonth)?.label}` : ''}
+                                    {selectedYear ? ` ${selectedYear}` : ''}
+                                </span>
+                            )}
                         </div>
 
                         <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-5">
