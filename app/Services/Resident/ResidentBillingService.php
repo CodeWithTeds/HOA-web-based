@@ -16,7 +16,7 @@ class ResidentBillingService
         protected ResidentRepositoryInterface $residentRepository
     ) {}
 
-    public function getBillingPageData(?string $email): array
+    public function getBillingPageData(?string $email, ?string $period = null, ?int $year = null): array
     {
         $resident = $email ? $this->residentRepository->findByEmail($email) : null;
 
@@ -24,14 +24,27 @@ class ResidentBillingService
             return $this->emptyBillingData();
         }
 
-        $invoices = $this->billingRepository->getResidentInvoices($resident->id);
-        $payments = $this->billingRepository->getResidentPayments($resident->id);
+        $invoices = $this->billingRepository->getResidentInvoices($resident->id, $period, $year);
+        $payments = $this->billingRepository->getResidentPayments($resident->id, $period, $year);
+        $allInvoices = $this->billingRepository->getResidentInvoices($resident->id);
+        $billingPeriods = $this->billingRepository->getAllBillingPeriods();
+
+        // Extract available years from all invoices for the year filter
+        $availableYears = $allInvoices
+            ->filter(fn ($invoice) => $invoice->due_date)
+            ->map(fn ($invoice) => $invoice->due_date->year)
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
 
         return [
             'resident' => $resident,
-            'summary' => $this->buildSummary($invoices, $payments),
+            'summary' => $this->buildSummary($allInvoices, $this->billingRepository->getResidentPayments($resident->id)),
             'invoices' => $invoices,
             'payments' => $payments,
+            'billing_periods' => $billingPeriods,
+            'available_years' => $availableYears,
         ];
     }
 
@@ -80,6 +93,8 @@ class ResidentBillingService
             ],
             'invoices' => new Collection(),
             'payments' => new Collection(),
+            'billing_periods' => new Collection(),
+            'available_years' => [],
         ];
     }
 

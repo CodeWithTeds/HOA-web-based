@@ -116,17 +116,21 @@ interface BillingRepositoryInterface extends BaseRepositoryInterface
      * Get all invoices owned by a resident.
      *
      * @param int $residentId
+     * @param string|null $period
+     * @param int|null $year
      * @return Collection
      */
-    public function getResidentInvoices(int $residentId): Collection;
+    public function getResidentInvoices(int $residentId, ?string $period = null, ?int $year = null): Collection;
 
     /**
      * Get all payments attached to a resident's invoices.
      *
      * @param int $residentId
+     * @param string|null $period
+     * @param int|null $year
      * @return Collection
      */
-    public function getResidentPayments(int $residentId): Collection;
+    public function getResidentPayments(int $residentId, ?string $period = null, ?int $year = null): Collection;
 
     /**
      * Find an invoice that belongs to a resident.

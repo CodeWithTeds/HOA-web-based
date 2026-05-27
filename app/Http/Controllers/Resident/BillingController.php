@@ -17,9 +17,16 @@ class BillingController extends Controller
 
     public function index(Request $request): Response
     {
-        $data = $this->billingService->getBillingPageData($request->user()?->email);
+        $data = $this->billingService->getBillingPageData(
+            $request->user()?->email,
+            $request->get('period'),
+            $request->get('year') ? (int) $request->get('year') : null,
+        );
 
-        return Inertia::render('Resident/billing/index', BillingPageResource::make($data)->resolve($request));
+        return Inertia::render('Resident/billing/index', [
+            ...BillingPageResource::make($data)->resolve($request),
+            'filters' => $request->only(['period', 'year']),
+        ]);
     }
 
     public function uploadProof(StorePaymentProofRequest $request): RedirectResponse

@@ -19,6 +19,11 @@ class BillingPageResource extends JsonResource
             'summary' => $this->resource['summary'],
             'invoices' => BillingInvoiceResource::collection($this->resource['invoices'])->resolve($request),
             'payments' => BillingPaymentResource::collection($this->resource['payments'])->resolve($request),
+            'billing_periods' => $this->resource['billing_periods']->map(fn ($period) => [
+                'id' => $period->id,
+                'name' => $period->name,
+            ]),
+            'available_years' => $this->resource['available_years'],
         ];
     }
 }

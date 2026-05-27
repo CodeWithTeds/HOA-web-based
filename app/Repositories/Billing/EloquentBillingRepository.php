@@ -170,26 +170,43 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     /**
      * @inheritDoc
      */
-    public function getResidentInvoices(int $residentId): Collection
+    public function getResidentInvoices(int $residentId, ?string $period = null, ?int $year = null): Collection
     {
-        return $this->model->newQuery()
+        $query = $this->model->newQuery()
             ->with(['billingPeriod', 'payments'])
-            ->where('resident_id', $residentId)
-            ->latest('due_date')
-            ->get();
+            ->where('resident_id', $residentId);
+
+        if ($period) {
+            $query->where('billing_period_id', $period);
+        }
+
+        if ($year) {
+            $query->whereYear('due_date', $year);
+        }
+
+        return $query->latest('due_date')->get();
     }
 
     /**
      * @inheritDoc
      */
-    public function getResidentPayments(int $residentId): Collection
+    public function getResidentPayments(int $residentId, ?string $period = null, ?int $year = null): Collection
     {
-        return Payment::query()
+        $query = Payment::query()
             ->with(['invoice.billingPeriod'])
-            ->whereHas('invoice', fn ($query) => $query->where('resident_id', $residentId))
-            ->latest('payment_date')
-            ->latest()
-            ->get();
+            ->whereHas('invoice', function ($q) use ($residentId, $period, $year) {
+                $q->where('resident_id', $residentId);
+
+                if ($period) {
+                    $q->where('billing_period_id', $period);
+                }
+
+                if ($year) {
+                    $q->whereYear('due_date', $year);
+                }
+            });
+
+        return $query->latest('payment_date')->latest()->get();
     }
 
     /**
