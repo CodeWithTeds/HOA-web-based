@@ -44,7 +44,6 @@ export default function ComplaintCreate({ residents, staff }: { residents: any[]
         description: '',
         resident_id: '',
         category: 'maintenance',
-        priority: 'low',
         status: 'pending',
         assigned_to: '',
         image: null as File | null,
@@ -186,15 +185,6 @@ export default function ComplaintCreate({ residents, staff }: { residents: any[]
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Priority</Label>
-                                        <select value={data.priority} onChange={e => setData('priority', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-rose-500/20">
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="urgent">Urgent</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Status</Label>
                                         <select value={data.status} onChange={e => setData('status', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-rose-500/20">
                                             <option value="pending">Pending</option>
@@ -203,7 +193,7 @@ export default function ComplaintCreate({ residents, staff }: { residents: any[]
                                             <option value="closed">Closed</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-1.5">
+                                    <div className="col-span-2 space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Assign To Staff</Label>
                                         <select value={data.assigned_to} onChange={e => setData('assigned_to', e.target.value)} className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 focus:ring-2 focus:ring-rose-500/20">
                                             <option value="">Unassigned</option>

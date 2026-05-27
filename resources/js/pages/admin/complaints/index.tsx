@@ -6,7 +6,6 @@ import {
     MessageSquare,
     Clock,
     CheckCircle2,
-    AlertCircle,
     ShieldAlert,
     Trash2,
     Eye,
@@ -63,19 +62,6 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                 return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500';
             default:
                 return 'bg-gray-100 text-gray-600';
-        }
-    };
-
-    const getPriorityStyle = (priority: string) => {
-        switch (priority.toLowerCase()) {
-            case 'urgent':
-                return 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400';
-            case 'high':
-                return 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
-            case 'medium':
-                return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-            default:
-                return 'bg-neutral-50 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
         }
     };
 
@@ -143,9 +129,6 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                                     Issue Details
                                 </th>
                                 <th className="px-6 py-4 text-left text-[11px] font-black uppercase text-neutral-400 tracking-widest">
-                                    Level
-                                </th>
-                                <th className="px-6 py-4 text-left text-[11px] font-black uppercase text-neutral-400 tracking-widest">
                                     Status
                                 </th>
                                 <th className="px-6 py-4 text-left text-[11px] font-black uppercase text-neutral-400 tracking-widest">
@@ -159,7 +142,7 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                         <tbody className="divide-y divide-neutral-50 dark:divide-neutral-800">
                             {complaints.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-8 py-24 text-center">
+                                    <td colSpan={5} className="px-8 py-24 text-center">
                                         <div className="flex flex-col items-center justify-center gap-4 grayscale opacity-30">
                                             <div className="size-20 rounded-full bg-neutral-100 flex items-center justify-center">
                                                 <MessageSquare className="size-10 text-neutral-400" />
@@ -199,12 +182,6 @@ export default function ComplaintIndex({ complaints, filters }: { complaints: an
                                                     </span>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getPriorityStyle(complaint.priority)}`}>
-                                                <AlertCircle className="size-3" />
-                                                {complaint.priority}
-                                            </span>
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusStyle(complaint.status)}`}>

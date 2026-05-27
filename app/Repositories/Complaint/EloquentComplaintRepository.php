@@ -33,10 +33,6 @@ class EloquentComplaintRepository extends BaseRepository implements ComplaintRep
             $query->where('category', $filters['category']);
         }
 
-        if (!empty($filters['priority'])) {
-            $query->where('priority', $filters['priority']);
-        }
-
         return $query->latest()->paginate($perPage)->withQueryString();
     }
 

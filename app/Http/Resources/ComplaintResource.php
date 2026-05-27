@@ -23,7 +23,6 @@ class ComplaintResource extends JsonResource
                 'name' => $this->assignedStaff?->name,
             ],
             'category' => $this->category,
-            'priority' => $this->priority,
             'status' => $this->status,
             'attachment_url' => $this->attachment_path ? asset('storage/' . $this->attachment_path) : null,
             'resolution_notes' => $this->resolution_notes,

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\ComplaintCategory;
-use App\Enums\ComplaintPriority;
 use App\Enums\ComplaintStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +18,6 @@ class Complaint extends Model
         'resident_id',
         'assigned_to',
         'category',
-        'priority',
         'status',
         'attachment_path',
         'resolution_notes',
@@ -30,7 +28,6 @@ class Complaint extends Model
     {
         return [
             'category' => ComplaintCategory::class,
-            'priority' => ComplaintPriority::class,
             'status' => ComplaintStatus::class,
             'resolved_at' => 'datetime',
         ];

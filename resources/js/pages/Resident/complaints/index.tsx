@@ -15,20 +15,12 @@ import Swal from 'sweetalert2';
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 const CATEGORIES = ['maintenance', 'noise', 'security', 'pets', 'others'];
-const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
 const statusConfig: Record<string, { label: string; className: string }> = {
     pending:     { label: 'Pending',     className: 'bg-amber-50 text-amber-700 border-amber-200' },
     in_progress: { label: 'In Progress', className: 'bg-blue-50 text-blue-700 border-blue-200' },
     resolved:    { label: 'Resolved',    className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
     closed:      { label: 'Closed',      className: 'bg-neutral-100 text-neutral-600 border-neutral-200' },
-};
-
-const priorityConfig: Record<string, { className: string }> = {
-    low:    { className: 'bg-neutral-100 text-neutral-600' },
-    medium: { className: 'bg-amber-50 text-amber-700' },
-    high:   { className: 'bg-orange-50 text-orange-700' },
-    urgent: { className: 'bg-rose-50 text-rose-700' },
 };
 
 export default function ResidentComplaints() {
@@ -40,7 +32,6 @@ export default function ResidentComplaints() {
         subject: '',
         description: '',
         category: 'maintenance',
-        priority: 'medium',
         image: null as File | null,
     });
 
@@ -140,7 +131,7 @@ export default function ResidentComplaints() {
                         <table className="w-full border-collapse min-w-[700px]">
                             <thead className="sticky top-0 z-10 bg-neutral-50/90 dark:bg-neutral-900/90 backdrop-blur-md">
                                 <tr>
-                                    {['#', 'Subject & Category', 'Priority', 'Status', 'Filed On'].map(h => (
+                                    {['#', 'Subject & Category', 'Status', 'Filed On'].map(h => (
                                         <th key={h} className="px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-100 dark:border-neutral-800">
                                             {h}
                                         </th>
@@ -150,7 +141,7 @@ export default function ResidentComplaints() {
                             <tbody className="divide-y divide-neutral-50 dark:divide-neutral-800/60">
                                 {!complaints?.data?.length ? (
                                     <tr>
-                                        <td colSpan={5} className="py-24 text-center">
+                                        <td colSpan={4} className="py-24 text-center">
                                             <div className="flex flex-col items-center gap-4 opacity-30">
                                                 <ShieldAlert className="size-16 text-neutral-400" strokeWidth={1} />
                                                 <p className="text-[14px] font-black text-neutral-400 uppercase tracking-widest">No complaints filed yet</p>
@@ -160,7 +151,6 @@ export default function ResidentComplaints() {
                                 ) : (
                                     complaints.data.map((c: any) => {
                                         const status = statusConfig[c.status] ?? { label: c.status, className: 'bg-neutral-100 text-neutral-600' };
-                                        const priority = priorityConfig[c.priority] ?? { className: 'bg-neutral-100 text-neutral-500' };
                                         return (
                                             <tr key={c.id} className="group hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors">
                                                 <td className="px-6 py-4 text-[13px] font-black text-neutral-400">#{c.id}</td>
@@ -168,11 +158,6 @@ export default function ResidentComplaints() {
                                                     <p className="text-[13px] font-bold text-[#0A2540] dark:text-neutral-200 line-clamp-1">{c.subject}</p>
                                                     <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded mt-1 inline-block">
                                                         {c.category}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={cn('text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full', priority.className)}>
-                                                        {c.priority}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -254,38 +239,21 @@ export default function ResidentComplaints() {
                                 {errors.subject && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.subject}</p>}
                             </div>
 
-                            {/* Category & Priority */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
-                                    <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
-                                        Category <span className="text-rose-500">*</span>
-                                    </Label>
-                                    <select
-                                        value={data.category}
-                                        onChange={e => setData('category', e.target.value)}
-                                        className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
-                                    >
-                                        {CATEGORIES.map(c => (
-                                            <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
-                                        ))}
-                                    </select>
-                                    {errors.category && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.category}</p>}
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
-                                        Priority <span className="text-rose-500">*</span>
-                                    </Label>
-                                    <select
-                                        value={data.priority}
-                                        onChange={e => setData('priority', e.target.value)}
-                                        className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
-                                    >
-                                        {PRIORITIES.map(p => (
-                                            <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
-                                        ))}
-                                    </select>
-                                    {errors.priority && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.priority}</p>}
-                                </div>
+                            {/* Category */}
+                            <div className="space-y-1.5">
+                                <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">
+                                    Category <span className="text-rose-500">*</span>
+                                </Label>
+                                <select
+                                    value={data.category}
+                                    onChange={e => setData('category', e.target.value)}
+                                    className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 text-[13px] font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
+                                >
+                                    {CATEGORIES.map(c => (
+                                        <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                                    ))}
+                                </select>
+                                {errors.category && <p className="text-[11px] font-bold text-rose-500">⚠ {errors.category}</p>}
                             </div>
 
                             {/* Description */}

@@ -30,7 +30,7 @@ class ComplaintController extends Controller
 
         return Inertia::render('admin/complaints/index', [
             'complaints' => ComplaintResource::collection($complaints),
-            'filters' => $request->only(['search', 'status', 'category', 'priority']),
+            'filters' => $request->only(['search', 'status', 'category']),
         ]);
     }
 

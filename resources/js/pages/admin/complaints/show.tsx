@@ -190,14 +190,6 @@ export default function ComplaintShow({ complaint }: { complaint: any }) {
                                     <p className="text-[11px] font-black text-neutral-400 uppercase tracking-widest">Ticket Attributes</p>
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[12px] font-bold text-neutral-500">Priority</span>
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                                                res.priority === 'urgent' ? 'bg-rose-50 text-rose-600' : 'bg-neutral-100 text-neutral-600'
-                                            }`}>
-                                                {res.priority}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
                                             <span className="text-[12px] font-bold text-neutral-500">Submission Date</span>
                                             <span className="text-[12px] font-black text-[#0A2540] dark:text-neutral-200">
                                                 {new Date(res.created_at).toLocaleDateString()}
