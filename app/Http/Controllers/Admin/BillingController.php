@@ -31,7 +31,7 @@ class BillingController extends Controller
             'invoices' => $this->billingService->getPaginatedInvoices($request->all()),
             'summaries' => $this->billingService->getFinancialSummaries($request->get('billing_period_id')),
             'periods' => $this->billingService->getAllBillingPeriods(),
-            'filters' => $request->only(['search', 'billing_period_id', 'status']),
+            'filters' => $request->only(['search', 'billing_period_id', 'status', 'month', 'year']),
         ]);
     }
 

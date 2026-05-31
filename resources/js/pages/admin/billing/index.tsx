@@ -345,6 +345,41 @@ export default function BillingIndex({
 
                             <select
                                 className="h-9 rounded-lg border border-neutral-200 px-3 text-[11px] font-black text-neutral-500 uppercase focus:ring-0 focus:outline-none"
+                                value={filters.month || ''}
+                                onChange={(e) =>
+                                    handleFilterChange('month', e.target.value)
+                                }
+                            >
+                                <option value="">Month: All</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+
+                            <select
+                                className="h-9 rounded-lg border border-neutral-200 px-3 text-[11px] font-black text-neutral-500 uppercase focus:ring-0 focus:outline-none"
+                                value={filters.year || ''}
+                                onChange={(e) =>
+                                    handleFilterChange('year', e.target.value)
+                                }
+                            >
+                                <option value="">Year: All</option>
+                                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                className="h-9 rounded-lg border border-neutral-200 px-3 text-[11px] font-black text-neutral-500 uppercase focus:ring-0 focus:outline-none"
                                 value={filters.status || ''}
                                 onChange={(e) =>
                                     handleFilterChange('status', e.target.value)

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -78,6 +78,8 @@ export function NavMain({
                     const active = isCurrentUrl(item.href) || isAnyChildActive;
 
                     if (!hasSubItems) {
+                        const isLogout = item.href === '/logout';
+
                         return (
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton
@@ -89,16 +91,32 @@ export function NavMain({
                                         ${active ? activeClass : inactiveClass}
                                     `}
                                 >
-                                    <Link href={item.href} prefetch className="flex items-center gap-3">
-                                        {item.icon && (
-                                            <item.icon
-                                                className={`size-[18px] ${active ? 'text-white' : iconInactiveClass}`}
-                                            />
-                                        )}
-                                        <span className={`font-semibold tracking-tight text-[13px]`}>
-                                            {item.title}
-                                        </span>
-                                    </Link>
+                                    {isLogout ? (
+                                        <button
+                                            onClick={() => router.post('/logout')}
+                                            className="flex items-center gap-3 w-full"
+                                        >
+                                            {item.icon && (
+                                                <item.icon
+                                                    className={`size-[18px] ${iconInactiveClass}`}
+                                                />
+                                            )}
+                                            <span className="font-semibold tracking-tight text-[13px]">
+                                                {item.title}
+                                            </span>
+                                        </button>
+                                    ) : (
+                                        <Link href={item.href} prefetch className="flex items-center gap-3">
+                                            {item.icon && (
+                                                <item.icon
+                                                    className={`size-[18px] ${active ? 'text-white' : iconInactiveClass}`}
+                                                />
+                                            )}
+                                            <span className={`font-semibold tracking-tight text-[13px]`}>
+                                                {item.title}
+                                            </span>
+                                        </Link>
+                                    )}
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         );

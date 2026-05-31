@@ -42,6 +42,14 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
             $query->where('billing_period_id', $filters['billing_period_id']);
         }
 
+        if (!empty($filters['month'])) {
+            $query->whereMonth('due_date', (int) $filters['month']);
+        }
+
+        if (!empty($filters['year'])) {
+            $query->whereYear('due_date', (int) $filters['year']);
+        }
+
         if (!empty($filters['status'])) {
             if ($filters['status'] === PaymentStatus::PENDING->value) {
                 $query->whereHas('payments', fn ($paymentQuery) => $paymentQuery->where('status', PaymentStatus::PENDING->value));
