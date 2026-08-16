@@ -328,6 +328,7 @@ export default function ResidentEdit({ resident }: { resident: Resident }) {
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Registry Status <span className="text-red-500">*</span></Label>
                                         <select value={data.status} onChange={e => setData('status', e.target.value)} className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                                             <option value="Active">Active</option>
+                                            <option value="Pending">Pending</option>
                                             <option value="Inactive">Inactive</option>
                                             <option value="Blacklisted">Blacklisted</option>
                                         </select>

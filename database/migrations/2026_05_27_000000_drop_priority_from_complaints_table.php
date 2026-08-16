@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasColumn('complaints', 'priority')) {
+            return;
+        }
+
         Schema::table('complaints', function (Blueprint $table) {
             $table->dropColumn('priority');
         });

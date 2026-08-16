@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/residents/{resident}', [ResidentController::class, 'show'])->name('admin.residents.show');
         Route::get('admin/residents/{resident}/edit', [ResidentController::class, 'edit'])->name('admin.residents.edit');
         Route::put('admin/residents/{resident}', [ResidentController::class, 'update'])->name('admin.residents.update');
+        Route::patch('admin/residents/{resident}/approve', [ResidentController::class, 'approve'])->name('admin.residents.approve');
 
         // Billing & Collection
         Route::get('admin/billing/export', [BillingController::class, 'exportCsv'])->name('admin.billing.export');

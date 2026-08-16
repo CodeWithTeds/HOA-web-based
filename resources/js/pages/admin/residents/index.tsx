@@ -12,6 +12,7 @@ import {
     ArrowUpDown,
     Plus,
     FileSpreadsheet,
+    CheckCircle2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -239,9 +240,11 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                                                 <div className={`px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                                                     resident.status === 'Active'
                                                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                        : resident.status === 'Inactive'
-                                                            ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500'
-                                                            : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                        : resident.status === 'Pending'
+                                                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                                            : resident.status === 'Inactive'
+                                                                ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500'
+                                                                : 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                 }`}>
                                                     {resident.status}
                                                 </div>
@@ -265,6 +268,11 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                                                             <Pencil className="size-3.5 text-neutral-400" /> Edit
                                                         </DropdownMenuItem>
                                                     </Link>
+                                                    {resident.status === 'Pending' && (
+                                                        <DropdownMenuItem onClick={() => router.patch(`/admin/residents/${resident.id}/approve`)} className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-emerald-600">
+                                                            <CheckCircle2 className="size-3.5" /> Approve
+                                                        </DropdownMenuItem>
+                                                    )}
                                                     {canDelete && (
                                                         <>
                                                             <DropdownMenuSeparator />

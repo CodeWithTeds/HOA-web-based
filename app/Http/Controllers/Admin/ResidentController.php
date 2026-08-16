@@ -111,6 +111,20 @@ class ResidentController extends Controller
     }
 
     /**
+     * Approve a resident whose registration is pending verification.
+     *
+     * @param mixed $resident
+     * @return RedirectResponse
+     */
+    public function approve(mixed $resident): RedirectResponse
+    {
+        $this->residentService->approveResident($resident);
+
+        return redirect()->back()
+            ->with('success', 'Resident verified and account approved.');
+    }
+
+    /**
      * Remove the specified resident from storage.
      *
      * @param mixed $resident

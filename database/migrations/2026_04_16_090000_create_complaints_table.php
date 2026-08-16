@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\ComplaintCategory;
-use App\Enums\ComplaintPriority;
 use App\Enums\ComplaintStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -21,7 +20,6 @@ return new class extends Migration
             $table->foreignId('resident_id')->constrained('residents')->onDelete('cascade');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
             $table->string('category')->default(ComplaintCategory::MAINTENANCE->value);
-            $table->string('priority')->default(ComplaintPriority::LOW->value);
             $table->string('status')->default(ComplaintStatus::PENDING->value);
             $table->string('attachment_path')->nullable();
             $table->text('resolution_notes')->nullable();

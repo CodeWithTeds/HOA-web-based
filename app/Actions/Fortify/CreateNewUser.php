@@ -81,7 +81,9 @@ class CreateNewUser implements CreatesNewUsers
                 'move_in_date' => $input['move_in_date'] ?? null,
                 'emergency_contact_name' => $input['emergency_contact_name'] ?? null,
                 'emergency_contact_number' => $input['emergency_contact_number'] ?? null,
-                'status' => ResidentStatus::ACTIVE->value,
+                'status' => $input['resident_type'] === ResidentType::OWNER->value
+                    ? ResidentStatus::PENDING->value
+                    : ResidentStatus::ACTIVE->value,
             ]);
 
             return User::create([

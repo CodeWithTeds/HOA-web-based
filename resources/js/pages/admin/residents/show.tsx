@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     User,
@@ -11,6 +11,7 @@ import {
     Mail,
     MapPin,
     Heart,
+    CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,7 @@ export default function ResidentShow({ resident }: { resident: Resident }) {
     );
 
     const statusColors: any = {
+        'Pending': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
         'Active': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
         'Inactive': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
         'Blacklisted': 'bg-red-500/10 text-red-600 border-red-500/20',
@@ -105,6 +107,11 @@ export default function ResidentShow({ resident }: { resident: Resident }) {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
+                            {resident.status === 'Pending' && (
+                                <Button onClick={() => router.patch(`/admin/residents/${resident.id}/approve`)} className="h-9 gap-2 rounded-lg text-[12px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white">
+                                    <CheckCircle2 className="size-3.5" /> Approve & Verify
+                                </Button>
+                            )}
                             <Link href={`/admin/residents/${resident.id}/edit`}>
                                 <Button variant="outline" className="h-9 gap-2 rounded-lg text-[12px] font-bold text-blue-600 border-blue-200 hover:bg-blue-50">
                                     Edit Profile

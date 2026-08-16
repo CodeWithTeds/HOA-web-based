@@ -2,6 +2,7 @@
 
 namespace App\Services\Resident;
 
+use App\Enums\ResidentStatus;
 use App\Repositories\Resident\ResidentRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -60,6 +61,20 @@ class ResidentService
     {
         $residentModel = $this->findResident($resident);
         return $this->residentRepository->update($residentModel, $data);
+    }
+
+    /**
+     * Approve a resident whose registration is pending verification.
+     *
+     * @param mixed $resident
+     * @return bool
+     */
+    public function approveResident(mixed $resident): bool
+    {
+        $residentModel = $this->findResident($resident);
+        return $this->residentRepository->update($residentModel, [
+            'status' => ResidentStatus::ACTIVE->value,
+        ]);
     }
 
     /**

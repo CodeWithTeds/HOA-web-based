@@ -720,6 +720,15 @@ export default function Register() {
                                     <InputError
                                         message={errorFor('resident_type')}
                                     />
+                                    {data.resident_type === 'Owner' && (
+                                        <p className="flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] font-bold leading-snug text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                            <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+                                            Owner registrations require
+                                            verification by the HOA
+                                            administrator before you can sign
+                                            in.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </section>
