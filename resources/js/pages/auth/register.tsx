@@ -64,7 +64,6 @@ type RegisterField =
     | 'street'
     | 'unit'
     | 'resident_type'
-    | 'is_head_of_household'
     | 'move_in_date'
     | 'emergency_contact_name'
     | 'emergency_contact_number';
@@ -138,7 +137,6 @@ export default function Register() {
         street: '',
         unit: '',
         resident_type: 'Owner',
-        is_head_of_household: true,
         move_in_date: new Date().toISOString().split('T')[0],
         emergency_contact_name: '',
         emergency_contact_number: '',
@@ -233,11 +231,6 @@ export default function Register() {
                 'emergency_contact_number',
                 'Emergency contact number',
             );
-
-            if (data.is_head_of_household && data.resident_type !== 'Owner') {
-                nextErrors.is_head_of_household =
-                    'Head of household can only be selected for Owners.';
-            }
         }
 
         setClientErrors(nextErrors);
@@ -710,16 +703,9 @@ export default function Register() {
                                             const residentType =
                                                 event.target.value;
                                             clearClientError('resident_type');
-                                            clearClientError(
-                                                'is_head_of_household',
-                                            );
                                             setData((current) => ({
                                                 ...current,
                                                 resident_type: residentType,
-                                                is_head_of_household:
-                                                    residentType === 'Owner'
-                                                        ? current.is_head_of_household
-                                                        : false,
                                             }));
                                         }}
                                         className={selectClass}
@@ -733,30 +719,6 @@ export default function Register() {
                                     </select>
                                     <InputError
                                         message={errorFor('resident_type')}
-                                    />
-                                </div>
-                                <div className="flex items-end pb-2">
-                                    <label className="flex items-center gap-2 text-[12px] font-black text-muted-foreground uppercase">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.is_head_of_household}
-                                            disabled={
-                                                data.resident_type !== 'Owner'
-                                            }
-                                            onChange={(event) =>
-                                                updateField(
-                                                    'is_head_of_household',
-                                                    event.target.checked,
-                                                )
-                                            }
-                                            className="size-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 disabled:opacity-40"
-                                        />
-                                        H.O.H
-                                    </label>
-                                    <InputError
-                                        message={errorFor(
-                                            'is_head_of_household',
-                                        )}
                                     />
                                 </div>
                             </div>

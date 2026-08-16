@@ -54,14 +54,6 @@ class CreateNewUser implements CreatesNewUsers
             'street' => ['nullable', 'string', 'max:255'],
             'unit' => ['nullable', 'string', 'max:50'],
             'resident_type' => ['required', new Enum(ResidentType::class)],
-            'is_head_of_household' => [
-                'boolean',
-                function ($attribute, $value, $fail) use ($input) {
-                    if ($value && ($input['resident_type'] ?? null) !== ResidentType::OWNER->value) {
-                        $fail('The Head of Household status can only be assigned to Owners.');
-                    }
-                },
-            ],
             'move_in_date' => ['nullable', 'date'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
@@ -86,7 +78,6 @@ class CreateNewUser implements CreatesNewUsers
                 'street' => $input['street'] ?? null,
                 'unit' => $input['unit'] ?? null,
                 'resident_type' => $input['resident_type'],
-                'is_head_of_household' => $input['is_head_of_household'] ?? false,
                 'move_in_date' => $input['move_in_date'] ?? null,
                 'emergency_contact_name' => $input['emergency_contact_name'] ?? null,
                 'emergency_contact_number' => $input['emergency_contact_number'] ?? null,

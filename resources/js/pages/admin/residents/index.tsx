@@ -199,9 +199,6 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                                                     <p className="text-[12px] font-bold text-[#0A2540] dark:text-neutral-200 truncate">
                                                         {resident.first_name} {resident.last_name}
                                                     </p>
-                                                    {resident.is_head_of_household && (
-                                                        <span className="text-[9px] font-black text-blue-600 uppercase tracking-tighter">H.O.H</span>
-                                                    )}
                                                 </div>
                                             </div>
                                         </td>

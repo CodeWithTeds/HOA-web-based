@@ -63,7 +63,6 @@ export default function ResidentCreate() {
         street: '',
         unit: '',
         resident_type: 'Owner',
-        is_head_of_household: false,
         move_in_date: new Date().toISOString().split('T')[0],
 
         // Emergency Contact
@@ -258,14 +257,7 @@ export default function ResidentCreate() {
                                         <Label className="text-[11px) font-black uppercase text-neutral-400">Resident Type <span className="text-red-500">*</span></Label>
                                         <select 
                                             value={data.resident_type} 
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                setData(d => ({
-                                                    ...d,
-                                                    resident_type: val,
-                                                    is_head_of_household: val === 'Owner' ? d.is_head_of_household : false
-                                                }));
-                                            }} 
+                                            onChange={e => setData('resident_type', e.target.value)}
                                             className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                         >
                                             <option value="Owner">Owner</option>
@@ -273,24 +265,6 @@ export default function ResidentCreate() {
                                             <option value="Family Member">Family Member</option>
                                             <option value="Helper">Helper</option>
                                         </select>
-                                    </div>
-                                    <div className="col-span-1 space-y-1.5 flex flex-col justify-end pb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <input 
-                                                type="checkbox" 
-                                                id="hoh" 
-                                                checked={data.is_head_of_household} 
-                                                disabled={data.resident_type !== 'Owner'}
-                                                onChange={e => setData('is_head_of_household', e.target.checked)}
-                                                className="size-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                                            />
-                                            <Label 
-                                                htmlFor="hoh" 
-                                                className={`text-[11px] font-black uppercase cursor-pointer transition-opacity ${data.resident_type !== 'Owner' ? 'text-neutral-300 opacity-50' : 'text-neutral-500'}`}
-                                            >
-                                                H.O.H
-                                            </Label>
-                                        </div>
                                     </div>
                                 </div>
                             </div>

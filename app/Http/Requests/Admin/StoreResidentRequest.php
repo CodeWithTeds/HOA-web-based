@@ -49,14 +49,6 @@ class StoreResidentRequest extends FormRequest
             'street' => ['nullable', 'string', 'max:255'],
             'unit' => ['nullable', 'string', 'max:50'],
             'resident_type' => ['required', new Enum(ResidentType::class)],
-            'is_head_of_household' => [
-                'boolean',
-                function ($attribute, $value, $fail) {
-                    if ($value && $this->input('resident_type') !== ResidentType::Owner->value) {
-                        $fail('The Head of Household status can only be assigned to Owners.');
-                    }
-                },
-            ],
             'move_in_date' => ['nullable', 'date'],
 
             // Emergency Contact

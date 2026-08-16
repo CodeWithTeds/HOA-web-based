@@ -21,7 +21,6 @@ test('new users can register', function () {
         'password_confirmation' => 'password',
         'nationality' => 'Filipino',
         'resident_type' => 'Owner',
-        'is_head_of_household' => true,
         'move_in_date' => now()->toDateString(),
     ]);
 

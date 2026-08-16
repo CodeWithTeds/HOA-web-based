@@ -42,7 +42,6 @@ class ResidentFactory extends Factory
             'street' => $this->faker->streetName(),
             'unit' => $this->faker->optional(0.3)->numerify('Unit ###'),
             'resident_type' => $this->faker->randomElement(ResidentType::cases()),
-            'is_head_of_household' => $this->faker->boolean(20),
             'move_in_date' => $this->faker->date('Y-m-d', '-5 years'),
             'emergency_contact_name' => $this->faker->name(),
             'emergency_contact_number' => $this->faker->numerify('09#########'),

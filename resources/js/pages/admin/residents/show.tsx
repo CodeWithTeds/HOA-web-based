@@ -37,7 +37,6 @@ interface Resident {
     street?: string;
     unit?: string;
     resident_type: string;
-    is_head_of_household: boolean;
     move_in_date?: string;
     emergency_contact_name?: string;
     emergency_contact_number?: string;
@@ -179,15 +178,6 @@ export default function ResidentShow({ resident }: { resident: Resident }) {
                                     <DataField label="Unit" value={resident.unit} />
                                     <div className="col-span-2">
                                         <DataField label="Resident Type" value={resident.resident_type} />
-                                    </div>
-                                    <div className="col-span-1 pt-2">
-                                        <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 items-center justify-center text-center">
-                                            <span className="text-[9px] font-black uppercase text-blue-400">H.O.H</span>
-                                            {resident.is_head_of_household ? 
-                                                <Badge className="bg-blue-600 text-[9px]">Head of Household</Badge> : 
-                                                <span className="text-[11px] font-bold text-neutral-400">Standard Member</span>
-                                            }
-                                        </div>
                                     </div>
                                 </div>
                             </div>
