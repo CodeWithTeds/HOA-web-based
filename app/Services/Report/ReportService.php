@@ -2,6 +2,7 @@
 
 namespace App\Services\Report;
 
+use App\Models\Resident;
 use App\Repositories\Report\ReportRepositoryInterface;
 use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,7 +19,7 @@ class ReportService
     ) {}
 
     /**
-     * Get the full financial dashboard data.
+     * Get the full financial dashboard data (admin/staff only).
      *
      * @return array
      */
@@ -29,6 +30,49 @@ class ReportService
             'trends' => $this->formatTrendsForChart($this->reportRepository->getRevenueTrends()),
             'distribution' => $this->formatDistributionForChart($this->reportRepository->getCollectionDistribution()),
             'period_summaries' => $this->reportRepository->getBillingPeriodSummaries(),
+        ];
+    }
+
+    /**
+     * Get limited transparency data for residents (no sensitive financial amounts).
+     *
+     * @return array
+     */
+    public function getResidentTransparencyData(): array
+    {
+        $activeResidents = Resident::where('status', 'Active')->count();
+        $distribution = $this->reportRepository->getCollectionDistribution();
+        $periods = $this->reportRepository->getBillingPeriodSummaries();
+
+        $totalInvoices = $distribution->sum('count');
+
+        $statusBreakdown = $distribution->map(fn($item) => [
+            'status' => $item->status->value ?? $item->status,
+            'count' => (int) $item->count,
+            'percentage' => $totalInvoices > 0
+                ? round(($item->count / $totalInvoices) * 100, 2)
+                : 0,
+        ])->toArray();
+
+        $overallCollectionRate = $periods->count() > 0
+            ? round($periods->avg('collection_percentage'), 2)
+            : 0;
+
+        $periodSummaries = $periods->map(fn($period) => [
+            'id' => $period['id'],
+            'name' => $period['name'],
+            'invoices_count' => $period['invoices_count'],
+            'collection_percentage' => $period['collection_percentage'],
+        ])->toArray();
+
+        return [
+            'community_stats' => [
+                'active_residents' => $activeResidents,
+                'total_billing_periods' => $periods->count(),
+                'overall_collection_rate' => $overallCollectionRate,
+            ],
+            'status_breakdown' => $statusBreakdown,
+            'period_summaries' => $periodSummaries,
         ];
     }
 

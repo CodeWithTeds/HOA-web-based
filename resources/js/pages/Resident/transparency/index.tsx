@@ -1,17 +1,15 @@
 import { Head } from '@inertiajs/react';
 import {
     Activity,
-    AlertCircle,
     BarChart3,
     CheckCircle2,
     CircleDollarSign,
+    Home,
     PieChart as PieChartIcon,
     TrendingUp,
-    Wallet,
+    Users,
 } from 'lucide-react';
 import {
-    Area,
-    AreaChart,
     Bar,
     BarChart,
     CartesianGrid,
@@ -28,28 +26,29 @@ const fontStack =
     '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
 type TransparencyData = {
-    stats: {
-        total_expected: number;
-        total_collected: number;
-        total_outstanding: number;
-        collection_rate: number;
+    community_stats: {
+        active_residents: number;
+        total_billing_periods: number;
+        overall_collection_rate: number;
     };
-    trends: Array<{ name: string; amount: number }>;
-    distribution: Array<{
-        name: string;
-        value: number;
-        amount: number;
-        fill: string;
+    status_breakdown: Array<{
+        status: string;
+        count: number;
+        percentage: number;
     }>;
     period_summaries: Array<{
         id: number;
         name: string;
         invoices_count: number;
-        total_billed: number;
-        total_collected: number;
-        balance: number;
         collection_percentage: number;
     }>;
+};
+
+const STATUS_COLORS: Record<string, string> = {
+    Paid: '#10b981',
+    Unpaid: '#f59e0b',
+    Overdue: '#ef4444',
+    Partial: '#3b82f6',
 };
 
 export default function ResidentTransparency({
@@ -57,40 +56,23 @@ export default function ResidentTransparency({
 }: {
     data: TransparencyData;
 }) {
-    const formatCurrency = (amount: number) =>
-        new Intl.NumberFormat('en-PH', {
-            style: 'currency',
-            currency: 'PHP',
-            maximumFractionDigits: 0,
-        }).format(amount || 0);
+    const collectionPie = data.status_breakdown
+        .filter((item) => item.count > 0)
+        .map((item) => ({
+            name: item.status,
+            value: item.count,
+            fill: STATUS_COLORS[item.status] ?? '#94a3b8',
+        }));
 
-    const collectionPie = [
-        {
-            name: 'Collected',
-            value: data.stats.total_collected,
-            fill: '#10b981',
-        },
-        {
-            name: 'Outstanding',
-            value: data.stats.total_outstanding,
-            fill: '#f59e0b',
-        },
-    ].filter((item) => item.value > 0);
+    const visiblePie =
+        collectionPie.length > 0
+            ? collectionPie
+            : [{ name: 'No data yet', value: 1, fill: '#e5e7eb' }];
 
-    const visibleDistribution =
-        data.distribution.length > 0
-            ? data.distribution
-            : [
-                  {
-                      name: 'No invoices yet',
-                      value: 1,
-                      amount: 0,
-                      fill: '#e5e7eb',
-                  },
-              ];
-
-    const visibleTrends =
-        data.trends.length > 0 ? data.trends : [{ name: 'No data', amount: 0 }];
+    const visiblePeriods =
+        data.period_summaries.length > 0
+            ? data.period_summaries
+            : [];
 
     return (
         <>
@@ -114,7 +96,7 @@ export default function ResidentTransparency({
                                     Community Transparency
                                 </h1>
                                 <p className="mt-1.5 text-[12px] font-bold tracking-wide text-neutral-400 uppercase">
-                                    Displays summarized HOA financial data
+                                    General community participation overview
                                 </p>
                             </div>
                         </div>
@@ -125,123 +107,36 @@ export default function ResidentTransparency({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-8 py-8">
-                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                         <SummaryCard
-                            title="Projected Revenue"
-                            description="Total billed to the community"
-                            value={formatCurrency(data.stats.total_expected)}
-                            icon={CircleDollarSign}
+                            title="Active Residents"
+                            description="Registered household accounts"
+                            value={String(data.community_stats.active_residents)}
+                            icon={Users}
                             tone="blue"
                         />
                         <SummaryCard
-                            title="Actual Collections"
-                            description="Verified HOA payments"
-                            value={formatCurrency(data.stats.total_collected)}
-                            icon={CheckCircle2}
+                            title="Billing Periods"
+                            description="Total billing cycles to date"
+                            value={String(data.community_stats.total_billing_periods)}
+                            icon={Activity}
                             tone="emerald"
                         />
                         <SummaryCard
-                            title="Outstanding Balance"
-                            description="Remaining unpaid dues"
-                            value={formatCurrency(data.stats.total_outstanding)}
-                            icon={AlertCircle}
-                            tone="amber"
-                        />
-                        <SummaryCard
-                            title="Collection Rate"
-                            description="Collected against billed amount"
-                            value={`${data.stats.collection_rate}%`}
-                            icon={Wallet}
+                            title="Avg. Collection Rate"
+                            description="Community payment compliance"
+                            value={`${data.community_stats.overall_collection_rate}%`}
+                            icon={CircleDollarSign}
                             tone="indigo"
                         />
                     </div>
 
-                    <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-5">
-                        <section className="xl:col-span-3">
-                            <SectionTitle
-                                icon={TrendingUp}
-                                title="Monthly Collections"
-                                description="Summarized payment movement across recent months."
-                            />
-                            <div className="h-[360px] rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={visibleTrends}>
-                                        <defs>
-                                            <linearGradient
-                                                id="collectionGradient"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop
-                                                    offset="5%"
-                                                    stopColor="#3b82f6"
-                                                    stopOpacity={0.28}
-                                                />
-                                                <stop
-                                                    offset="95%"
-                                                    stopColor="#3b82f6"
-                                                    stopOpacity={0}
-                                                />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            vertical={false}
-                                            stroke="#e5e7eb"
-                                        />
-                                        <XAxis
-                                            dataKey="name"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{
-                                                fill: '#94a3b8',
-                                                fontSize: 11,
-                                                fontWeight: 800,
-                                            }}
-                                        />
-                                        <YAxis
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{
-                                                fill: '#94a3b8',
-                                                fontSize: 11,
-                                                fontWeight: 800,
-                                            }}
-                                            tickFormatter={(value) =>
-                                                `PHP ${Number(value) / 1000}k`
-                                            }
-                                        />
-                                        <Tooltip
-                                            formatter={(value) =>
-                                                formatCurrency(Number(value))
-                                            }
-                                            contentStyle={{
-                                                borderRadius: 16,
-                                                border: '0',
-                                                boxShadow:
-                                                    '0 18px 45px rgba(15, 23, 42, 0.16)',
-                                                fontWeight: 800,
-                                            }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="amount"
-                                            stroke="#3b82f6"
-                                            strokeWidth={4}
-                                            fill="url(#collectionGradient)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </section>
-
-                        <section className="xl:col-span-2">
+                    <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-2">
+                        <section>
                             <SectionTitle
                                 icon={PieChartIcon}
-                                title="Collection Status"
-                                description="Community dues grouped by payment status."
+                                title="Payment Status Distribution"
+                                description="Invoice breakdown by payment status."
                             />
                             <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                                 <div className="h-64">
@@ -251,21 +146,14 @@ export default function ResidentTransparency({
                                     >
                                         <PieChart>
                                             <Pie
-                                                data={
-                                                    collectionPie.length > 0
-                                                        ? collectionPie
-                                                        : visibleDistribution
-                                                }
+                                                data={visiblePie}
                                                 dataKey="value"
                                                 innerRadius={68}
                                                 outerRadius={98}
                                                 paddingAngle={4}
                                                 stroke="none"
                                             >
-                                                {(collectionPie.length > 0
-                                                    ? collectionPie
-                                                    : visibleDistribution
-                                                ).map((entry) => (
+                                                {visiblePie.map((entry) => (
                                                     <Cell
                                                         key={entry.name}
                                                         fill={entry.fill}
@@ -276,9 +164,9 @@ export default function ResidentTransparency({
                                     </ResponsiveContainer>
                                 </div>
                                 <div className="space-y-3">
-                                    {visibleDistribution.map((item) => (
+                                    {data.status_breakdown.map((item) => (
                                         <div
-                                            key={item.name}
+                                            key={item.status}
                                             className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3 dark:bg-neutral-950"
                                         >
                                             <div className="flex items-center gap-3">
@@ -286,21 +174,21 @@ export default function ResidentTransparency({
                                                     className="size-2.5 rounded-full"
                                                     style={{
                                                         backgroundColor:
-                                                            item.fill,
+                                                            STATUS_COLORS[
+                                                                item.status
+                                                            ] ?? '#94a3b8',
                                                     }}
                                                 />
                                                 <span className="text-[12px] font-black tracking-wide uppercase">
-                                                    {item.name}
+                                                    {item.status}
                                                 </span>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-[12px] font-black">
-                                                    {formatCurrency(
-                                                        item.amount,
-                                                    )}
+                                                    {item.percentage}%
                                                 </p>
                                                 <p className="text-[10px] font-bold text-neutral-400">
-                                                    {item.value} invoices
+                                                    {item.count} invoices
                                                 </p>
                                             </div>
                                         </div>
@@ -308,92 +196,61 @@ export default function ResidentTransparency({
                                 </div>
                             </div>
                         </section>
-                    </div>
 
-                    <SectionTitle
-                        icon={Activity}
-                        title="Billing Cycle Summary"
-                        description="Collected, billed and remaining balance per billing period."
-                        className="mt-8"
-                    />
-                    <div className="overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                        {data.period_summaries.length === 0 ? (
-                            <EmptyState text="No billing cycle summaries available yet." />
-                        ) : (
-                            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                                {data.period_summaries.map((period) => (
-                                    <div
-                                        key={period.id}
-                                        className="grid grid-cols-1 gap-5 px-5 py-5 lg:grid-cols-[1.1fr_1fr_auto]"
-                                    >
-                                        <div>
-                                            <p className="text-[14px] font-black">
-                                                {period.name}
-                                            </p>
-                                            <p className="mt-1 text-[11px] font-bold tracking-wide text-neutral-400 uppercase">
-                                                {period.invoices_count} invoices
-                                                generated
-                                            </p>
-                                        </div>
-                                        <div className="h-20">
-                                            <ResponsiveContainer
-                                                width="100%"
-                                                height="100%"
-                                            >
-                                                <BarChart
-                                                    data={[
-                                                        {
-                                                            name: period.name,
-                                                            billed: period.total_billed,
-                                                            collected:
-                                                                period.total_collected,
-                                                        },
-                                                    ]}
-                                                >
-                                                    <Bar
-                                                        dataKey="billed"
-                                                        fill="#dbeafe"
-                                                        radius={[8, 8, 0, 0]}
-                                                    />
-                                                    <Bar
-                                                        dataKey="collected"
-                                                        fill="#3b82f6"
-                                                        radius={[8, 8, 0, 0]}
-                                                    />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 text-left md:grid-cols-4 lg:text-right">
-                                            <Metric
-                                                label="Billed"
-                                                value={formatCurrency(
-                                                    period.total_billed,
-                                                )}
-                                            />
-                                            <Metric
-                                                label="Collected"
-                                                value={formatCurrency(
-                                                    period.total_collected,
-                                                )}
-                                                className="text-emerald-600"
-                                            />
-                                            <Metric
-                                                label="Balance"
-                                                value={formatCurrency(
-                                                    period.balance,
-                                                )}
-                                                className="text-amber-600"
-                                            />
-                                            <Metric
-                                                label="Rate"
-                                                value={`${period.collection_percentage}%`}
-                                                className="text-blue-600"
-                                            />
-                                        </div>
+                        <section>
+                            <SectionTitle
+                                icon={TrendingUp}
+                                title="Billing Cycle Performance"
+                                description="Collection rate per billing period."
+                            />
+                            <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                                {visiblePeriods.length === 0 ? (
+                                    <div className="flex min-h-36 items-center justify-center px-6 py-10 text-center text-[13px] font-bold text-neutral-400">
+                                        No billing cycle data available yet.
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="space-y-4">
+                                        {visiblePeriods.map((period) => (
+                                            <div
+                                                key={period.id}
+                                                className="rounded-xl border border-neutral-100 p-4 dark:border-neutral-800"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-[14px] font-black">
+                                                            {period.name}
+                                                        </p>
+                                                        <p className="mt-1 text-[11px] font-bold text-neutral-400">
+                                                            {period.invoices_count}{' '}
+                                                            invoices
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[14px] font-black text-blue-600">
+                                                            {
+                                                                period.collection_percentage
+                                                            }
+                                                            %
+                                                        </p>
+                                                        <p className="text-[10px] font-bold text-neutral-400 uppercase">
+                                                            Collection rate
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                                                    <div
+                                                        className="h-full rounded-full bg-blue-600"
+                                                        style={{
+                                                            width: `${Math.min(period.collection_percentage, 100)}%`,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </section>
                     </div>
                 </div>
             </div>
@@ -412,12 +269,11 @@ function SummaryCard({
     description: string;
     value: string;
     icon: React.ElementType;
-    tone: 'blue' | 'emerald' | 'amber' | 'indigo';
+    tone: 'blue' | 'emerald' | 'indigo';
 }) {
     const tones = {
         blue: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40',
         emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40',
-        amber: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40',
         indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40',
     };
 
@@ -465,35 +321,6 @@ function SectionTitle({
                     {description}
                 </p>
             </div>
-        </div>
-    );
-}
-
-function Metric({
-    label,
-    value,
-    className = '',
-}: {
-    label: string;
-    value: string;
-    className?: string;
-}) {
-    return (
-        <div>
-            <p className="text-[10px] font-black tracking-wide text-neutral-400 uppercase">
-                {label}
-            </p>
-            <p className={`mt-1 text-[12px] font-black ${className}`}>
-                {value}
-            </p>
-        </div>
-    );
-}
-
-function EmptyState({ text }: { text: string }) {
-    return (
-        <div className="flex min-h-36 items-center justify-center px-6 py-10 text-center text-[13px] font-bold text-neutral-400">
-            {text}
         </div>
     );
 }

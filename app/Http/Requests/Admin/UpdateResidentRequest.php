@@ -6,6 +6,7 @@ use App\Enums\CivilStatus;
 use App\Enums\Gender;
 use App\Enums\ResidentStatus;
 use App\Enums\ResidentType;
+use App\Rules\UniqueResidentAddress;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -47,7 +48,7 @@ class UpdateResidentRequest extends FormRequest
             'email' => ['nullable', 'email', Rule::unique('residents', 'email')->ignore($residentId)],
 
             // Residency Details
-            'phase' => ['nullable', 'string', 'max:50'],
+            'phase' => ['nullable', 'string', 'max:50', new UniqueResidentAddress($residentId)],
             'block' => ['nullable', 'string', 'max:50'],
             'lot' => ['nullable', 'string', 'max:50'],
             'street' => ['nullable', 'string', 'max:255'],

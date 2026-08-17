@@ -16,7 +16,7 @@ class TransparencyController extends Controller
     public function index(): Response
     {
         return Inertia::render('Resident/transparency/index', [
-            'data' => $this->reportService->getFinancialDashboardData(),
+            'data' => $this->reportService->getResidentTransparencyData(),
         ]);
     }
 }

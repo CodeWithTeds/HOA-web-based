@@ -10,6 +10,7 @@ use App\Enums\ResidentType;
 use App\Enums\UserRole;
 use App\Models\Resident;
 use App\Models\User;
+use App\Rules\UniqueResidentAddress;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -57,6 +58,8 @@ class CreateNewUser implements CreatesNewUsers
             'move_in_date' => ['nullable', 'date'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+        ], [
+            'phase' => [new UniqueResidentAddress()],
         ])->validate();
 
         return DB::transaction(function () use ($input) {
