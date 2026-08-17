@@ -44,7 +44,7 @@ class UniqueResidentAddress implements ValidationRule
         }
 
         if ($query->exists()) {
-            $fail('This address is already registered to an active household. Only one account is allowed per household.');
+            $fail('An account already exists for this address. Only one account per household is allowed.');
         }
     }
 }

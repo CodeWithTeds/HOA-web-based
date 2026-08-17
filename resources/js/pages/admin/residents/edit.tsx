@@ -261,6 +261,11 @@ export default function ResidentEdit({ resident }: { resident: Resident }) {
                                     title="Address" 
                                     description="Physical location in the community."
                                 />
+                                {errors.phase && (
+                                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400">
+                                        {errors.phase}
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Phase</Label>

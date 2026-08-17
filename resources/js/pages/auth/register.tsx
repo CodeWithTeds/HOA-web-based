@@ -603,6 +603,11 @@ export default function Register() {
                     <div className="grid gap-8 lg:grid-cols-2">
                         <section>
                             <SectionHeader icon={Home} title="Address" />
+                            {errorFor('phase') && (
+                                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] font-bold text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400">
+                                    {errorFor('phase')}
+                                </div>
+                            )}
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="phase">
