@@ -2,6 +2,8 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     CheckCircle2,
+    ChevronDown,
+    ChevronRight,
     Clock3,
     FileUp,
     Filter,
@@ -30,6 +32,7 @@ type Invoice = {
     display_status?: string;
     has_pending_payment: boolean;
     due_date: string | null;
+    items: { description: string; amount: number; type: string }[];
 };
 
 type Payment = {
@@ -42,6 +45,8 @@ type Payment = {
     reference_number: string | null;
     status: string;
     proof_url: string | null;
+    invoice_total: number;
+    invoice_due_date: string | null;
 };
 
 export default function ResidentBilling({
@@ -76,6 +81,7 @@ export default function ResidentBilling({
 
     const [selectedMonth, setSelectedMonth] = useState(filters?.month || '');
     const [selectedYear, setSelectedYear] = useState(filters?.year || '');
+    const [expandedInvoices, setExpandedInvoices] = useState<Set<number>>(new Set());
 
     const months = [
         { value: '1', label: 'January' },
@@ -94,8 +100,15 @@ export default function ResidentBilling({
 
     const applyFilters = (month: string, year: string) => {
         const params: Record<string, string> = {};
-        if (month) params.month = month;
-        if (year) params.year = year;
+
+        if (month) {
+params.month = month;
+}
+
+        if (year) {
+params.year = year;
+}
+
         router.get('/billing', params, { preserveState: true, preserveScroll: true });
     };
 
@@ -113,6 +126,20 @@ export default function ResidentBilling({
         setSelectedMonth('');
         setSelectedYear('');
         router.get('/billing', {}, { preserveState: true, preserveScroll: true });
+    };
+
+    const toggleInvoice = (id: number) => {
+        setExpandedInvoices((prev) => {
+            const next = new Set(prev);
+
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+
+            return next;
+        });
     };
 
     const payableInvoices = useMemo(
@@ -318,56 +345,75 @@ export default function ResidentBilling({
                                             {payments.map((payment) => (
                                                 <div
                                                     key={payment.id}
-                                                    className="flex items-center justify-between gap-4 px-5 py-4"
+                                                    className="px-5 py-4"
                                                 >
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-[13px] font-black">
-                                                                {payment.invoice_number ||
-                                                                    'Payment'}
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-[13px] font-black">
+                                                                    {payment.invoice_number ||
+                                                                        'Payment'}
+                                                                </p>
+                                                                <StatusBadge
+                                                                    status={
+                                                                        payment.status
+                                                                    }
+                                                                />
+                                                            </div>
+                                                            <p className="mt-1 text-[11px] font-bold text-neutral-400">
+                                                                {payment.period ||
+                                                                    'Billing period'}
                                                             </p>
-                                                            <StatusBadge
-                                                                status={
-                                                                    payment.status
-                                                                }
-                                                            />
-                                                        </div>
-                                                        <p className="mt-1 text-[11px] font-bold text-neutral-400">
-                                                            {payment.period ||
-                                                                'Billing period'}{' '}
-                                                            •{' '}
-                                                            {
-                                                                payment.payment_method
-                                                            }
-                                                            {payment.reference_number
-                                                                ? ` • Ref ${payment.reference_number}`
-                                                                : ''}
-                                                        </p>
-                                                        {payment.proof_url && (
-                                                            <a
-                                                                href={
-                                                                    payment.proof_url
-                                                                }
-                                                                target="_blank"
-                                                                className="mt-1 inline-flex text-[11px] font-black text-blue-600 uppercase"
-                                                            >
-                                                                View proof
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="text-[14px] font-black text-emerald-600">
-                                                            {formatCurrency(
-                                                                payment.amount,
+                                                            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-neutral-500">
+                                                                <span className="inline-flex items-center gap-1">
+                                                                    <span className="text-neutral-400">Method:</span>
+                                                                    {payment.payment_method}
+                                                                </span>
+                                                                {payment.reference_number && (
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                        <span className="text-neutral-400">Ref:</span>
+                                                                        {payment.reference_number}
+                                                                    </span>
+                                                                )}
+                                                                {payment.invoice_due_date && (
+                                                                    <span className="inline-flex items-center gap-1">
+                                                                        <span className="text-neutral-400">Due:</span>
+                                                                        {new Date(payment.invoice_due_date).toLocaleDateString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {payment.proof_url && (
+                                                                <a
+                                                                    href={
+                                                                        payment.proof_url
+                                                                    }
+                                                                    target="_blank"
+                                                                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-black text-blue-600 uppercase hover:text-blue-700"
+                                                                >
+                                                                    <FileUp className="size-3" />
+                                                                    View proof
+                                                                </a>
                                                             )}
-                                                        </p>
-                                                        <p className="mt-1 text-[11px] font-bold text-neutral-400">
-                                                            {payment.payment_date
-                                                                ? new Date(
-                                                                      payment.payment_date,
-                                                                  ).toLocaleDateString()
-                                                                : 'No date'}
-                                                        </p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-[14px] font-black text-emerald-600">
+                                                                {formatCurrency(
+                                                                    payment.amount,
+                                                                )}
+                                                            </p>
+                                                            <p className="mt-1 text-[11px] font-bold text-neutral-400">
+                                                                {payment.payment_date
+                                                                    ? new Date(
+                                                                          payment.payment_date,
+                                                                      ).toLocaleDateString()
+                                                                    : 'No date'}
+                                                            </p>
+                                                            {payment.invoice_total > 0 && (
+                                                                <p className="mt-0.5 text-[10px] font-bold text-neutral-300">
+                                                                    of {formatCurrency(payment.invoice_total)}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -386,54 +432,94 @@ export default function ResidentBilling({
                                         <EmptyState text="No billing records found." />
                                     ) : (
                                         <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                                            {invoices.map((invoice) => (
-                                                <div
-                                                    key={invoice.id}
-                                                    className="grid grid-cols-1 gap-3 px-5 py-4 md:grid-cols-[1fr_auto]"
-                                                >
-                                                    <div>
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <p className="text-[13px] font-black text-blue-600">
-                                                                {
-                                                                    invoice.invoice_number
-                                                                }
-                                                            </p>
-                                                            <StatusBadge
-                                                                status={
-                                                                    invoice.display_status ||
-                                                                    invoice.status
-                                                                }
-                                                            />
+                                            {invoices.map((invoice) => {
+                                                const isExpanded = expandedInvoices.has(invoice.id);
+
+                                                return (
+                                                    <div key={invoice.id}>
+                                                        <div
+                                                            className="grid cursor-pointer grid-cols-1 gap-3 px-5 py-4 md:grid-cols-[1fr_auto] hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
+                                                            onClick={() => invoice.items.length > 0 && toggleInvoice(invoice.id)}
+                                                        >
+                                                            <div>
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    {invoice.items.length > 0 && (
+                                                                        <span className="text-neutral-400">
+                                                                            {isExpanded ? (
+                                                                                <ChevronDown className="size-4" />
+                                                                            ) : (
+                                                                                <ChevronRight className="size-4" />
+                                                                            )}
+                                                                        </span>
+                                                                    )}
+                                                                    <p className="text-[13px] font-black text-blue-600">
+                                                                        {invoice.invoice_number}
+                                                                    </p>
+                                                                    <StatusBadge
+                                                                        status={
+                                                                            invoice.display_status ||
+                                                                            invoice.status
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                                <p className="mt-1 text-[11px] font-bold text-neutral-400">
+                                                                    {invoice.period ||
+                                                                        'Billing period'}{' '}
+                                                                    • Due{' '}
+                                                                    {invoice.due_date
+                                                                        ? new Date(
+                                                                              invoice.due_date,
+                                                                          ).toLocaleDateString()
+                                                                        : 'N/A'}
+                                                                    {invoice.has_pending_payment
+                                                                        ? ' • Proof pending review'
+                                                                        : ''}
+                                                                </p>
+                                                            </div>
+                                                            <div className="text-left md:text-right">
+                                                                <p className="text-[13px] font-black">
+                                                                    {formatCurrency(
+                                                                        invoice.total_amount,
+                                                                    )}
+                                                                </p>
+                                                                <p className="mt-1 text-[11px] font-black text-red-500 uppercase">
+                                                                    Balance{' '}
+                                                                    {formatCurrency(
+                                                                        invoice.balance,
+                                                                    )}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                        <p className="mt-1 text-[11px] font-bold text-neutral-400">
-                                                            {invoice.period ||
-                                                                'Billing period'}{' '}
-                                                            • Due{' '}
-                                                            {invoice.due_date
-                                                                ? new Date(
-                                                                      invoice.due_date,
-                                                                  ).toLocaleDateString()
-                                                                : 'N/A'}
-                                                            {invoice.has_pending_payment
-                                                                ? ' • Proof pending review'
-                                                                : ''}
-                                                        </p>
+                                                        {isExpanded && invoice.items.length > 0 && (
+                                                            <div className="border-t border-neutral-100 bg-neutral-50/30 px-5 py-3 dark:border-neutral-800 dark:bg-neutral-900/40">
+                                                                <p className="mb-2 text-[10px] font-black tracking-widest text-neutral-400 uppercase">
+                                                                    Line Items
+                                                                </p>
+                                                                <div className="space-y-1.5">
+                                                                    {invoice.items.map((item, idx) => (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 dark:bg-neutral-800/60"
+                                                                        >
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="inline-flex size-5 items-center justify-center rounded-md bg-blue-50 text-[9px] font-black text-blue-600 dark:bg-blue-900/30">
+                                                                                    {item.type.charAt(0)}
+                                                                                </span>
+                                                                                <span className="text-[12px] font-bold text-neutral-600 dark:text-neutral-300">
+                                                                                    {item.description}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span className="text-[12px] font-black text-neutral-800 dark:text-neutral-200">
+                                                                                {formatCurrency(item.amount)}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div className="text-left md:text-right">
-                                                        <p className="text-[13px] font-black">
-                                                            {formatCurrency(
-                                                                invoice.total_amount,
-                                                            )}
-                                                        </p>
-                                                        <p className="mt-1 text-[11px] font-black text-red-500 uppercase">
-                                                            Balance{' '}
-                                                            {formatCurrency(
-                                                                invoice.balance,
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -738,9 +824,11 @@ function StatusBadge({ status }: { status: string }) {
             ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
             : status === 'Pending' || status === 'Unpaid'
               ? 'bg-amber-50 text-amber-700 border-amber-100'
-              : status === 'Rejected' || status === 'Overdue'
-                ? 'bg-red-50 text-red-700 border-red-100'
-                : 'bg-blue-50 text-blue-700 border-blue-100';
+              : status === 'Partially Paid'
+                ? 'bg-blue-50 text-blue-700 border-blue-100'
+                : status === 'Rejected' || status === 'Overdue'
+                  ? 'bg-red-50 text-red-700 border-red-100'
+                  : 'bg-neutral-50 text-neutral-700 border-neutral-100';
 
     return (
         <span

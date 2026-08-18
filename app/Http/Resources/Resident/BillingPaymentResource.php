@@ -22,6 +22,8 @@ class BillingPaymentResource extends JsonResource
             'reference_number' => $this->reference_number,
             'status' => $this->status?->value ?? $this->status,
             'proof_url' => $this->payment_proof_path ? asset('storage/' . $this->payment_proof_path) : null,
+            'invoice_total' => (float) ($this->invoice?->total_amount ?? 0),
+            'invoice_due_date' => $this->invoice?->due_date?->toDateString(),
         ];
     }
 }

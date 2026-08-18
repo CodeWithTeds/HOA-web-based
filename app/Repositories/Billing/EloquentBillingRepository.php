@@ -181,7 +181,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     public function getResidentInvoices(int $residentId, ?int $month = null, ?int $year = null): Collection
     {
         $query = $this->model->newQuery()
-            ->with(['billingPeriod', 'payments'])
+            ->with(['billingPeriod', 'payments', 'items'])
             ->where('resident_id', $residentId);
 
         if ($month) {

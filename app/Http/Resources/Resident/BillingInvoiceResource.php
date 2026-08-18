@@ -27,6 +27,13 @@ class BillingInvoiceResource extends JsonResource
             'display_status' => $hasPendingPayment ? PaymentStatus::PENDING->value : ($this->status?->value ?? $this->status),
             'has_pending_payment' => $hasPendingPayment,
             'due_date' => $this->due_date?->toDateString(),
+            'items' => $this->relationLoaded('items')
+                ? $this->items->map(fn ($item) => [
+                    'description' => $item->description,
+                    'amount' => (float) $item->amount,
+                    'type' => $item->type,
+                ])->values()->all()
+                : [],
         ];
     }
 }
