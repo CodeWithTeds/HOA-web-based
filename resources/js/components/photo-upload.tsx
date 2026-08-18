@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
 import { User, Upload, X, ImageIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { SweetAlert } from '@/components/ui/sweet-alert';
 
@@ -23,27 +23,34 @@ export function PhotoUpload({ value, onChange, error, className }: PhotoUploadPr
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+
+        if (!file) {
+return;
+}
 
         // Front-end Validation: PNG and JPG only
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
         if (!allowedTypes.includes(file.type)) {
             setAlert({
                 show: true,
                 title: 'Invalid File Type',
                 message: 'Please upload a JPG or PNG image only.'
             });
+
             return;
         }
 
         // Front-end Validation: 1MB limit
         const maxSize = 1 * 1024 * 1024; // 1MB
+
         if (file.size > maxSize) {
             setAlert({
                 show: true,
                 title: 'File Too Large',
                 message: 'The selected image exceeds the 1MB size limit.'
             });
+
             return;
         }
 
@@ -59,6 +66,7 @@ export function PhotoUpload({ value, onChange, error, className }: PhotoUploadPr
     const handleRemove = () => {
         setPreview(null);
         onChange(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }

@@ -13,11 +13,11 @@ import {
     User,
     MessageSquare,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -34,6 +34,7 @@ export default function ComplaintCreate({ residents, staff }: { residents: any[]
         if (flash?.success) {
             setAlert({ show: true, type: 'success', title: 'Ticket Recorded', message: flash.success });
         }
+
         if (flash?.error) {
             setAlert({ show: true, type: 'error', title: 'Operation Failed', message: flash.error });
         }

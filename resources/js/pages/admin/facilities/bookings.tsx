@@ -1,4 +1,5 @@
 import { Head, Link, usePage, router } from '@inertiajs/react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import {
     Search,
     Calendar,
@@ -13,9 +14,10 @@ import {
     LayoutList,
     ChevronRight,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,8 +25,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -45,6 +45,7 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
         if (flash?.success) {
             setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
         }
+
         if (flash?.error) {
             setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
         }
@@ -285,6 +286,7 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                 ))}
                                 {days.map(day => {
                                     const dayBookings = bookings.filter(b => isSameDay(new Date(b.start_time), day));
+
                                     return (
                                         <div key={day.toString()} className="bg-white dark:bg-[#0c0c0c] min-h-[120px] p-3 border-t border-l border-neutral-100 dark:border-neutral-800/40 relative group">
                                             <span className={`text-[13px] font-black ${isSameDay(day, new Date()) ? 'text-blue-600' : 'text-neutral-300'}`}>

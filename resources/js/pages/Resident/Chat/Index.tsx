@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import axios from 'axios';
 import { Send, MessageSquare, Archive } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -12,8 +12,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
 import echo from '@/echo';
-import axios from 'axios';
 
 const VISIBLE_COUNT = 6;
 
@@ -45,7 +45,10 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
             .listen('.App\\Events\\Chat\\MessageSent', (e: { message: Message }) => {
                 // To avoid duplication
                 setAllMessages(prev => {
-                    if (prev.find(m => m.id === e.message.id)) return prev;
+                    if (prev.find(m => m.id === e.message.id)) {
+return prev;
+}
+
                     return [...prev, e.message];
                 });
             });
@@ -57,7 +60,10 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim()) return;
+
+        if (!newMessage.trim()) {
+return;
+}
 
         try {
             const res = await axios.post('/chat', {
@@ -151,6 +157,7 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
                                                     <tbody className="divide-y divide-neutral-50">
                                                         {allMessages.map((msg) => {
                                                             const isMe = msg.sender_type === 'homeowner';
+
                                                             return (
                                                                 <tr key={msg.id} className="hover:bg-neutral-50/50 transition-colors">
                                                                     <td className="px-5 py-3 text-[11px] font-bold text-neutral-400 whitespace-nowrap">{msg.human_time}</td>
@@ -196,6 +203,7 @@ export default function ResidentChat({ messages: initialMessages }: { messages: 
                                     )}
                                     {visibleMessages.map((msg) => {
                                         const isMe = msg.sender_type === 'homeowner';
+
                                         return (
                                             <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                 <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>

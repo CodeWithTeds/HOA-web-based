@@ -1,4 +1,5 @@
-import { Component, ErrorInfo, ReactNode } from "react";
+import type { ErrorInfo, ReactNode } from "react";
+import { Component } from "react";
 
 interface Props {
   children?: ReactNode;
@@ -28,6 +29,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) {
           return this.props.fallback;
       }
+
       return (
         <div className="p-4 rounded-md bg-red-50 text-red-900 border border-red-200 m-4">
             <h2 className="text-lg font-semibold border-b border-red-200 pb-2 mb-2">UI Component Error</h2>

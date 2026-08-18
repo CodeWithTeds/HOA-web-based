@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
 import { Head, usePage, Link } from '@inertiajs/react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
+import axios from 'axios';
 import { Send, Search, MessageSquare, Archive } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -13,9 +12,10 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import AppLayout from '@/layouts/app-layout';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import echo from '@/echo';
-import axios from 'axios';
+import AppLayout from '@/layouts/app-layout';
 
 const VISIBLE_COUNT = 6;
 
@@ -72,7 +72,10 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !activeResidentId) return;
+
+        if (!newMessage.trim() || !activeResidentId) {
+return;
+}
 
         try {
             const res = await axios.post('/admin/chat', {
@@ -219,6 +222,7 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
                                                             <tbody className="divide-y divide-neutral-50">
                                                                 {allMessages.map((msg) => {
                                                                     const isMe = msg.sender_type === 'admin' || msg.sender_type === 'staff';
+
                                                                     return (
                                                                         <tr key={msg.id} className="hover:bg-neutral-50/50 transition-colors">
                                                                             <td className="px-5 py-3 text-[11px] font-bold text-neutral-400 whitespace-nowrap">{msg.human_time}</td>
@@ -264,6 +268,7 @@ export default function AdminChat({ threads }: { threads: Thread[] }) {
                                             )}
                                             {visibleMessages.map((msg) => {
                                                 const isMe = msg.sender_type === 'admin' || msg.sender_type === 'staff';
+
                                                 return (
                                                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                         <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>

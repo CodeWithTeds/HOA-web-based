@@ -1,16 +1,16 @@
 import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
 import {
     ShieldAlert, Plus, AlertCircle, CheckCircle2, Clock, X,
     Upload, Tag, FileText, LayoutList, Loader2, Info, Eye
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import Swal from 'sweetalert2';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -151,6 +151,7 @@ export default function ResidentComplaints() {
                                 ) : (
                                     complaints.data.map((c: any) => {
                                         const status = statusConfig[c.status] ?? { label: c.status, className: 'bg-neutral-100 text-neutral-600' };
+
                                         return (
                                             <tr key={c.id} className="group hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20 transition-colors">
                                                 <td className="px-6 py-4 text-[13px] font-black text-neutral-400">#{c.id}</td>

@@ -1,5 +1,5 @@
-import { Megaphone, Calendar, ArrowRight } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { Megaphone, Calendar, ArrowRight } from 'lucide-react';
 
 export default function PublicAnnouncements({ announcements }: { announcements: any[] }) {
     if (!announcements || announcements.length === 0) {

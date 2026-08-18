@@ -1,4 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import {
     ChevronLeft,
     Calendar as CalendarIcon,
@@ -9,9 +10,8 @@ import {
     Search,
     Filter,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 

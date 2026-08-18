@@ -17,7 +17,7 @@ import {
     Activity,
     Heart,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import {
     AreaChart,
     Area,
@@ -33,7 +33,7 @@ import {
     Cell,
     Legend
 } from 'recharts';
-import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -218,6 +218,7 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                                 content={({ active, payload, label }) => {
                                                     if (active && payload && payload.length) {
                                                         const p = payload[0];
+
                                                         return (
                                                             <div className="bg-[#0f172a] p-4 rounded-xl shadow-2xl border border-white/10 min-w-[150px]">
                                                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 pb-2 mb-2">{label}</p>
@@ -230,6 +231,7 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                                             </div>
                                                         );
                                                     }
+
                                                     return null;
                                                 }}
                                             />

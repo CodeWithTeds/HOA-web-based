@@ -1,4 +1,10 @@
 import { Link, router } from '@inertiajs/react';
+import { ChevronRight } from 'lucide-react';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -9,14 +15,8 @@ import {
     SidebarMenuSubButton,
     SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem } from '@/types';
-import { ChevronRight } from 'lucide-react';
 
 type AccentColor = 'blue' | 'emerald' | 'white';
 

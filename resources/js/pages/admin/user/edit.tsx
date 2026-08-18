@@ -12,12 +12,12 @@ import {
     Pencil,
     Building,
 } from 'lucide-react';
+import { useState } from 'react';
+import { PhotoUpload } from '@/components/photo-upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { PhotoUpload } from '@/components/photo-upload';
-import { useState } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -132,7 +132,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                         <Input
                                             id="firstName"
                                             value={data.firstName}
-                                            onChange={e => { setData('firstName', e.target.value); clearErrors('firstName'); }}
+                                            onChange={e => {
+ setData('firstName', e.target.value); clearErrors('firstName'); 
+}}
                                             placeholder="John"
                                             className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.firstName ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                         />
@@ -147,7 +149,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                         <Input
                                             id="lastName"
                                             value={data.lastName}
-                                            onChange={e => { setData('lastName', e.target.value); clearErrors('lastName'); }}
+                                            onChange={e => {
+ setData('lastName', e.target.value); clearErrors('lastName'); 
+}}
                                             placeholder="Doe"
                                             className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.lastName ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                         />
@@ -163,7 +167,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                             id="email"
                                             type="email"
                                             value={data.email}
-                                            onChange={e => { setData('email', e.target.value); clearErrors('email'); }}
+                                            onChange={e => {
+ setData('email', e.target.value); clearErrors('email'); 
+}}
                                             placeholder="staff@smarthoa.com"
                                             className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.email ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                         />
@@ -180,7 +186,11 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                             value={data.phone}
                                             onChange={e => {
                                                 const val = e.target.value.replace(/\D/g, '');
-                                                if (val.length <= 11) setData('phone', val);
+
+                                                if (val.length <= 11) {
+setData('phone', val);
+}
+
                                                 clearErrors('phone');
                                             }}
                                             placeholder="09123456789"
@@ -216,7 +226,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                                 id="password"
                                                 type="password"
                                                 value={data.password}
-                                                onChange={e => { setData('password', e.target.value); clearErrors('password'); }}
+                                                onChange={e => {
+ setData('password', e.target.value); clearErrors('password'); 
+}}
                                                 placeholder="••••••••"
                                                 className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.password ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                             />
@@ -250,7 +262,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                         <select
                                             id="role"
                                             value={data.role}
-                                            onChange={e => { setData('role', e.target.value); clearErrors('role'); }}
+                                            onChange={e => {
+ setData('role', e.target.value); clearErrors('role'); 
+}}
                                             className={`flex h-12 w-full rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 cursor-pointer ${errors.role ? 'border-red-400 bg-red-50/50' : 'border-neutral-200 dark:border-neutral-800'}`}
                                             style={{ fontFamily: fontStack }}
                                         >
@@ -282,7 +296,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                         <select
                                             id="status"
                                             value={data.status}
-                                            onChange={e => { setData('status', e.target.value); clearErrors('status'); }}
+                                            onChange={e => {
+ setData('status', e.target.value); clearErrors('status'); 
+}}
                                             className={`flex h-12 w-full rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 cursor-pointer ${errors.status ? 'border-red-400 bg-red-50/50' : 'border-neutral-200 dark:border-neutral-800'}`}
                                             style={{ fontFamily: fontStack }}
                                         >
@@ -301,7 +317,9 @@ export default function StaffEdit({ staff }: { staff: any }) {
                                             id="hireDate"
                                             type="date"
                                             value={data.hireDate}
-                                            onChange={e => { setData('hireDate', e.target.value); clearErrors('hireDate'); }}
+                                            onChange={e => {
+ setData('hireDate', e.target.value); clearErrors('hireDate'); 
+}}
                                             className={`h-12 rounded-xl border-2 bg-neutral-50/80 dark:bg-neutral-900/50 px-4 text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 ${errors.hireDate ? 'border-red-400 bg-red-50/50 dark:bg-red-900/10' : 'border-neutral-200 dark:border-neutral-800'}`}
                                         />
                                         {errors.hireDate && <p className="text-[12px] font-bold text-red-500 flex items-center gap-1.5 animate-in slide-in-from-top-1 duration-200">⚠ {errors.hireDate}</p>}

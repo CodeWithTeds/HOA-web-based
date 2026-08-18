@@ -11,11 +11,11 @@ import {
     MapPin,
     AlertCircle,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -41,6 +41,7 @@ export default function BookingCreate({ residents, facilities }: { residents: an
         if (flash?.success) {
             setAlert({ show: true, type: 'success', title: 'Reservation Confirmed', message: flash.success });
         }
+
         if (errors.error) {
             setAlert({ show: true, type: 'error', title: 'Conflict Detected', message: errors.error });
         }

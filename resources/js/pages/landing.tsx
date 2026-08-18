@@ -1,12 +1,12 @@
 import { Head } from '@inertiajs/react';
-import Navbar from '@/components/landing/Navbar';
-import Hero from '@/components/landing/Hero';
-import Overview from '@/components/landing/Overview';
-import Features from '@/components/landing/Features';
-import Transparency from '@/components/landing/Transparency';
 import CTA from '@/components/landing/CTA';
+import Features from '@/components/landing/Features';
 import Footer from '@/components/landing/Footer';
+import Hero from '@/components/landing/Hero';
+import Navbar from '@/components/landing/Navbar';
+import Overview from '@/components/landing/Overview';
 import PublicAnnouncements from '@/components/landing/PublicAnnouncements';
+import Transparency from '@/components/landing/Transparency';
 
 export default function Landing({ announcements }: { announcements: any }) {
     return (

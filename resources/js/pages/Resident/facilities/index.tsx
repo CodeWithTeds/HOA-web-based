@@ -1,14 +1,14 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, Tag, CheckCircle2, Loader2, Sparkles, AlertCircle, Info } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import Swal from 'sweetalert2';
 
 interface Facility {
     id: number;

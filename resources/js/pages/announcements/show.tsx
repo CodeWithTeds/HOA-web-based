@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
-import Navbar from '@/components/landing/Navbar';
-import Footer from '@/components/landing/Footer';
 import { Calendar, User, ArrowLeft, Tag, Clock } from 'lucide-react';
+import Footer from '@/components/landing/Footer';
+import Navbar from '@/components/landing/Navbar';
 
 export default function AnnouncementShow({ announcement }: { announcement: { data: any } }) {
     const res = announcement.data;

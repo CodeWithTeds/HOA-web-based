@@ -14,9 +14,10 @@ import {
     Ban,
     ArrowUpDown,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,7 +26,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SweetAlert } from '@/components/ui/sweet-alert';
-import { useState, useEffect } from 'react';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
@@ -40,6 +40,7 @@ const avatarGradients = [
 
 function getGradient(name: string) {
     const code = (name?.charCodeAt(0) || 0) + (name?.charCodeAt(1) || 0);
+
     return avatarGradients[code % avatarGradients.length];
 }
 
@@ -58,6 +59,7 @@ export default function StaffIndex({ staff, filters }: { staff: any, filters?: a
         if (flash?.success) {
             setAlert({ show: true, type: 'success', title: 'Operation Successful', message: flash.success });
         }
+
         if (flash?.error) {
             setAlert({ show: true, type: 'error', title: 'Something went wrong', message: flash.error });
         }
