@@ -327,8 +327,11 @@ export default function FacilityBooking() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Attendees <span className="text-red-500">*</span></Label>
-                                        <Input type="number" min="1" value={data.attendees} onChange={e => setData('attendees', e.target.value)} placeholder="e.g. 50" className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        <Input type="number" min="1" max={selectedFacility?.capacity} value={data.attendees} onChange={e => setData('attendees', e.target.value)} placeholder={`e.g. 50 (max ${selectedFacility?.capacity ?? '—'})`} className={cn("h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900", data.attendees && selectedFacility && Number(data.attendees) > selectedFacility.capacity && "border-red-500 focus:ring-red-500/10")} />
                                         {errors.attendees && <p className="text-[10px] font-bold text-red-500">⚠ {errors.attendees}</p>}
+                                        {data.attendees && selectedFacility && Number(data.attendees) > selectedFacility.capacity && !errors.attendees && (
+                                            <p className="text-[10px] font-bold text-red-500">⚠ Exceeds maximum capacity of {selectedFacility.capacity} guests</p>
+                                        )}
                                     </div>
                                 </div>
                                 
@@ -367,7 +370,7 @@ export default function FacilityBooking() {
                                     </Button>
                                     <Button
                                         type="submit"
-                                        disabled={processing}
+                                        disabled={processing || (data.attendees !== '' && selectedFacility !== null && Number(data.attendees) > selectedFacility.capacity)}
                                         className="h-10 rounded-xl px-8 text-[13px] font-black bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center"
                                     >
                                         {processing ? (

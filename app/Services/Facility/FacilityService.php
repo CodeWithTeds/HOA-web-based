@@ -61,6 +61,14 @@ class FacilityService
 
     public function createBooking(array $data): FacilityBooking
     {
+        // Capacity validation
+        if (isset($data['attendees'])) {
+            $facility = $this->getFacility($data['facility_id']);
+            if ($facility && $data['attendees'] > $facility->capacity) {
+                throw new Exception("The number of attendees ({$data['attendees']}) exceeds the maximum capacity of {$facility->capacity} for {$facility->name}.");
+            }
+        }
+
         // Conflict prevention logic
         if ($this->hasConflict($data['facility_id'], $data['start_time'], $data['end_time'])) {
             throw new Exception('Facility is already booked for this time slot.');
