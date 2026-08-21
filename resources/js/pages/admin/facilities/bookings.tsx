@@ -13,11 +13,24 @@ import {
     MapPin,
     LayoutList,
     ChevronRight,
+    FileText,
+    Receipt,
+    ShieldCheck,
+    Clock3,
+    Printer,
+    CreditCard,
+    Banknote,
+    ExternalLink,
+    Building2,
+    CalendarDays,
+    Users,
+    Tag,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -33,6 +46,10 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedBooking, setSelectedBooking] = useState<any>(null);
+    const [isPaymentLogOpen, setIsPaymentLogOpen] = useState(false);
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+    const [receiptPayment, setReceiptPayment] = useState<any>(null);
 
     const [alert, setAlert] = useState<{
         show: boolean;
@@ -65,6 +82,32 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                 });
             }
         });
+    };
+
+    const openPaymentLog = (booking: any) => {
+        setSelectedBooking(booking);
+        setIsPaymentLogOpen(true);
+    };
+
+    const openReceipt = (payment: any, booking: any) => {
+        setReceiptPayment({ ...payment, booking });
+        setIsReceiptOpen(true);
+    };
+
+    const formatCurrency = (amt: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amt || 0);
+
+    const calculateBreakdown = (booking: any) => {
+        if (!booking?.facility || !booking?.start_time || !booking?.end_time) return null;
+        const start = new Date(booking.start_time);
+        const end = new Date(booking.end_time);
+        const diffMs = end.getTime() - start.getTime();
+        const hours = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60)));
+        const priceType = booking.facility.price_type;
+        const base = parseFloat(booking.facility.base_price);
+        if (priceType === 'Hourly') {
+            return { hours, base, total: hours * base, priceType, label: `${hours} hr × ${formatCurrency(base)}` };
+        }
+        return { hours: 1, base, total: base, priceType, label: `Flat rate • ${formatCurrency(base)}` };
     };
 
     const filteredBookings = bookings.filter(b =>
@@ -253,18 +296,30 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                                                         <MoreHorizontal className="size-4 text-neutral-400" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                                                <DropdownMenuContent align="end" className="w-52 rounded-xl p-1">
                                                     <DropdownMenuItem
-                                                        className="gap-2 font-bold text-[12px]"
+                                                        className="gap-2 font-bold text-[12px] rounded-lg"
                                                         onSelect={() => handleStatusUpdate(booking.id, 'Confirmed')}
                                                     >
-                                                        <CheckCircle2 className="size-4 text-emerald-600" /> Approve
+                                                        <CheckCircle2 className="size-4 text-emerald-600" /> Approve Booking
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
-                                                        className="gap-2 font-bold text-[12px]"
+                                                        className="gap-2 font-bold text-[12px] rounded-lg"
                                                         onSelect={() => handleStatusUpdate(booking.id, 'Cancelled')}
                                                     >
-                                                        <XCircle className="size-4 text-rose-600" /> Decline
+                                                        <XCircle className="size-4 text-rose-600" /> Decline Booking
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="gap-2 font-bold text-[12px] rounded-lg text-blue-700 focus:bg-blue-50 focus:text-blue-700"
+                                                        onSelect={() => openPaymentLog(booking)}
+                                                    >
+                                                        <Receipt className="size-4 text-blue-600" /> Payment Breakdown
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="gap-2 font-bold text-[12px] rounded-lg text-violet-700 focus:bg-violet-50 focus:text-violet-700"
+                                                        onSelect={() => openPaymentLog(booking)}
+                                                    >
+                                                        <ShieldCheck className="size-4 text-violet-600" /> Payment Log
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -324,6 +379,268 @@ export default function BookingIndex({ bookings }: { bookings: any[] }) {
                     )}
                 </div>
             </div>
+
+            {/* PAYMENT BREAKDOWN & LOG MODAL */}
+            <Dialog open={isPaymentLogOpen} onOpenChange={setIsPaymentLogOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden rounded-[2rem] border-none bg-white p-0 shadow-2xl dark:bg-neutral-900 flex flex-col" style={{ fontFamily: fontStack }}>
+                    {selectedBooking && (
+                        <>
+                            <div className="shrink-0 bg-gradient-to-br from-blue-600 to-indigo-700 px-8 py-7 text-white">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <p className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest backdrop-blur">Reservation Payment • {selectedBooking.facility?.name}</p>
+                                        <h2 className="mt-3 text-[22px] font-black tracking-tight leading-none">Payment Breakdown</h2>
+                                        <p className="mt-1.5 text-[12px] font-bold text-blue-100">Invoice {selectedBooking.invoice?.invoice_number || '—'} • {selectedBooking.invoice?.status || 'Unpaid'} • Due {selectedBooking.invoice?.due_date ? format(new Date(selectedBooking.invoice.due_date), 'MMM dd, yyyy') : '—'}</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-white/20 px-4 py-3 backdrop-blur text-right">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-100">Reservation Fee</p>
+                                        <p className="text-[20px] font-black leading-none">{formatCurrency(parseFloat(selectedBooking.total_fee || 0))}</p>
+                                        <p className="mt-1 text-[10px] font-bold text-blue-100">{selectedBooking.facility?.price_type} • {formatCurrency(parseFloat(selectedBooking.facility?.base_price || 0))}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+                                {/* Booking Summary */}
+                                <section className="rounded-2xl border border-neutral-100 bg-neutral-50/50 p-5 dark:border-neutral-800 dark:bg-neutral-900/50">
+                                    <h3 className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500 mb-3"><Building2 className="size-3.5" /> Booking Summary</h3>
+                                    <div className="grid grid-cols-2 gap-4 text-[13px]">
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-neutral-400">Resident</p>
+                                            <p className="font-black text-[#0A2540] dark:text-white">{selectedBooking.resident?.first_name} {selectedBooking.resident?.last_name}</p>
+                                            <p className="text-[11px] font-bold text-neutral-500">#RES-{selectedBooking.resident_id} • Phase {selectedBooking.resident?.phase} B{selectedBooking.resident?.block} L{selectedBooking.resident?.lot}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-neutral-400">Schedule</p>
+                                            <p className="font-bold flex items-center gap-1.5"><CalendarDays className="size-3.5 text-blue-600" /> {format(new Date(selectedBooking.start_time), 'MMM dd, yyyy hh:mm a')}</p>
+                                            <p className="text-[11px] font-bold text-neutral-500">→ {format(new Date(selectedBooking.end_time), 'MMM dd, yyyy hh:mm a')}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-neutral-400">Purpose</p>
+                                            <p className="font-bold">{selectedBooking.purpose || '—'}</p>
+                                            <p className="text-[11px] font-bold text-neutral-500 flex items-center gap-1"><Users className="size-3" /> {selectedBooking.attendees} attendees</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-neutral-400">Status</p>
+                                            <Badge className={`mt-1 ${selectedBooking.status === 'Confirmed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'} border`}>{selectedBooking.status}</Badge>
+                                            {selectedBooking.special_requests && <p className="mt-1 text-[11px] font-medium text-neutral-500">{selectedBooking.special_requests}</p>}
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Fee Calculation Breakdown */}
+                                {(() => {
+                                    const b = calculateBreakdown(selectedBooking);
+                                    if (!b) return null;
+                                    return (
+                                        <section className="rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+                                            <h3 className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-blue-700 mb-3"><Tag className="size-3.5" /> Fee Calculation • Detailed Breakdown</h3>
+                                            <div className="space-y-2 text-[13px]">
+                                                <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-blue-100">
+                                                    <span className="text-[11px] font-black uppercase text-neutral-500">Facility</span>
+                                                    <span className="font-black">{selectedBooking.facility?.name}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-blue-100">
+                                                    <span className="text-[11px] font-black uppercase text-neutral-500">Pricing Model</span>
+                                                    <span className="font-bold">{b.priceType} • {formatCurrency(b.base)} per {b.priceType === 'Hourly' ? 'hour' : 'booking'}</span>
+                                                </div>
+                                                {b.priceType === 'Hourly' && (
+                                                    <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-blue-100">
+                                                        <span className="text-[11px] font-black uppercase text-neutral-500">Duration</span>
+                                                        <span className="font-bold">{b.hours} hour(s)</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-blue-100">
+                                                    <span className="text-[11px] font-black uppercase text-neutral-500">Computation</span>
+                                                    <span className="font-bold">{b.label}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between rounded-xl bg-blue-600 px-4 py-3 text-white">
+                                                    <span className="text-[11px] font-black uppercase text-blue-100">Total Reservation Fee</span>
+                                                    <span className="text-[16px] font-black">{formatCurrency(b.total)}</span>
+                                                </div>
+                                                {selectedBooking.invoice && (
+                                                    <div className="grid grid-cols-3 gap-3 pt-2">
+                                                        <div className="rounded-xl bg-white px-3 py-2.5 border text-center">
+                                                            <p className="text-[9px] font-black uppercase text-neutral-400">Total Billed</p>
+                                                            <p className="text-[13px] font-black">{formatCurrency(parseFloat(selectedBooking.invoice.total_amount))}</p>
+                                                        </div>
+                                                        <div className="rounded-xl bg-emerald-50 px-3 py-2.5 border border-emerald-100 text-center">
+                                                            <p className="text-[9px] font-black uppercase text-emerald-600">Paid</p>
+                                                            <p className="text-[13px] font-black text-emerald-700">{formatCurrency(parseFloat(selectedBooking.invoice.paid_amount || 0))}</p>
+                                                        </div>
+                                                        <div className="rounded-xl bg-red-50 px-3 py-2.5 border border-red-100 text-center">
+                                                            <p className="text-[9px] font-black uppercase text-red-500">Balance</p>
+                                                            <p className="text-[13px] font-black text-red-700">{formatCurrency(parseFloat(selectedBooking.invoice.balance || 0))}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </section>
+                                    );
+                                })()}
+
+                                {/* Invoice Items */}
+                                {selectedBooking.invoice?.items?.length > 0 && (
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500 mb-3"><FileText className="size-3.5" /> Invoice Line Items</h3>
+                                        <div className="space-y-2">
+                                            {selectedBooking.invoice.items.map((item: any) => (
+                                                <div key={item.id} className="flex items-center justify-between rounded-xl border bg-white px-4 py-3">
+                                                    <div>
+                                                        <p className="text-[13px] font-bold text-[#0A2540]">{item.description}</p>
+                                                        <p className="text-[10px] font-black uppercase text-neutral-400">{item.type}</p>
+                                                    </div>
+                                                    <p className="text-[14px] font-black">{formatCurrency(parseFloat(item.amount))}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* Payment History + Verification Log */}
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500 mb-3"><CreditCard className="size-3.5" /> Payment History & Verification Log</h3>
+                                    {selectedBooking.invoice?.payments?.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {selectedBooking.invoice.payments.map((p: any) => (
+                                                <div key={p.id} className={`rounded-xl border p-4 ${p.status === 'Verified' ? 'bg-emerald-50/50 border-emerald-100' : p.status === 'Pending' ? 'bg-violet-50/50 border-violet-100' : 'bg-white border-neutral-100'}`}>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[12px] font-black uppercase">{p.payment_method}</span>
+                                                                <Badge className={`h-5 text-[9px] font-black uppercase ${p.status === 'Verified' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : p.status === 'Pending' ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-red-50 text-red-700 border-red-200'} border`}>{p.status}</Badge>
+                                                                {p.reference_number && <span className="text-[10px] font-black uppercase italic text-neutral-500">Ref: {p.reference_number}</span>}
+                                                            </div>
+                                                            <p className="mt-1 text-[11px] font-bold text-neutral-500">{new Date(p.payment_date).toLocaleDateString()} • {formatCurrency(parseFloat(p.amount))}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[14px] font-black">{formatCurrency(parseFloat(p.amount))}</span>
+                                                            {p.status === 'Verified' && (
+                                                                <Button onClick={() => openReceipt(p, selectedBooking)} className="h-7 rounded-lg bg-emerald-600 px-2 text-[10px] font-black uppercase text-white"><Printer className="size-3" /> Receipt</Button>
+                                                            )}
+                                                            {p.proof_url && (
+                                                                <a href={p.proof_url} target="_blank" className="inline-flex items-center gap-1 rounded-lg border bg-white px-2 py-1 text-[10px] font-black uppercase text-blue-600 hover:bg-blue-50"><ExternalLink className="size-3" /> Proof</a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    {/* Verification log */}
+                                                    {p.status === 'Verified' && (
+                                                        <div className="mt-3 flex items-center gap-2 rounded-lg bg-white px-3 py-2 border border-emerald-100">
+                                                            <ShieldCheck className="size-3.5 text-emerald-600" />
+                                                            <span className="text-[10px] font-black uppercase text-emerald-800">Confirmed by {p.verified_by?.name || 'Admin'} {p.verified_by?.email ? `• ${p.verified_by.email}` : ''}</span>
+                                                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500"><Clock3 className="size-3" /> {p.verified_at ? new Date(p.verified_at).toLocaleString() : '—'}</span>
+                                                        </div>
+                                                    )}
+                                                    {p.status === 'Pending' && (
+                                                        <div className="mt-3 flex items-center gap-2 rounded-lg bg-violet-100/60 px-3 py-2 border border-violet-100">
+                                                            <Clock3 className="size-3.5 text-violet-600" />
+                                                            <span className="text-[10px] font-bold uppercase text-violet-700">Awaiting admin verification • Submitted {p.created_at ? new Date(p.created_at).toLocaleString() : new Date(p.payment_date).toLocaleString()}</span>
+                                                        </div>
+                                                    )}
+                                                    {p.status === 'Rejected' && (
+                                                        <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 border border-red-100">
+                                                            <XCircle className="size-3.5 text-red-600" />
+                                                            <span className="text-[10px] font-black uppercase text-red-700">Rejected {p.rejected_by?.name ? `by ${p.rejected_by.name}` : ''} {p.rejected_at ? `• ${new Date(p.rejected_at).toLocaleString()}` : ''}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-xl border border-dashed bg-neutral-50 px-6 py-10 text-center">
+                                            <Banknote className="mx-auto size-8 text-neutral-300" />
+                                            <p className="mt-2 text-[13px] font-bold text-neutral-500">No payments recorded yet</p>
+                                            <p className="text-[11px] font-medium text-neutral-400">Resident has not uploaded proof or admin has not recorded payment.</p>
+                                        </div>
+                                    )}
+                                </section>
+
+                                {/* Summary Payment Log Table */}
+                                {selectedBooking.invoice?.payments?.some((p: any) => p.status === 'Verified') && (
+                                    <section className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-5">
+                                        <h3 className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700 mb-3"><ShieldCheck className="size-3.5" /> Reservation Payment Log — Who Confirmed & When</h3>
+                                        <div className="overflow-hidden rounded-xl border bg-white">
+                                            <table className="w-full text-left">
+                                                <thead className="bg-neutral-50">
+                                                    <tr className="text-[10px] font-black uppercase text-neutral-400">
+                                                        <th className="px-4 py-2">Payment #</th>
+                                                        <th className="px-4 py-2">Amount</th>
+                                                        <th className="px-4 py-2">Confirmed By</th>
+                                                        <th className="px-4 py-2 text-right">Date & Time</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y text-[12px]">
+                                                    {selectedBooking.invoice.payments.filter((p: any) => p.status === 'Verified').map((p: any) => (
+                                                        <tr key={`logrow-${p.id}`} className="font-bold">
+                                                            <td className="px-4 py-2.5">#{p.id} • {p.payment_method}</td>
+                                                            <td className="px-4 py-2.5 text-emerald-700">{formatCurrency(parseFloat(p.amount))}</td>
+                                                            <td className="px-4 py-2.5">{p.verified_by?.name || 'Admin'}<span className="block text-[11px] font-medium text-neutral-400">{p.verified_by?.email || ''}</span></td>
+                                                            <td className="px-4 py-2.5 text-right font-black">{p.verified_at ? new Date(p.verified_at).toLocaleString() : '—'}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </section>
+                                )}
+                            </div>
+                            <div className="shrink-0 border-t bg-neutral-50/50 px-8 py-4 flex items-center justify-between">
+                                <p className="text-[11px] font-bold text-neutral-500">Keep this log for audit purposes. Confirmed payments cannot be edited without creating a new record.</p>
+                                <Button onClick={() => setIsPaymentLogOpen(false)} className="rounded-xl bg-[#0A2540] px-6 text-[12px] font-black uppercase text-white">Close</Button>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* RECEIPT MODAL */}
+            <Dialog open={isReceiptOpen} onOpenChange={setIsReceiptOpen}>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden rounded-[2rem] border-none bg-white p-0 shadow-2xl dark:bg-neutral-900 flex flex-col" style={{ fontFamily: fontStack }}>
+                    {receiptPayment && (
+                        <>
+                            <div className="shrink-0 bg-white px-8 pt-8 pb-6 border-b text-center">
+                                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"><Receipt className="size-6" /></div>
+                                <h2 className="mt-3 text-[18px] font-black uppercase tracking-tight">Payment Confirmation Receipt</h2>
+                                <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-400">Official Receipt • HOA Reservation Payment</p>
+                                <div className="mt-4 grid grid-cols-2 gap-4 text-left rounded-2xl bg-neutral-50 p-4 border">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase text-neutral-400">Receipt #</p>
+                                        <p className="text-[13px] font-black">PAY-{receiptPayment.id} • {receiptPayment.invoice?.invoice_number || selectedBooking?.invoice?.invoice_number || ''}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black uppercase text-neutral-400">Date Issued</p>
+                                        <p className="text-[13px] font-bold">{receiptPayment.verified_at ? new Date(receiptPayment.verified_at).toLocaleString() : new Date().toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-5 text-[13px]">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase text-neutral-400">Billed To</p>
+                                        <p className="font-black">{selectedBooking?.resident?.first_name} {selectedBooking?.resident?.last_name}</p>
+                                        <p className="text-[11px] font-bold text-neutral-500">{selectedBooking?.facility?.name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black uppercase text-neutral-400">Payment Details</p>
+                                        <p className="font-bold">{receiptPayment.payment_method} • {formatCurrency(parseFloat(receiptPayment.amount))}</p>
+                                        <p className="text-[11px] font-bold text-neutral-500">Ref: {receiptPayment.reference_number || '—'}</p>
+                                    </div>
+                                </div>
+                                <div className="rounded-xl border bg-emerald-50/50 p-4 border-emerald-100">
+                                    <p className="text-[10px] font-black uppercase text-emerald-700">Amount Confirmed</p>
+                                    <p className="text-[24px] font-black text-emerald-700">{formatCurrency(parseFloat(receiptPayment.amount))}</p>
+                                    <div className="mt-2 flex items-center gap-2 text-[11px] font-bold text-emerald-700"><ShieldCheck className="size-4" /> Verified by {receiptPayment.verified_by?.name || 'Admin'} on {receiptPayment.verified_at ? new Date(receiptPayment.verified_at).toLocaleString() : '—'}</div>
+                                </div>
+                                {selectedBooking && (() => { const b = calculateBreakdown(selectedBooking); return b ? <div className="rounded-xl border bg-blue-50/50 p-4 border-blue-100"><p className="text-[11px] font-black uppercase text-blue-700 mb-1">Reservation Breakdown</p><p className="text-[12px] font-bold">{selectedBooking.facility?.name} • {b.label} = {formatCurrency(b.total)}</p></div> : null; })()}
+                                <p className="text-center text-[10px] font-bold uppercase tracking-widest text-neutral-400 pt-2">This is a computer-generated receipt. Keep for your records.</p>
+                            </div>
+                            <div className="shrink-0 border-t px-8 py-4 flex gap-3 bg-neutral-50/50">
+                                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setIsReceiptOpen(false)}>Close</Button>
+                                <Button className="flex-1 rounded-xl bg-blue-600 text-white hover:bg-blue-700" onClick={() => window.print()}><Printer className="size-4 mr-2" /> Print / Save PDF</Button>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

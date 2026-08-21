@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Resident;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Resident\StorePaymentProofRequest;
 use App\Http\Resources\Resident\BillingPageResource;
+use App\Http\Resources\Resident\BillingPaymentResource;
+use App\Http\Resources\Billing\InvoiceResource;
 use App\Services\Resident\ResidentBillingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,5 +37,19 @@ class BillingController extends Controller
 
         return redirect()->route('resident.billing.index')
             ->with('success', 'Proof of payment uploaded. It is now pending verification.');
+    }
+
+    public function showReceipt(Request $request, int $payment): BillingPaymentResource
+    {
+        $paymentModel = $this->billingService->getReceiptData($request->user()?->email, $payment);
+
+        return new BillingPaymentResource($paymentModel);
+    }
+
+    public function showInvoiceReceipt(Request $request, int $id): InvoiceResource
+    {
+        $invoice = $this->billingService->getInvoiceReceiptData($request->user()?->email, $id);
+
+        return new InvoiceResource($invoice);
     }
 }

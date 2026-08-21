@@ -95,6 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('admin/billing/payments/{payment}/verify', [BillingController::class, 'verifyPayment'])->name('admin.billing.payments.verify');
         Route::patch('admin/billing/payments/{payment}/reject', [BillingController::class, 'rejectPayment'])->name('admin.billing.payments.reject');
         Route::get('admin/billing/invoices/{id}', [BillingController::class, 'showInvoice'])->name('admin.billing.invoices.show');
+        Route::get('admin/billing/receipt/{payment}', [BillingController::class, 'showReceipt'])->name('admin.billing.receipt');
 
         // Reports & Analytics
         Route::get('admin/reports/export', [ReportController::class, 'exportCsv'])->name('admin.reports.export');
@@ -138,6 +139,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:homeowner')->group(function () {
         Route::get('billing', [ResidentBillingController::class, 'index'])->name('resident.billing.index');
         Route::post('billing/proof', [ResidentBillingController::class, 'uploadProof'])->name('resident.billing.proof');
+        Route::get('billing/receipt/{payment}', [ResidentBillingController::class, 'showReceipt'])->name('resident.billing.receipt');
+        Route::get('billing/invoices/{id}/receipt', [ResidentBillingController::class, 'showInvoiceReceipt'])->name('resident.billing.invoice_receipt');
 
         // Chat Support (Resident)
         Route::get('chat', [ChatController::class, 'index'])->name('chat.index');
@@ -146,6 +149,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Facilities (Resident)
         Route::get('facilities', [\App\Http\Controllers\Resident\FacilityController::class, 'index'])->name('resident.facilities.index');
         Route::post('facilities/book', [\App\Http\Controllers\Resident\FacilityController::class, 'storeBooking'])->name('resident.facilities.book');
+        Route::get('facilities/booked-dates', [\App\Http\Controllers\Resident\FacilityController::class, 'getBookedDates'])->name('resident.facilities.booked-dates');
 
         // Complaints (Resident)
         Route::get('complaints', [ResidentComplaintController::class, 'index'])->name('resident.complaints.index');

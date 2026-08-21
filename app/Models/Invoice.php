@@ -59,4 +59,9 @@ class Invoice extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function booking(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(FacilityBooking::class, 'invoice_id');
+    }
 }

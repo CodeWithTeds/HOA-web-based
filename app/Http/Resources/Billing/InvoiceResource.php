@@ -18,6 +18,8 @@ class InvoiceResource extends JsonResource
         $hasPendingPayment = $this->relationLoaded('payments')
             && $this->payments->contains(fn ($payment) => $payment->status === PaymentStatus::PENDING);
 
+        $booking = $this->whenLoaded('booking');
+
         return [
             'id' => $this->id,
             'invoice_number' => $this->invoice_number,
@@ -31,6 +33,8 @@ class InvoiceResource extends JsonResource
             'due_date' => $this->due_date,
             'items' => $this->whenLoaded('items'),
             'payments' => PaymentResource::collection($this->whenLoaded('payments'))->resolve($request),
+            'booking' => $booking,
+            'is_reservation' => str_starts_with($this->invoice_number, 'FB-'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

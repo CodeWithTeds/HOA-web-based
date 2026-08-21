@@ -144,11 +144,12 @@ class BillingService
      * Record a payment for an invoice.
      *
      * @param array $data
+     * @param int|null $verifiedBy
      * @return Payment
      */
-    public function recordPayment(array $data): Payment
+    public function recordPayment(array $data, ?int $verifiedBy = null): Payment
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $verifiedBy) {
             $invoice = $this->billingRepository->findInvoice($data['invoice_id']);
             
             // Create the payment record
@@ -159,6 +160,8 @@ class BillingService
                 'payment_method' => $data['payment_method'],
                 'reference_number' => $data['reference_number'] ?? null,
                 'status' => PaymentStatus::VERIFIED,
+                'verified_by' => $verifiedBy,
+                'verified_at' => now(),
             ]);
 
             // Update invoice balances
@@ -172,13 +175,14 @@ class BillingService
      * Verify a homeowner-uploaded proof of payment.
      *
      * @param int $paymentId
+     * @param int|null $verifiedBy
      * @return Payment
      *
      * @throws AuthorizationException
      */
-    public function verifyPayment(int $paymentId): Payment
+    public function verifyPayment(int $paymentId, ?int $verifiedBy = null): Payment
     {
-        return DB::transaction(function () use ($paymentId) {
+        return DB::transaction(function () use ($paymentId, $verifiedBy) {
             $payment = $this->billingRepository->findPayment($paymentId, ['invoice']);
 
             if ($payment->status !== PaymentStatus::PENDING) {
@@ -187,6 +191,10 @@ class BillingService
 
             $verifiedPayment = $this->billingRepository->updatePayment($payment, [
                 'status' => PaymentStatus::VERIFIED,
+                'verified_by' => $verifiedBy,
+                'verified_at' => now(),
+                'rejected_by' => null,
+                'rejected_at' => null,
             ]);
 
             $this->applyVerifiedPaymentToInvoice($payment->invoice, (float) $payment->amount);
@@ -199,11 +207,12 @@ class BillingService
      * Reject a homeowner-uploaded proof of payment.
      *
      * @param int $paymentId
+     * @param int|null $rejectedBy
      * @return Payment
      *
      * @throws AuthorizationException
      */
-    public function rejectPayment(int $paymentId): Payment
+    public function rejectPayment(int $paymentId, ?int $rejectedBy = null): Payment
     {
         $payment = $this->billingRepository->findPayment($paymentId);
 
@@ -213,6 +222,10 @@ class BillingService
 
         return $this->billingRepository->updatePayment($payment, [
             'status' => PaymentStatus::REJECTED,
+            'rejected_by' => $rejectedBy,
+            'rejected_at' => now(),
+            'verified_by' => null,
+            'verified_at' => null,
         ]);
     }
 
@@ -224,7 +237,12 @@ class BillingService
      */
     public function getInvoiceDetails(int $id): Invoice
     {
-        return $this->billingRepository->findInvoice($id, ['resident', 'billingPeriod', 'items', 'payments']);
+        return $this->billingRepository->findInvoice($id, ['resident', 'billingPeriod', 'items', 'payments', 'booking.facility']);
+    }
+
+    public function getPaymentDetails(int $id): Payment
+    {
+        return $this->billingRepository->findPayment($id, ['invoice.resident', 'invoice.billingPeriod', 'invoice.items', 'invoice.booking.facility']);
     }
 
     /**

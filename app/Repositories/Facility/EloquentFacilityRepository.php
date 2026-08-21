@@ -42,7 +42,7 @@ class EloquentFacilityRepository extends BaseRepository implements FacilityRepos
 
     public function getAllBookings(): Collection
     {
-        return FacilityBooking::with(['resident', 'facility', 'invoice'])->get();
+        return FacilityBooking::with(['resident', 'facility', 'invoice.items', 'invoice.payments.verifiedBy', 'invoice.payments.rejectedBy', 'invoice.billingPeriod'])->get();
     }
 
     public function createBooking(array $data): FacilityBooking

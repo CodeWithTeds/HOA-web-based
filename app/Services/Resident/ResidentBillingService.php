@@ -25,6 +25,8 @@ class ResidentBillingService
         }
 
         $invoices = $this->billingRepository->getResidentInvoices($resident->id, $month, $year);
+        // Enrich invoices with booking for facility reservation breakdown
+        $invoices->loadMissing(['items', 'payments.verifiedBy', 'payments.rejectedBy', 'booking.facility', 'billingPeriod']);
         $payments = $this->billingRepository->getResidentPayments($resident->id, $month, $year);
         $allInvoices = $this->billingRepository->getResidentInvoices($resident->id);
 
@@ -103,5 +105,39 @@ class ResidentBillingService
             'total_paid' => (float) $invoices->sum('paid_amount'),
             'pending_proofs' => $payments->where('status', PaymentStatus::PENDING)->count(),
         ];
+    }
+
+    public function getReceiptData(?string $email, int $paymentId)
+    {
+        $resident = $email ? $this->residentRepository->findByEmail($email) : null;
+
+        if (!$resident) {
+            throw new AuthorizationException();
+        }
+
+        $payment = $this->billingRepository->findPayment($paymentId, ['invoice.resident', 'invoice.billingPeriod', 'invoice.items', 'invoice.booking.facility', 'verifiedBy', 'rejectedBy']);
+
+        if ((int) $payment->invoice->resident_id !== (int) $resident->id) {
+            throw new AuthorizationException('You are not authorized to view this receipt.');
+        }
+
+        return $payment;
+    }
+
+    public function getInvoiceReceiptData(?string $email, int $invoiceId)
+    {
+        $resident = $email ? $this->residentRepository->findByEmail($email) : null;
+
+        if (!$resident) {
+            throw new AuthorizationException();
+        }
+
+        $invoice = $this->billingRepository->findInvoice($invoiceId, ['resident', 'billingPeriod', 'items', 'payments.verifiedBy', 'payments.rejectedBy', 'booking.facility']);
+
+        if ((int) $invoice->resident_id !== (int) $resident->id) {
+            throw new AuthorizationException('You are not authorized to view this invoice.');
+        }
+
+        return $invoice;
     }
 }

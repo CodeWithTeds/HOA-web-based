@@ -11,6 +11,11 @@ import {
     MapPin,
     Loader2,
     ExternalLink,
+    ShieldCheck,
+    Clock3,
+    Printer,
+    Building2,
+    CalendarDays,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +43,13 @@ interface Payment {
     status: string;
     proof_url?: string | null;
     payment_proof_path?: string | null;
+    verified_by?: { id: number; name: string; email: string } | null;
+    verified_at?: string | null;
+    verified_at_human?: string | null;
+    rejected_by?: { id: number; name: string; email: string } | null;
+    rejected_at?: string | null;
+    rejected_at_human?: string | null;
+    created_at?: string | null;
 }
 
 interface Invoice {
@@ -754,7 +766,7 @@ export default function BillingIndex({
                 onOpenChange={setIsDetailsModalOpen}
             >
                 <DialogContent
-                    className="max-w-xl overflow-hidden rounded-[2.5rem] border-none bg-white p-0 shadow-2xl dark:bg-neutral-900"
+                    className="max-w-4xl w-[95vw] overflow-hidden rounded-[2.5rem] border-none bg-white p-0 shadow-2xl dark:bg-neutral-900 sm:max-w-4xl"
                     style={{ fontFamily: fontStack }}
                 >
                     {isLoadingDetails ? (
@@ -836,6 +848,30 @@ export default function BillingIndex({
 
                                 <div className="custom-scrollbar flex-1 overflow-y-auto px-10 py-8">
                                     <div className="space-y-8">
+                                        {/* RESERVATION BREAKDOWN */}
+                                        {invoiceDetails.is_reservation && invoiceDetails.booking && (
+                                            <section className="rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+                                                <h3 className="mb-3 flex items-center gap-2 text-[11px] font-black tracking-widest text-blue-700 uppercase">
+                                                    <Building2 className="size-3.5" /> Reservation Payment Breakdown
+                                                </h3>
+                                                <div className="grid grid-cols-2 gap-4 text-[12px]">
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase text-neutral-400">Facility</p>
+                                                        <p className="font-black text-[#0A2540]">{invoiceDetails.booking.facility?.name}</p>
+                                                        <p className="text-[11px] font-bold text-neutral-500">{invoiceDetails.booking.facility?.price_type} • ₱{invoiceDetails.booking.facility?.base_price}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase text-neutral-400">Schedule</p>
+                                                        <p className="font-bold text-[#0A2540] flex items-center gap-1"><CalendarDays className="size-3.5 text-blue-500" /> {new Date(invoiceDetails.booking.start_time).toLocaleString()} — {new Date(invoiceDetails.booking.end_time).toLocaleString()}</p>
+                                                        <p className="text-[11px] font-bold text-neutral-500">Purpose: {invoiceDetails.booking.purpose || '—'} • {invoiceDetails.booking.attendees} attendees • Status: {invoiceDetails.booking.status}</p>
+                                                    </div>
+                                                    <div className="col-span-2 flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-blue-100">
+                                                        <span className="text-[11px] font-black uppercase text-neutral-500">Reservation Fee</span>
+                                                        <span className="text-[15px] font-black text-blue-700">{formatCurrency(invoiceDetails.total_amount)}</span>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                        )}
                                         {/* ITEMS */}
                                         <section>
                                             <h3 className="mb-4 flex items-center gap-2 text-[11px] font-black tracking-widest text-neutral-400 uppercase">
@@ -882,98 +918,162 @@ export default function BillingIndex({
                                                         (payment: any) => (
                                                             <div
                                                                 key={payment.id}
-                                                                className={`flex items-center justify-between gap-4 rounded-xl border p-3 transition-all ${payment.status === 'Pending' ? 'border-violet-100/70 bg-violet-50/50 hover:bg-violet-50' : 'border-emerald-100/50 bg-emerald-50/50 hover:bg-emerald-50'}`}
+                                                                className={`rounded-xl border p-3 transition-all ${payment.status === 'Pending' ? 'border-violet-100/70 bg-violet-50/50 hover:bg-violet-50' : payment.status === 'Verified' ? 'border-emerald-100/50 bg-emerald-50/50 hover:bg-emerald-50' : 'border-red-100/70 bg-red-50/50'}`}
                                                             >
-                                                                <div className="space-y-0.5">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span
-                                                                            className={`text-[12px] leading-none font-black tracking-tight uppercase ${payment.status === 'Pending' ? 'text-violet-900' : 'text-emerald-900'}`}
-                                                                        >
-                                                                            {
-                                                                                payment.payment_method
-                                                                            }
-                                                                        </span>
-                                                                        <Badge
-                                                                            className={`h-4 border px-1.5 text-[8px] font-black uppercase ${statusColors[payment.status] || ''}`}
-                                                                        >
-                                                                            {
-                                                                                payment.status
-                                                                            }
-                                                                        </Badge>
-                                                                        {payment.reference_number && (
+                                                                <div className="flex items-center justify-between gap-4">
+                                                                    <div className="space-y-0.5">
+                                                                        <div className="flex items-center gap-2">
                                                                             <span
-                                                                                className={`text-[9px] font-black uppercase italic ${payment.status === 'Pending' ? 'text-violet-600/60' : 'text-emerald-600/60'}`}
+                                                                                className={`text-[12px] leading-none font-black tracking-tight uppercase ${payment.status === 'Pending' ? 'text-violet-900' : payment.status === 'Verified' ? 'text-emerald-900' : 'text-red-900'}`}
                                                                             >
-                                                                                Ref:{' '}
                                                                                 {
-                                                                                    payment.reference_number
+                                                                                    payment.payment_method
                                                                                 }
                                                                             </span>
-                                                                        )}
+                                                                            <Badge
+                                                                                className={`h-4 border px-1.5 text-[8px] font-black uppercase ${statusColors[payment.status] || ''}`}
+                                                                            >
+                                                                                {
+                                                                                    payment.status
+                                                                                }
+                                                                            </Badge>
+                                                                            {payment.reference_number && (
+                                                                                <span
+                                                                                    className={`text-[9px] font-black uppercase italic ${payment.status === 'Pending' ? 'text-violet-600/60' : 'text-emerald-600/60'}`}
+                                                                                >
+                                                                                    Ref:{' '}
+                                                                                    {
+                                                                                        payment.reference_number
+                                                                                    }
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <span
+                                                                                className={`text-[10px] font-bold uppercase ${payment.status === 'Pending' ? 'text-violet-600/80' : 'text-emerald-600/80'}`}
+                                                                            >
+                                                                                {new Date(
+                                                                                    payment.payment_date,
+                                                                                ).toLocaleDateString()}
+                                                                            </span>
+                                                                            {payment.proof_url && (
+                                                                                <a
+                                                                                    href={
+                                                                                        payment.proof_url
+                                                                                    }
+                                                                                    target="_blank"
+                                                                                    className="inline-flex items-center gap-1 text-[9px] font-black text-blue-600 uppercase hover:text-blue-700"
+                                                                                >
+                                                                                    <ExternalLink className="size-3" />{' '}
+                                                                                    View
+                                                                                    Proof
+                                                                                </a>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
                                                                     <div className="flex items-center gap-3">
                                                                         <span
-                                                                            className={`text-[10px] font-bold uppercase ${payment.status === 'Pending' ? 'text-violet-600/80' : 'text-emerald-600/80'}`}
+                                                                            className={`text-[13px] font-black ${payment.status === 'Pending' ? 'text-violet-700' : payment.status === 'Verified' ? 'text-emerald-700' : 'text-red-700'}`}
                                                                         >
-                                                                            {new Date(
-                                                                                payment.payment_date,
-                                                                            ).toLocaleDateString()}
+                                                                            -
+                                                                            {formatCurrency(
+                                                                                payment.amount,
+                                                                            )}
                                                                         </span>
-                                                                        {payment.proof_url && (
+                                                                        {payment.status ===
+                                                                            'Pending' && (
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        rejectProof(
+                                                                                            payment.id,
+                                                                                        )
+                                                                                    }
+                                                                                    className="h-8 rounded-lg bg-red-600 px-3 text-[10px] font-black text-white uppercase hover:bg-red-700"
+                                                                                >
+                                                                                    Reject
+                                                                                </Button>
+                                                                                <Button
+                                                                                    type="button"
+                                                                                    onClick={() =>
+                                                                                        verifyProof(
+                                                                                            payment.id,
+                                                                                        )
+                                                                                    }
+                                                                                    className="h-8 rounded-lg bg-violet-600 px-3 text-[10px] font-black text-white uppercase hover:bg-violet-700"
+                                                                                >
+                                                                                    Verify
+                                                                                </Button>
+                                                                            </div>
+                                                                        )}
+                                                                        {payment.status === 'Verified' && (
                                                                             <a
-                                                                                href={
-                                                                                    payment.proof_url
-                                                                                }
+                                                                                href={`/admin/billing/receipt/${payment.id}`}
                                                                                 target="_blank"
-                                                                                className="inline-flex items-center gap-1 text-[9px] font-black text-blue-600 uppercase hover:text-blue-700"
+                                                                                className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-700 uppercase hover:text-emerald-800 border border-emerald-200 rounded-lg px-2 py-1 bg-white"
                                                                             >
-                                                                                <ExternalLink className="size-3" />{' '}
-                                                                                View
-                                                                                Proof
+                                                                                <Printer className="size-3" /> Receipt
                                                                             </a>
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-3">
-                                                                    <span
-                                                                        className={`text-[13px] font-black ${payment.status === 'Pending' ? 'text-violet-700' : 'text-emerald-700'}`}
-                                                                    >
-                                                                        -
-                                                                        {formatCurrency(
-                                                                            payment.amount,
-                                                                        )}
-                                                                    </span>
-                                                                    {payment.status ===
-                                                                        'Pending' && (
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    rejectProof(
-                                                                                        payment.id,
-                                                                                    )
-                                                                                }
-                                                                                className="h-8 rounded-lg bg-red-600 px-3 text-[10px] font-black text-white uppercase hover:bg-red-700"
-                                                                            >
-                                                                                Reject
-                                                                            </Button>
-                                                                            <Button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    verifyProof(
-                                                                                        payment.id,
-                                                                                    )
-                                                                                }
-                                                                                className="h-8 rounded-lg bg-violet-600 px-3 text-[10px] font-black text-white uppercase hover:bg-violet-700"
-                                                                            >
-                                                                                Verify
-                                                                            </Button>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                                {/* PAYMENT LOG: WHO CONFIRMED + DATETIME */}
+                                                                {payment.status === 'Verified' && (payment.verified_by || payment.verified_at) && (
+                                                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 border border-emerald-100">
+                                                                        <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                                                                            Confirmed by {payment.verified_by?.name || 'System'} {payment.verified_by?.email ? `• ${payment.verified_by.email}` : ''}
+                                                                        </span>
+                                                                        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+                                                                            <Clock3 className="size-3" /> {payment.verified_at_human || payment.verified_at || payment.updated_at}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {payment.status === 'Rejected' && (payment.rejected_by || payment.rejected_at) && (
+                                                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 border border-red-100">
+                                                                        <AlertCircle className="size-3.5 text-red-600 shrink-0" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-wider text-red-700">
+                                                                            Rejected by {payment.rejected_by?.name || 'System'}
+                                                                        </span>
+                                                                        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+                                                                            <Clock3 className="size-3" /> {payment.rejected_at_human || payment.rejected_at || payment.updated_at}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {payment.status === 'Pending' && (
+                                                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-violet-100/50 px-3 py-2 border border-violet-100">
+                                                                        <Clock3 className="size-3.5 text-violet-600 shrink-0" />
+                                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-violet-700">
+                                                                            Awaiting verification • Submitted {new Date(payment.created_at || payment.payment_date).toLocaleString()}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ),
                                                     )}
+                                                </div>
+                                            </section>
+                                        )}
+                                        {/* RESERVATION PAYMENT LOG SUMMARY */}
+                                        {invoiceDetails.is_reservation && invoiceDetails.payments?.some((p: any) => p.status === 'Verified') && (
+                                            <section className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-5">
+                                                <h3 className="mb-3 flex items-center gap-2 text-[11px] font-black tracking-widest text-emerald-700 uppercase">
+                                                    <ShieldCheck className="size-3.5" /> Reservation Payment Log
+                                                </h3>
+                                                <div className="space-y-2">
+                                                    {invoiceDetails.payments.filter((p: any) => p.status === 'Verified').map((p: any) => (
+                                                        <div key={`log-${p.id}`} className="flex items-center justify-between rounded-xl bg-white px-4 py-3 border border-emerald-100">
+                                                            <div>
+                                                                <p className="text-[11px] font-black uppercase text-neutral-500">Confirmed Payment #{p.id} • {formatCurrency(p.amount)}</p>
+                                                                <p className="text-[12px] font-bold text-emerald-800">Verified by {p.verified_by?.name || 'Admin'} ({p.verified_by?.email || '—'})</p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-[11px] font-black text-neutral-500 uppercase">Date & Time of Confirmation</p>
+                                                                <p className="text-[12px] font-black text-[#0A2540]">{p.verified_at_human || p.verified_at || p.updated_at}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </section>
                                         )}

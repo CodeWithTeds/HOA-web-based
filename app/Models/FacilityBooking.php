@@ -27,7 +27,10 @@ class FacilityBooking extends Model
     protected $casts = [
         'start_time' => 'datetime',
         'end_time' => 'datetime',
+        'total_fee' => 'decimal:2',
     ];
+
+    protected $appends = [];
 
     public function resident(): BelongsTo
     {

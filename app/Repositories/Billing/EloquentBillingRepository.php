@@ -28,7 +28,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
      */
     public function getPaginatedInvoices(array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
-        $query = $this->model->newQuery()->with(['resident', 'billingPeriod', 'payments']);
+        $query = $this->model->newQuery()->with(['resident', 'billingPeriod', 'payments.verifiedBy', 'payments.rejectedBy', 'booking.facility']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
@@ -136,6 +136,15 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
      */
     public function findInvoice(int $id, array $relations = []): Invoice
     {
+        // Ensure payments verifier is always loaded when invoice details fetched
+        if (in_array('payments', $relations) && !in_array('payments.verifiedBy', $relations)) {
+            $relations[] = 'payments.verifiedBy';
+            $relations[] = 'payments.rejectedBy';
+        }
+        if (in_array('payments', $relations) && !in_array('booking.facility', $relations)) {
+            $relations[] = 'booking.facility';
+        }
+
         return $this->model->newQuery()->with($relations)->findOrFail($id);
     }
 
@@ -162,6 +171,9 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
      */
     public function findPayment(int $id, array $relations = []): Payment
     {
+        // Always eager load verifier relations when payment is fetched for audit
+        $relations = array_unique(array_merge($relations, ['verifiedBy', 'rejectedBy']));
+
         return Payment::query()->with($relations)->findOrFail($id);
     }
 
@@ -181,7 +193,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     public function getResidentInvoices(int $residentId, ?int $month = null, ?int $year = null): Collection
     {
         $query = $this->model->newQuery()
-            ->with(['billingPeriod', 'payments', 'items'])
+            ->with(['billingPeriod', 'payments.verifiedBy', 'payments.rejectedBy', 'items', 'booking.facility'])
             ->where('resident_id', $residentId);
 
         if ($month) {
@@ -201,7 +213,7 @@ class EloquentBillingRepository extends BaseRepository implements BillingReposit
     public function getResidentPayments(int $residentId, ?int $month = null, ?int $year = null): Collection
     {
         $query = Payment::query()
-            ->with(['invoice.billingPeriod'])
+            ->with(['invoice.billingPeriod', 'invoice.items', 'invoice.booking.facility', 'verifiedBy', 'rejectedBy'])
             ->whereHas('invoice', function ($q) use ($residentId, $month, $year) {
                 $q->where('resident_id', $residentId);
 

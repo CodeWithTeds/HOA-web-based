@@ -17,6 +17,10 @@ class Payment extends Model
         'reference_number',
         'payment_proof_path',
         'status',
+        'verified_by',
+        'verified_at',
+        'rejected_by',
+        'rejected_at',
     ];
 
     protected $casts = [
@@ -24,6 +28,8 @@ class Payment extends Model
         'payment_date' => 'date',
         'payment_method' => PaymentMethod::class,
         'status' => PaymentStatus::class,
+        'verified_at' => 'datetime',
+        'rejected_at' => 'datetime',
     ];
 
     /**
@@ -32,5 +38,15 @@ class Payment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function rejectedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 }

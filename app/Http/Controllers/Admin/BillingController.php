@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RecordPaymentRequest;
 use App\Http\Requests\Admin\StoreBillingPeriodRequest;
 use App\Http\Resources\Billing\InvoiceResource;
+use App\Http\Resources\Billing\PaymentResource;
 use App\Services\Billing\BillingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -73,7 +74,7 @@ class BillingController extends Controller
      */
     public function recordPayment(RecordPaymentRequest $request): RedirectResponse
     {
-        $this->billingService->recordPayment($request->validated());
+        $this->billingService->recordPayment($request->validated(), $request->user()?->id);
 
         return redirect()->back()->with('success', 'Payment recorded and balance updated.');
     }
@@ -81,9 +82,9 @@ class BillingController extends Controller
     /**
      * Verify a pending homeowner payment proof.
      */
-    public function verifyPayment(int $payment): RedirectResponse
+    public function verifyPayment(int $payment, Request $request): RedirectResponse
     {
-        $this->billingService->verifyPayment($payment);
+        $this->billingService->verifyPayment($payment, $request->user()?->id);
 
         return redirect()->back()->with('success', 'Payment proof verified and invoice balance updated.');
     }
@@ -91,9 +92,9 @@ class BillingController extends Controller
     /**
      * Reject a pending homeowner payment proof.
      */
-    public function rejectPayment(int $payment): RedirectResponse
+    public function rejectPayment(int $payment, Request $request): RedirectResponse
     {
-        $this->billingService->rejectPayment($payment);
+        $this->billingService->rejectPayment($payment, $request->user()?->id);
 
         return redirect()->back()->with('success', 'Payment proof rejected. The homeowner can upload a new proof.');
     }
@@ -104,6 +105,16 @@ class BillingController extends Controller
     public function showInvoice(int $id): InvoiceResource
     {
         return new InvoiceResource($this->billingService->getInvoiceDetails($id));
+    }
+
+    /**
+     * Get payment receipt data as JSON (for reservation payment logs).
+     */
+    public function showReceipt(int $payment): PaymentResource
+    {
+        $paymentModel = $this->billingService->getPaymentDetails($payment);
+
+        return new PaymentResource($paymentModel);
     }
 
     /**

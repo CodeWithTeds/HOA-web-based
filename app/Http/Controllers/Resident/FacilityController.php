@@ -10,6 +10,7 @@ use App\Models\Resident;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class FacilityController extends Controller
 {
@@ -65,5 +66,35 @@ class FacilityController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['conflict' => $e->getMessage()]);
         }
+    }
+
+    public function getBookedDates(Request $request)
+    {
+        $facilityId = $request->query('facility_id');
+        
+        if (!$facilityId) {
+            return response()->json(['dates' => []]);
+        }
+
+        $bookings = FacilityBooking::where('facility_id', $facilityId)
+            ->where('status', 'Confirmed')
+            ->where('start_time', '>=', Carbon::now())
+            ->get(['start_time', 'end_time']);
+
+        $bookedDates = [];
+        foreach ($bookings as $booking) {
+            $start = Carbon::parse($booking->start_time);
+            $end = Carbon::parse($booking->end_time);
+            
+            $current = $start->copy()->startOfDay();
+            while ($current->lte($end->copy()->startOfDay())) {
+                $bookedDates[] = $current->format('Y-m-d');
+                $current->addDay();
+            }
+        }
+
+        return response()->json([
+            'dates' => array_unique($bookedDates)
+        ]);
     }
 }

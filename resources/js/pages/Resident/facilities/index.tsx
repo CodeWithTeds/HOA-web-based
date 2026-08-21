@@ -1,13 +1,21 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { Calendar, Clock, Users, Tag, CheckCircle2, Loader2, Sparkles, AlertCircle, Info } from 'lucide-react';
+import { Calendar, Clock, Users, Tag, Loader2, Sparkles, AlertCircle, Info } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { BookingCalendar } from '@/components/BookingCalendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 interface Facility {
@@ -23,10 +31,33 @@ interface Facility {
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
+const PURPOSE_OPTIONS = [
+    { value: 'Birthday Party', label: 'Birthday Party' },
+    { value: 'Wedding Reception', label: 'Wedding Reception' },
+    { value: 'Anniversary Celebration', label: 'Anniversary Celebration' },
+    { value: 'Family Reunion', label: 'Family Reunion' },
+    { value: 'Corporate Event', label: 'Corporate Event' },
+    { value: 'Meeting/Conference', label: 'Meeting/Conference' },
+    { value: 'Seminar/Workshop', label: 'Seminar/Workshop' },
+    { value: 'Training Session', label: 'Training Session' },
+    { value: 'Community Gathering', label: 'Community Gathering' },
+    { value: 'Sports Activity', label: 'Sports Activity' },
+    { value: 'Fitness Class', label: 'Fitness Class' },
+    { value: 'Religious Activity', label: 'Religious Activity' },
+    { value: 'Cultural Event', label: 'Cultural Event' },
+    { value: 'Graduation Party', label: 'Graduation Party' },
+    { value: 'Baby Shower', label: 'Baby Shower' },
+    { value: 'Bridal Shower', label: 'Bridal Shower' },
+    { value: 'Holiday Party', label: 'Holiday Party' },
+    { value: 'Other', label: 'Other' },
+];
+
 export default function FacilityBooking() {
     const { facilities, flash, errors: pageErrors, hasPendingBooking, residentNotLinked } = usePage<any>().props;
     const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [bookedDates, setBookedDates] = useState<string[]>([]);
+    const [isLoadingDates, setIsLoadingDates] = useState(false);
 
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         facility_id: '',
@@ -66,6 +97,28 @@ export default function FacilityBooking() {
         setData('facility_id', facility.id.toString());
         clearErrors();
         setIsDialogOpen(true);
+    };
+
+    useEffect(() => {
+        if (selectedFacility && isDialogOpen) {
+            fetchBookedDates(selectedFacility.id);
+        }
+    }, [selectedFacility, isDialogOpen]);
+
+
+    const fetchBookedDates = async (facilityId: number) => {
+        setIsLoadingDates(true);
+
+        try {
+            const response = await fetch(`/facilities/booked-dates?facility_id=${facilityId}`);
+            const data = await response.json();
+            setBookedDates(data.dates || []);
+        } catch (error) {
+            console.error('Failed to fetch booked dates:', error);
+            setBookedDates([]);
+        } finally {
+            setIsLoadingDates(false);
+        }
     };
 
     const submitBooking = (e: React.FormEvent) => {
@@ -213,7 +266,14 @@ export default function FacilityBooking() {
             </div>
 
             {/* Booking Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+
+                if (!open) {
+                    setBookedDates([]);
+                    setSelectedFacility(null);
+                }
+            }}>
                 <DialogContent className="sm:max-w-[900px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-neutral-900 grid grid-cols-1 md:grid-cols-5">
                     
                     {/* Left Column: Facility Details */}
@@ -305,6 +365,30 @@ export default function FacilityBooking() {
                                         <p className="text-[12px] text-neutral-400 font-bold mt-0.5">Define interval and purpose for usage.</p>
                                     </div>
                                 </div>
+
+                                <div className="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30 p-4">
+                                    <p className="text-[11px] font-black uppercase text-neutral-400 mb-3">Select a date from the calendar below</p>
+                                    <BookingCalendar
+                                        bookedDates={bookedDates}
+                                        selectedDate={data.start_time ? data.start_time.split('T')[0] : undefined}
+                                        onDateSelect={(date) => {
+                                            const currentStart = data.start_time ? data.start_time.split('T')[1] : '09:00';
+                                            const currentEnd = data.end_time ? data.end_time.split('T')[1] : '10:00';
+                                            setData('start_time', `${date}T${currentStart}`);
+                                            setData('end_time', `${date}T${currentEnd}`);
+                                        }}
+                                        disabled={isLoadingDates}
+                                    />
+                                    {isLoadingDates && (
+                                        <div className="mt-4 flex items-center justify-center gap-2 text-neutral-500">
+                                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            <span className="text-sm">Loading booked dates...</span>
+                                        </div>
+                                    )}
+                                </div>
                                 
                                 <div className="grid grid-cols-1 gap-4">
                                     <div className="space-y-1.5">
@@ -322,7 +406,18 @@ export default function FacilityBooking() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Purpose / Occasion <span className="text-red-500">*</span></Label>
-                                        <Input value={data.purpose} onChange={e => setData('purpose', e.target.value)} placeholder="e.g. Birthday Party" className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900" />
+                                        <Select value={data.purpose} onValueChange={(value) => setData('purpose', value)}>
+                                            <SelectTrigger className="h-10 rounded-xl text-[13px] font-black border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                                                <SelectValue placeholder="Select purpose/occasion" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {PURPOSE_OPTIONS.map((option) => (
+                                                    <SelectItem key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                         {errors.purpose && <p className="text-[10px] font-bold text-red-500">⚠ {errors.purpose}</p>}
                                     </div>
                                     <div className="space-y-1.5">
