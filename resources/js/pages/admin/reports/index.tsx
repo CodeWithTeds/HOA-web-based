@@ -187,12 +187,17 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                     <div className="flex gap-4 text-right">
                                         <div>
                                             <p className="text-[10px] font-black text-neutral-400 uppercase leading-none mb-1">Peak Velocity</p>
-                                            <p className="text-[14px] font-black text-emerald-600 tracking-tighter">{formatCurrency(Math.max(...data.trends.map(t => t.amount)))}</p>
+                                            <p className="text-[14px] font-black text-emerald-600 tracking-tighter">{data.trends.length ? formatCurrency(Math.max(...data.trends.map(t => t.amount))) : formatCurrency(0)}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="flex-1 w-full -ml-4 relative z-10">
+                                    {data.trends.length === 0 ? (
+                                        <div className="flex h-full items-center justify-center">
+                                            <p className="text-[12px] font-bold text-neutral-400">No revenue data for selected period</p>
+                                        </div>
+                                    ) : (
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={data.trends}>
                                             <defs>
@@ -247,6 +252,7 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                             />
                                         </AreaChart>
                                     </ResponsiveContainer>
+                                    )}
                                 </div>
 
                                 <div className="mt-6 flex items-center justify-between pt-6 border-t border-neutral-50 dark:border-neutral-800 z-10">
@@ -271,6 +277,11 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                     <p className="text-[11px] font-bold text-neutral-400 mt-0.5 uppercase tracking-tight italic">Status segmentation</p>
                                 </div>
                                 <div className="flex-1 w-full relative">
+                                    {data.distribution.length === 0 ? (
+                                        <div className="flex h-full items-center justify-center">
+                                            <p className="text-[12px] font-bold text-neutral-400">No distribution data</p>
+                                        </div>
+                                    ) : (
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
                                             <Pie
@@ -297,6 +308,7 @@ export default function ReportIndex({ data }: { data: ReportData }) {
                                             />
                                         </PieChart>
                                     </ResponsiveContainer>
+                                    )}
                                     <div className="absolute top-[41%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                                         <p className="text-[10px] font-black text-neutral-400 uppercase leading-none mb-1">Success</p>
                                         <p className="text-[20px] font-black text-[#0A2540] dark:text-white leading-none tracking-tighter">{data.stats.collection_rate}%</p>

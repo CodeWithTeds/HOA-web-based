@@ -842,8 +842,21 @@ export default function BillingIndex({
                                                         .billing_period.name
                                                 }
                                             </p>
+                                            {invoiceDetails.billing_period.description && (
+                                                <p className="mt-2 text-[11px] font-bold text-neutral-500 italic leading-relaxed max-w-[260px] ml-auto">
+                                                    {invoiceDetails.billing_period.description}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
+                                    {(invoiceDetails.billing_period.description || invoiceDetails.description) && (
+                                        <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Billing Period Description</p>
+                                            <p className="text-[13px] font-bold text-[#0A2540] leading-relaxed whitespace-pre-wrap">
+                                                {invoiceDetails.billing_period.description || invoiceDetails.description}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="custom-scrollbar flex-1 overflow-y-auto px-10 py-8">

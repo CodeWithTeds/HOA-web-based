@@ -40,10 +40,11 @@ class EloquentReportRepository implements ReportRepositoryInterface
     public function getRevenueTrends(int $months = 12): Collection
     {
         return Payment::query()
-            ->selectRaw("DATE_FORMAT(payment_date, '%b %Y') as month, SUM(amount) as total, payment_date")
+            ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m-01') as sort_date, DATE_FORMAT(payment_date, '%b %Y') as month, SUM(amount) as total")
+            ->where('status', 'Verified')
             ->where('payment_date', '>=', now()->subMonths($months))
-            ->groupBy('month', 'payment_date')
-            ->orderBy('payment_date')
+            ->groupBy('sort_date', 'month')
+            ->orderBy('sort_date')
             ->get();
     }
 

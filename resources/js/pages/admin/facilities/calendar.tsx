@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfDay, isBefore, isEqual } from 'date-fns';
 import {
     ChevronLeft,
     Calendar as CalendarIcon,
@@ -17,6 +17,7 @@ const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro 
 
 export default function FacilityCalendar({ bookings = [] }: { bookings: any[] }) {
     const [currentDate, setCurrentDate] = useState(new Date());
+    const todayStart = startOfDay(new Date());
 
     const days = eachDayOfInterval({
         start: startOfMonth(currentDate),
@@ -96,11 +97,17 @@ export default function FacilityCalendar({ bookings = [] }: { bookings: any[] })
                         {/* Days */}
                         {days.map(day => {
                             const dayBookings = bookings.filter(b => isSameDay(new Date(b.start_time), day));
+                            const isPastOrToday = isBefore(startOfDay(day), todayStart) || isEqual(startOfDay(day), todayStart);
+                            const isToday = isSameDay(day, new Date());
                             
                             return (
-                                <div key={day.toString()} className="bg-white dark:bg-[#0c0c0c] min-h-[140px] p-3 border-t border-l border-neutral-100 dark:border-neutral-800/40 group">
+                                <div
+                                    key={day.toString()}
+                                    className={`min-h-[140px] p-3 border-t border-l border-neutral-100 dark:border-neutral-800/40 group relative ${isPastOrToday ? 'bg-neutral-100 dark:bg-neutral-900/60 opacity-60 cursor-not-allowed' : 'bg-white dark:bg-[#0c0c0c] cursor-pointer hover:bg-blue-50/50'}`}
+                                    title={isPastOrToday ? 'Past and present dates are disabled for new bookings' : 'Available for new facility bookings'}
+                                >
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className={`text-[14px] font-black ${isSameDay(day, new Date()) ? 'text-blue-600' : 'text-neutral-400'}`}>
+                                        <span className={`text-[14px] font-black ${isToday ? 'text-blue-600' : isPastOrToday ? 'text-neutral-300' : 'text-neutral-700 dark:text-neutral-300'}`}>
                                             {format(day, 'd')}
                                         </span>
                                         {dayBookings.length > 0 && (
@@ -112,7 +119,7 @@ export default function FacilityCalendar({ bookings = [] }: { bookings: any[] })
                                     
                                     <div className="space-y-1">
                                         {dayBookings.slice(0, 3).map((booking: any) => (
-                                            <div key={booking.id} className="text-[10px] p-1.5 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 text-blue-700 dark:text-blue-300 truncate font-bold">
+                                            <div key={booking.id} className={`text-[10px] p-1.5 rounded-lg border truncate font-bold ${isPastOrToday ? 'bg-neutral-200/50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-500' : 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/40 text-blue-700 dark:text-blue-300'}`}>
                                                 {booking.facility?.name}
                                             </div>
                                         ))}
@@ -122,6 +129,11 @@ export default function FacilityCalendar({ bookings = [] }: { bookings: any[] })
                                             </div>
                                         )}
                                     </div>
+                                    {isPastOrToday && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 bg-white/80 dark:bg-neutral-900/80 px-2 py-1 rounded-full border">Disabled</span>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

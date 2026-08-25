@@ -276,7 +276,14 @@ export default function ResidentIndex({ residents, filters }: { residents: any, 
                                                     {canDelete && (
                                                         <>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600">
+                                                            <DropdownMenuItem
+                                                                onSelect={() => {
+                                                                    if (confirm(`Archive ${resident.first_name} ${resident.last_name}? The record will be moved to Archive and can be restored.`)) {
+                                                                        router.delete(`/admin/residents/${resident.id}`, { preserveScroll: true });
+                                                                    }
+                                                                }}
+                                                                className="gap-2 rounded-md font-bold text-[11px] cursor-pointer text-red-600"
+                                                            >
                                                                 <Trash2 className="size-3.5" /> Archive
                                                             </DropdownMenuItem>
                                                         </>

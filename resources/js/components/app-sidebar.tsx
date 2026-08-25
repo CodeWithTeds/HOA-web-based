@@ -14,6 +14,7 @@ import {
     LogOut,
     Receipt,
     FileText,
+    Archive,
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
@@ -110,7 +111,7 @@ export function AppSidebar() {
                 icon: AlertCircle,
             },
             { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
-            { title: 'System Settings', href: '#', icon: ShieldCheck },
+            { title: 'Archive', href: '/admin/archive', icon: Archive },
         );
     }
 
@@ -155,6 +156,7 @@ export function AppSidebar() {
                 icon: AlertCircle,
             },
             { title: 'Chat Support', href: '/admin/chat', icon: MessageSquare },
+            { title: 'Archive', href: '/admin/archive', icon: Archive },
             { title: 'Logout', href: '/logout', icon: LogOut },
         );
     }

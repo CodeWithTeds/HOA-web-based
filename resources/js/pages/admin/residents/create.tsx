@@ -22,7 +22,14 @@ import { SweetAlert } from '@/components/ui/sweet-alert';
 
 const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif';
 
-export default function ResidentCreate() {
+interface StreetUnitOption {
+    value: string;
+    label: string;
+    street: string;
+    unit: string | null;
+}
+
+export default function ResidentCreate({ streetOptions = [], unitOptions = [], addressOptions = [] }: { streetOptions?: string[]; unitOptions?: string[]; addressOptions?: StreetUnitOption[] }) {
     const { flash } = usePage<any>().props;
     const [alert, setAlert] = useState<{
         show: boolean;
@@ -253,12 +260,55 @@ export default function ResidentCreate() {
                                     </div>
                                     <div className="col-span-2 space-y-1.5">
                                         <Label className="text-[11px] font-black uppercase text-neutral-400">Street Name</Label>
-                                        <Input value={data.street} onChange={e => setData('street', e.target.value)} placeholder="e.g. Diamond St." className="h-9 rounded-lg text-[13px] font-bold" />
+                                        <select
+                                            value={String(data.street)}
+                                            onChange={e => setData('street', e.target.value)}
+                                            className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        >
+                                            <option value="">Select Street</option>
+                                            {streetOptions.map((s) => (
+                                                <option key={s} value={String(s)}>{String(s)}</option>
+                                            ))}
+                                        </select>
+                                        {errors.street && <p className="text-[10px] font-bold text-red-500">⚠ {errors.street}</p>}
                                     </div>
                                     <div className="col-span-1 space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Unit</Label>
-                                        <Input value={data.unit} onChange={e => setData('unit', e.target.value)} placeholder="4B" className="h-9 rounded-lg text-[13px] font-bold" />
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400">Unit / Street Unit</Label>
+                                        <select
+                                            value={String(data.unit ?? '')}
+                                            onChange={e => setData('unit', e.target.value)}
+                                            className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        >
+                                            <option value="">Select Unit</option>
+                                            {unitOptions.map((u) => (
+                                                <option key={u} value={String(u)}>{String(u)}</option>
+                                            ))}
+                                        </select>
+                                        {errors.unit && <p className="text-[10px] font-bold text-red-500">⚠ {errors.unit}</p>}
                                     </div>
+                                    {/* Composite Street/Unit dropdown from existing records */}
+                                    {addressOptions.length > 0 && (
+                                        <div className="col-span-3 space-y-1.5">
+                                            <Label className="text-[11px] font-black uppercase text-neutral-400">Existing Street/Unit Records</Label>
+                                            <select
+                                                value={data.street ? `${data.street}${data.unit ? '|' + data.unit : ''}` : ''}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    if (!val) return;
+                                                    const [s, u] = val.split('|');
+                                                    setData('street', String(s));
+                                                    setData('unit', u ? String(u) : '');
+                                                }}
+                                                className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                            >
+                                                <option value="">— Select Existing Street/Unit —</option>
+                                                {addressOptions.map((opt) => (
+                                                    <option key={opt.value} value={String(opt.value)}>{String(opt.label)}</option>
+                                                ))}
+                                            </select>
+                                            <p className="text-[10px] font-bold text-neutral-400">Select an existing Street/Unit instead of typing. Values are handled as text/string.</p>
+                                        </div>
+                                    )}
                                     <div className="col-span-2 space-y-1.5">
                                         <Label className="text-[11px) font-black uppercase text-neutral-400">Resident Type <span className="text-red-500">*</span></Label>
                                         <select 

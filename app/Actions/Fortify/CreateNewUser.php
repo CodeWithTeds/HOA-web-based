@@ -44,7 +44,7 @@ class CreateNewUser implements CreatesNewUsers
             'last_name' => ['required', 'string', 'max:255'],
             'suffix' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', new Enum(Gender::class)],
-            'birth_date' => ['nullable', 'date'],
+            'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
             'civil_status' => ['nullable', new Enum(CivilStatus::class)],
             'nationality' => ['nullable', 'string', 'max:100'],
             'mobile_number' => ['nullable', 'string', 'max:20'],
@@ -52,14 +52,14 @@ class CreateNewUser implements CreatesNewUsers
             'phase' => ['nullable', 'string', 'max:50'],
             'block' => ['nullable', 'string', 'max:50'],
             'lot' => ['nullable', 'string', 'max:50'],
-            'street' => ['nullable', 'string', 'max:255'],
+            'street' => ['nullable', 'string', 'max:255', Rule::in(['Kyoto', 'Lisbon', 'El Grande', 'Jirosalem'])],
             'unit' => ['nullable', 'string', 'max:50'],
             'resident_type' => ['required', new Enum(ResidentType::class)],
             'move_in_date' => ['nullable', 'date'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
         ], [
-            'phase' => [new UniqueResidentAddress()],
+            'phase' => [new UniqueResidentAddress(null, $input)],
         ])->validate();
 
         return DB::transaction(function () use ($input) {

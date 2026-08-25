@@ -21,6 +21,13 @@ const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro 
 
 export default function BookingCreate({ residents, facilities }: { residents: any[], facilities: any[] }) {
     const { flash } = usePage<any>().props;
+    // Only future dates allowed (tomorrow onwards) – past and present disabled
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const minDateTime = new Date(tomorrow);
+    minDateTime.setMinutes(minDateTime.getMinutes() - minDateTime.getTimezoneOffset());
+    const minDateTimeLocal = minDateTime.toISOString().slice(0, 16);
     const [alert, setAlert] = useState<{
         show: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
@@ -179,12 +186,14 @@ export default function BookingCreate({ residents, facilities }: { residents: an
                                     <div className="grid grid-cols-1 gap-4">
                                         <div className="space-y-1.5">
                                             <Label className="text-[11px] font-black uppercase text-neutral-400">Start Date & Time <span className="text-red-500">*</span></Label>
-                                            <Input type="datetime-local" value={data.start_time} onChange={e => setData('start_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200" />
+                                            <Input type="datetime-local" value={data.start_time} min={minDateTimeLocal} onChange={e => setData('start_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200" />
+                                            <p className="text-[10px] font-bold text-neutral-400">Only future dates selectable (tomorrow onwards)</p>
                                             {errors.start_time && <p className="text-[10px] font-bold text-red-500">⚠ {errors.start_time}</p>}
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label className="text-[11px] font-black uppercase text-neutral-400">End Date & Time <span className="text-red-500">*</span></Label>
-                                            <Input type="datetime-local" value={data.end_time} onChange={e => setData('end_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200" />
+                                            <Input type="datetime-local" value={data.end_time} min={minDateTimeLocal} onChange={e => setData('end_time', e.target.value)} className="h-10 rounded-xl text-[13px] font-black border-neutral-200" />
+                                            <p className="text-[10px] font-bold text-neutral-400">Must be after start and only future dates</p>
                                             {errors.end_time && <p className="text-[10px] font-bold text-red-500">⚠ {errors.end_time}</p>}
                                         </div>
                                     </div>

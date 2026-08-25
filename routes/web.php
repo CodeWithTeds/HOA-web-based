@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ComplaintController;
 use App\Http\Controllers\Admin\FacilityController;
+use App\Http\Controllers\Admin\ArchiveController;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\Admin\ChatController as AdminChatController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -63,7 +64,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('admin/user/{user}/status', [StaffController::class, 'toggleStatus'])->name('admin.user.status');
         Route::delete('admin/user/{user}', [StaffController::class, 'destroy'])->name('admin.user.destroy');
 
-        // Admin-only destructive actions
+        // Admin-only destructive actions (now archiving via SoftDeletes)
         Route::delete('admin/residents/{resident}', [ResidentController::class, 'destroy'])->name('admin.residents.destroy');
         Route::delete('admin/facilities/{id}', [FacilityController::class, 'destroy'])->name('admin.facilities.destroy');
         Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
@@ -134,6 +135,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/chat', [AdminChatController::class, 'index'])->name('admin.chat.index');
         Route::get('admin/chat/{residentId}', [AdminChatController::class, 'show'])->name('admin.chat.show');
         Route::post('admin/chat', [AdminChatController::class, 'store'])->name('admin.chat.store');
+
+        // Archive (accessible to admin/staff)
+        Route::get('admin/archive', [ArchiveController::class, 'index'])->name('admin.archive.index');
+        Route::patch('admin/archive/{type}/{id}/restore', [ArchiveController::class, 'restore'])->name('admin.archive.restore');
+        Route::delete('admin/archive/{type}/{id}/force', [ArchiveController::class, 'forceDelete'])->name('admin.archive.forceDelete');
     });
 
     Route::middleware('role:homeowner')->group(function () {

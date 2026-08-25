@@ -48,7 +48,42 @@ class ResidentController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('admin/residents/create');
+        $streetOptions = Resident::whereNotNull('street')
+            ->where('street', '!=', '')
+            ->distinct()
+            ->pluck('street')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $unitOptions = Resident::whereNotNull('unit')
+            ->where('unit', '!=', '')
+            ->distinct()
+            ->pluck('unit')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        // Also provide composite address options for Street/Unit dropdown
+        $addressOptions = Resident::whereNotNull('street')
+            ->where('street', '!=', '')
+            ->select('street', 'unit')
+            ->distinct()
+            ->get()
+            ->map(fn ($r) => [
+                'value' => $r->street . ($r->unit ? '|' . $r->unit : ''),
+                'label' => $r->street . ($r->unit ? ' (' . $r->unit . ')' : ''),
+                'street' => $r->street,
+                'unit' => $r->unit,
+            ])
+            ->values()
+            ->toArray();
+
+        return Inertia::render('admin/residents/create', [
+            'streetOptions' => $streetOptions,
+            'unitOptions' => $unitOptions,
+            'addressOptions' => $addressOptions,
+        ]);
     }
 
     /**
@@ -90,8 +125,41 @@ class ResidentController extends Controller
     {
         $residentModel = $this->residentService->findResident($resident);
 
+        $streetOptions = Resident::whereNotNull('street')
+            ->where('street', '!=', '')
+            ->distinct()
+            ->pluck('street')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $unitOptions = Resident::whereNotNull('unit')
+            ->where('unit', '!=', '')
+            ->distinct()
+            ->pluck('unit')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $addressOptions = Resident::whereNotNull('street')
+            ->where('street', '!=', '')
+            ->select('street', 'unit')
+            ->distinct()
+            ->get()
+            ->map(fn ($r) => [
+                'value' => $r->street . ($r->unit ? '|' . $r->unit : ''),
+                'label' => $r->street . ($r->unit ? ' (' . $r->unit . ')' : ''),
+                'street' => $r->street,
+                'unit' => $r->unit,
+            ])
+            ->values()
+            ->toArray();
+
         return Inertia::render('admin/residents/edit', [
             'resident' => $residentModel,
+            'streetOptions' => $streetOptions,
+            'unitOptions' => $unitOptions,
+            'addressOptions' => $addressOptions,
         ]);
     }
 

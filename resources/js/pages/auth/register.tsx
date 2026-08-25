@@ -114,6 +114,8 @@ function SectionHeader({
     );
 }
 
+const TODAY_ISO = new Date().toISOString().split('T')[0];
+
 export default function Register() {
     const [step, setStep] = useState(1);
     const [clientErrors, setClientErrors] = useState<RegisterErrors>({});
@@ -417,6 +419,7 @@ export default function Register() {
                                         id="birth_date"
                                         type="date"
                                         value={data.birth_date}
+                                        max={TODAY_ISO}
                                         onChange={(event) =>
                                             updateField(
                                                 'birth_date',
@@ -668,7 +671,7 @@ export default function Register() {
                                         Street Name{' '}
                                         <span className="text-red-500">*</span>
                                     </Label>
-                                    <Input
+                                    <select
                                         id="street"
                                         value={data.street}
                                         onChange={(event) =>
@@ -677,8 +680,14 @@ export default function Register() {
                                                 event.target.value,
                                             )
                                         }
-                                        className={fieldClass}
-                                    />
+                                        className={selectClass}
+                                    >
+                                        <option value="">Select Street</option>
+                                        <option value="Kyoto">Kyoto</option>
+                                        <option value="Lisbon">Lisbon</option>
+                                        <option value="El Grande">El Grande</option>
+                                        <option value="Jirosalem">Jirosalem</option>
+                                    </select>
                                     <InputError message={errorFor('street')} />
                                 </div>
                                 <div className="grid gap-2">

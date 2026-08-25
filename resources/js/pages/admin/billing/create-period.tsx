@@ -52,12 +52,14 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
         }
     }, [flash?.success, flash?.error]);
 
+    const todayIso = new Date().toISOString().split('T')[0];
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         amount: '',
         start_date: '',
         end_date: '',
         due_date: '',
+        description: '',
         resident_ids: [] as number[],
     });
 
@@ -220,17 +222,56 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
 
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage Start</Label>
-                                        <Input type="date" value={data.start_date} onChange={e => setData('start_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage Start <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            type="date"
+                                            value={data.start_date}
+                                            max={data.end_date || undefined}
+                                            onChange={e => setData('start_date', e.target.value)}
+                                            className="h-10 rounded-lg text-[13px] font-bold border-neutral-200"
+                                        />
+                                        <p className="text-[10px] font-bold text-neutral-400">Invalid dates based on billing period are disabled</p>
+                                        {errors.start_date && <p className="text-[10px] font-bold text-red-500">⚠ {errors.start_date}</p>}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage End</Label>
-                                        <Input type="date" value={data.end_date} onChange={e => setData('end_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-neutral-200" />
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Coverage End <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            type="date"
+                                            value={data.end_date}
+                                            min={data.start_date || undefined}
+                                            onChange={e => setData('end_date', e.target.value)}
+                                            className="h-10 rounded-lg text-[13px] font-bold border-neutral-200"
+                                        />
+                                        <p className="text-[10px] font-bold text-neutral-400">Must be after coverage start</p>
+                                        {errors.end_date && <p className="text-[10px] font-bold text-red-500">⚠ {errors.end_date}</p>}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Payment Due</Label>
-                                        <Input type="date" value={data.due_date} onChange={e => setData('due_date', e.target.value)} className="h-10 rounded-lg text-[13px] font-bold border-red-100 bg-red-50/20 text-red-600" />
+                                        <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Payment Due <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            type="date"
+                                            value={data.due_date}
+                                            min={data.start_date ? (data.start_date > todayIso ? data.start_date : todayIso) : todayIso}
+                                            onChange={e => setData('due_date', e.target.value)}
+                                            className="h-10 rounded-lg text-[13px] font-bold border-red-100 bg-red-50/20 text-red-600"
+                                        />
+                                        <p className="text-[10px] font-bold text-neutral-400">Past dates are disabled — present or future only</p>
+                                        {errors.due_date && <p className="text-[10px] font-bold text-red-500">⚠ {errors.due_date}</p>}
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider flex items-center gap-2">
+                                        <Info className="size-3.5 text-blue-500" /> Description
+                                    </Label>
+                                    <textarea
+                                        value={data.description}
+                                        onChange={e => setData('description', e.target.value)}
+                                        placeholder="Enter additional information, notes, or details about the billing period..."
+                                        rows={4}
+                                        className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    />
+                                    {errors.description && <p className="text-[10px] font-bold text-red-500">⚠ {errors.description}</p>}
+                                    <p className="text-[10px] font-bold text-neutral-400">This description will be saved with the billing record and displayed in billing details.</p>
                                 </div>
 
                                 {/* AUTHORIZATION CARD WITH INTEGRATED ACTIONS */}

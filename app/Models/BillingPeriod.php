@@ -5,15 +5,19 @@ namespace App\Models;
 use App\Enums\BillingPeriodStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BillingPeriod extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'start_date',
         'end_date',
         'due_date',
         'amount',
+        'description',
         'status',
     ];
 
