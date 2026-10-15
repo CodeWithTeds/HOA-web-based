@@ -124,7 +124,12 @@ export default function FacilityBooking() {
     const submitBooking = (e: React.FormEvent) => {
         e.preventDefault();
         post('/facilities/book', {
+            preserveState: true,
             preserveScroll: true,
+            onSuccess: () => {
+                setIsDialogOpen(false);
+                reset();
+            }
         });
     };
 
@@ -350,6 +355,17 @@ export default function FacilityBooking() {
                                 <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3">
                                     <AlertCircle className="size-5 text-red-600 shrink-0" />
                                     <p className="text-[12px] font-black text-red-600 tracking-tight">{pageErrors.conflict}</p>
+                                </div>
+                            )}
+
+                            {Object.keys(errors).length > 0 && (
+                                <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex flex-col gap-2">
+                                    <p className="text-[12px] font-black text-red-600 tracking-tight uppercase">Please fix the following errors:</p>
+                                    <ul className="list-disc pl-5">
+                                        {Object.entries(errors).map(([key, error]) => (
+                                            <li key={key} className="text-[11px] font-bold text-red-600">{error as string}</li>
+                                        ))}
+                                    </ul>
                                 </div>
                             )}
 
