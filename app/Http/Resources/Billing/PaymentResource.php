@@ -27,6 +27,7 @@ class PaymentResource extends JsonResource
             ] : null),
             'verified_at' => $this->verified_at?->toDateTimeString(),
             'verified_at_human' => $this->verified_at?->format('M d, Y h:i A'),
+            'verification_notes' => $this->verification_notes,
             'rejected_by' => $this->whenLoaded('rejectedBy', fn () => $this->rejectedBy ? [
                 'id' => $this->rejectedBy->id,
                 'name' => $this->rejectedBy->name,
@@ -34,6 +35,7 @@ class PaymentResource extends JsonResource
             ] : null),
             'rejected_at' => $this->rejected_at?->toDateTimeString(),
             'rejected_at_human' => $this->rejected_at?->format('M d, Y h:i A'),
+            'rejection_reason' => $this->rejection_reason,
             'created_at' => $this->created_at?->toDateTimeString(),
             'updated_at' => $this->updated_at?->toDateTimeString(),
             'invoice' => $this->whenLoaded('invoice', function () {

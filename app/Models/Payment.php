@@ -19,8 +19,10 @@ class Payment extends Model
         'status',
         'verified_by',
         'verified_at',
+        'verification_notes',
         'rejected_by',
         'rejected_at',
+        'rejection_reason',
     ];
 
     protected $casts = [

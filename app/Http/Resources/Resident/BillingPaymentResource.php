@@ -49,6 +49,7 @@ class BillingPaymentResource extends JsonResource
             ] : null,
             'rejected_at' => $this->rejected_at?->toDateTimeString(),
             'rejected_at_human' => $this->rejected_at?->format('M d, Y h:i A'),
+            'rejection_reason' => $this->rejection_reason,
             'created_at' => $this->created_at?->toDateTimeString(),
             'booking' => $booking ? [
                 'id' => $booking->id,
