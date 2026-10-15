@@ -82,6 +82,7 @@ type Payment = {
     rejected_by?: { id: number; name: string; email: string } | null;
     rejected_at?: string | null;
     rejected_at_human?: string | null;
+    rejection_reason?: string | null;
     created_at?: string | null;
     booking?: {
         id: number;
@@ -516,9 +517,16 @@ params.year = year;
                                                                 </div>
                                                             )}
                                                             {payment.status === 'Rejected' && (
-                                                                <div className="mt-3 flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2">
-                                                                    <AlertCircle className="size-3.5 text-red-600 shrink-0" />
-                                                                    <span className="text-[10px] font-black uppercase text-red-700">Rejected {payment.rejected_by?.name ? `by ${payment.rejected_by.name}` : ''} {payment.rejected_at_human ? `• ${payment.rejected_at_human}` : ''}</span>
+                                                                <div className="mt-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <AlertCircle className="size-3.5 text-red-600 shrink-0" />
+                                                                        <span className="text-[10px] font-black uppercase text-red-700">Rejected {payment.rejected_by?.name ? `by ${payment.rejected_by.name}` : ''} {payment.rejected_at_human ? `• ${payment.rejected_at_human}` : ''}</span>
+                                                                    </div>
+                                                                    {payment.rejection_reason && (
+                                                                        <p className="mt-1.5 pl-5 text-[11px] font-bold text-red-600">
+                                                                            <span className="font-black uppercase tracking-wide">Reason: </span>{payment.rejection_reason}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             )}
                                                         </div>
