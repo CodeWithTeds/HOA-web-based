@@ -180,9 +180,9 @@ class BillingService
      *
      * @throws AuthorizationException
      */
-    public function verifyPayment(int $paymentId, ?int $verifiedBy = null): Payment
+    public function verifyPayment(int $paymentId, ?int $verifiedBy = null, ?string $notes = null): Payment
     {
-        return DB::transaction(function () use ($paymentId, $verifiedBy) {
+        return DB::transaction(function () use ($paymentId, $verifiedBy, $notes) {
             $payment = $this->billingRepository->findPayment($paymentId, ['invoice']);
 
             if ($payment->status !== PaymentStatus::PENDING) {
@@ -193,6 +193,7 @@ class BillingService
                 'status' => PaymentStatus::VERIFIED,
                 'verified_by' => $verifiedBy,
                 'verified_at' => now(),
+                'verification_notes' => $notes,
                 'rejected_by' => null,
                 'rejected_at' => null,
             ]);
@@ -212,7 +213,7 @@ class BillingService
      *
      * @throws AuthorizationException
      */
-    public function rejectPayment(int $paymentId, ?int $rejectedBy = null): Payment
+    public function rejectPayment(int $paymentId, ?int $rejectedBy = null, ?string $reason = null): Payment
     {
         $payment = $this->billingRepository->findPayment($paymentId);
 
@@ -224,6 +225,7 @@ class BillingService
             'status' => PaymentStatus::REJECTED,
             'rejected_by' => $rejectedBy,
             'rejected_at' => now(),
+            'rejection_reason' => $reason,
             'verified_by' => null,
             'verified_at' => null,
         ]);

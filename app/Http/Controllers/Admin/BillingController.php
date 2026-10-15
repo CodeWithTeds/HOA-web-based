@@ -84,7 +84,8 @@ class BillingController extends Controller
      */
     public function verifyPayment(int $payment, Request $request): RedirectResponse
     {
-        $this->billingService->verifyPayment($payment, $request->user()?->id);
+        $notes = $request->input('verification_notes');
+        $this->billingService->verifyPayment($payment, $request->user()?->id, $notes);
 
         return redirect()->back()->with('success', 'Payment proof verified and invoice balance updated.');
     }
@@ -94,7 +95,13 @@ class BillingController extends Controller
      */
     public function rejectPayment(int $payment, Request $request): RedirectResponse
     {
-        $this->billingService->rejectPayment($payment, $request->user()?->id);
+        $reason = $request->input('rejection_reason');
+
+        if (empty($reason)) {
+            return redirect()->back()->with('error', 'A rejection reason is required.');
+        }
+
+        $this->billingService->rejectPayment($payment, $request->user()?->id, $reason);
 
         return redirect()->back()->with('success', 'Payment proof rejected. The homeowner can upload a new proof.');
     }
