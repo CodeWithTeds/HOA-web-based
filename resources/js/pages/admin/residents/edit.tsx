@@ -353,8 +353,7 @@ export default function ResidentEdit({ resident, streetOptions = [], unitOptions
                                         >
                                             <option value="Owner">Owner</option>
                                             <option value="Tenant">Tenant</option>
-                                            <option value="Family Member">Family Member</option>
-                                            <option value="Helper">Helper</option>
+
                                         </select>
                                     </div>
                                 </div>

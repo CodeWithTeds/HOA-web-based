@@ -726,10 +726,6 @@ export default function Register() {
                                     >
                                         <option value="Owner">Owner</option>
                                         <option value="Tenant">Tenant</option>
-                                        <option value="Family Member">
-                                            Family Member
-                                        </option>
-                                        <option value="Helper">Helper</option>
                                     </select>
                                     <InputError
                                         message={errorFor('resident_type')}
