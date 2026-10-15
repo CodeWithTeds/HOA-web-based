@@ -93,10 +93,6 @@ export function AppSidebar() {
                 items: [
                     { title: 'Facilities List', href: '/admin/facilities' },
                     { title: 'Reservations', href: '/admin/bookings' },
-                    {
-                        title: 'Calendar Schedule',
-                        href: '/admin/facilities/calendar',
-                    },
                 ],
             },
 
@@ -139,10 +135,6 @@ export function AppSidebar() {
                 items: [
                     { title: 'Facilities List', href: '/admin/facilities' },
                     { title: 'Reservations', href: '/admin/bookings' },
-                    {
-                        title: 'Calendar Schedule',
-                        href: '/admin/facilities/calendar',
-                    },
                 ],
             },
             {

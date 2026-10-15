@@ -106,7 +106,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/facilities', [FacilityController::class, 'index'])->name('admin.facilities.index');
         Route::get('admin/facilities/create', [FacilityController::class, 'create'])->name('admin.facilities.create');
         Route::get('admin/facilities/{id}/edit', [FacilityController::class, 'edit'])->name('admin.facilities.edit');
-        Route::get('admin/facilities/calendar', [FacilityController::class, 'calendar'])->name('admin.facilities.calendar');
         Route::post('admin/facilities', [FacilityController::class, 'store'])->name('admin.facilities.store');
         Route::put('admin/facilities/{id}', [FacilityController::class, 'update'])->name('admin.facilities.update');
 
