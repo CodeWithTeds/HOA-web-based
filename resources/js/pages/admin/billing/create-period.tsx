@@ -30,11 +30,13 @@ interface Resident {
     phase: string;
     block: string;
     lot: string;
+    resident_type?: string;
 }
 
 export default function BillingPeriodCreate({ residents }: { residents: Resident[] }) {
     const { flash } = usePage<any>().props;
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState<'name' | 'type'>('name');
     const [alert, setAlert] = useState<{
         show: boolean;
         type: 'success' | 'error' | 'warning' | 'info';
@@ -64,10 +66,22 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
     });
 
     const filteredResidents = useMemo(() => {
-        return residents.filter(r => 
+        const filtered = residents.filter(r => 
             `${r.first_name} ${r.last_name}`.toLowerCase().includes(searchTerm.toLowerCase())
         );
-    }, [residents, searchTerm]);
+        
+        if (sortBy === 'type') {
+            return [...filtered].sort((a, b) => {
+                const typeA = a.resident_type || '';
+                const typeB = b.resident_type || '';
+                if (typeA < typeB) return -1;
+                if (typeA > typeB) return 1;
+                return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
+            });
+        }
+        
+        return filtered;
+    }, [residents, searchTerm, sortBy]);
 
     const toggleResident = (id: number) => {
         setData('resident_ids', 
@@ -156,14 +170,24 @@ export default function BillingPeriodCreate({ residents }: { residents: Resident
                                 </button>
                             </div>
                             
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-neutral-400" />
-                                <Input 
-                                    placeholder="Filter community..." 
-                                    className="h-9 pl-9 rounded-xl text-[12px] font-bold border-neutral-200 bg-white"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                />
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-neutral-400" />
+                                    <Input 
+                                        placeholder="Filter community..." 
+                                        className="h-9 pl-9 rounded-xl text-[12px] font-bold border-neutral-200 bg-white"
+                                        value={searchTerm}
+                                        onChange={e => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as 'name' | 'type')}
+                                    className="h-9 rounded-xl text-[12px] font-bold border-neutral-200 bg-white px-3 dark:bg-neutral-900 dark:border-neutral-800"
+                                >
+                                    <option value="name">Sort by Name</option>
+                                    <option value="type">Sort by Type</option>
+                                </select>
                             </div>
 
                             <div className="h-[480px] overflow-y-auto pr-2 space-y-1 custom-scrollbar">

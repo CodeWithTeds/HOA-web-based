@@ -49,6 +49,8 @@ interface Payment {
     rejected_by?: { id: number; name: string; email: string } | null;
     rejected_at?: string | null;
     rejected_at_human?: string | null;
+    rejection_reason?: string | null;
+    verification_notes?: string | null;
     created_at?: string | null;
 }
 
@@ -96,6 +98,11 @@ export default function BillingIndex({
         title: string;
         message?: string;
     }>({ show: false, type: 'success', title: '' });
+
+    const [rejectPaymentId, setRejectPaymentId] = useState<number | null>(null);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [verifyPaymentId, setVerifyPaymentId] = useState<number | null>(null);
+    const [verificationNotes, setVerificationNotes] = useState('');
 
     useEffect(() => {
         if (flash?.success) {
@@ -175,12 +182,21 @@ export default function BillingIndex({
     };
 
     const verifyProof = (paymentId: number) => {
+        setVerifyPaymentId(paymentId);
+        setVerificationNotes('');
+    };
+
+    const confirmVerify = () => {
+        if (!verifyPaymentId) return;
+
         router.patch(
-            `/admin/billing/payments/${paymentId}/verify`,
-            {},
+            `/admin/billing/payments/${verifyPaymentId}/verify`,
+            { verification_notes: verificationNotes },
             {
                 preserveScroll: true,
                 onSuccess: () => {
+                    setVerifyPaymentId(null);
+                    setVerificationNotes('');
                     if (selectedInvoice) {
                         void handleViewDetails(selectedInvoice);
                     }
@@ -190,12 +206,29 @@ export default function BillingIndex({
     };
 
     const rejectProof = (paymentId: number) => {
+        setRejectPaymentId(paymentId);
+        setRejectionReason('');
+    };
+
+    const confirmReject = () => {
+        if (!rejectPaymentId) return;
+        if (!rejectionReason.trim()) {
+            setAlert({
+                show: true,
+                type: 'error',
+                title: 'Rejection Reason Required',
+                message: 'Please provide a reason for rejecting this payment.',
+            });
+            return;
+        }
         router.patch(
-            `/admin/billing/payments/${paymentId}/reject`,
-            {},
+            `/admin/billing/payments/${rejectPaymentId}/reject`,
+            { rejection_reason: rejectionReason.trim() },
             {
                 preserveScroll: true,
                 onSuccess: () => {
+                    setRejectPaymentId(null);
+                    setRejectionReason('');
                     if (selectedInvoice) {
                         void handleViewDetails(selectedInvoice);
                     }
@@ -223,8 +256,6 @@ export default function BillingIndex({
     const typeColors: any = {
         Owner: 'text-blue-600 bg-blue-50/50 border-blue-100',
         Tenant: 'text-amber-600 bg-amber-50/50 border-amber-100',
-        'Family Member': 'text-emerald-600 bg-emerald-50/50 border-emerald-100',
-        Helper: 'text-neutral-500 bg-neutral-50/50 border-neutral-100',
     };
 
     const formatCurrency = (amount: number) => {
@@ -1033,25 +1064,39 @@ export default function BillingIndex({
                                                                 </div>
                                                                 {/* PAYMENT LOG: WHO CONFIRMED + DATETIME */}
                                                                 {payment.status === 'Verified' && (payment.verified_by || payment.verified_at) && (
-                                                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 border border-emerald-100">
-                                                                        <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
-                                                                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">
-                                                                            Confirmed by {payment.verified_by?.name || 'System'} {payment.verified_by?.email ? `• ${payment.verified_by.email}` : ''}
-                                                                        </span>
-                                                                        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
-                                                                            <Clock3 className="size-3" /> {payment.verified_at_human || payment.verified_at || payment.updated_at}
-                                                                        </span>
+                                                                    <div className="mt-3 rounded-lg bg-white/80 px-3 py-2 border border-emerald-100">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <ShieldCheck className="size-3.5 text-emerald-600 shrink-0" />
+                                                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                                                                                Confirmed by {payment.verified_by?.name || 'System'} {payment.verified_by?.email ? `• ${payment.verified_by.email}` : ''}
+                                                                            </span>
+                                                                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+                                                                                <Clock3 className="size-3" /> {payment.verified_at_human || payment.verified_at || payment.updated_at}
+                                                                            </span>
+                                                                        </div>
+                                                                        {payment.verification_notes && (
+                                                                            <p className="mt-1.5 text-[10px] font-bold text-emerald-700 pl-5">
+                                                                                Note: {payment.verification_notes}
+                                                                            </p>
+                                                                        )}
                                                                     </div>
                                                                 )}
                                                                 {payment.status === 'Rejected' && (payment.rejected_by || payment.rejected_at) && (
-                                                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-white/80 px-3 py-2 border border-red-100">
-                                                                        <AlertCircle className="size-3.5 text-red-600 shrink-0" />
-                                                                        <span className="text-[10px] font-black uppercase tracking-wider text-red-700">
-                                                                            Rejected by {payment.rejected_by?.name || 'System'}
-                                                                        </span>
-                                                                        <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
-                                                                            <Clock3 className="size-3" /> {payment.rejected_at_human || payment.rejected_at || payment.updated_at}
-                                                                        </span>
+                                                                    <div className="mt-3 rounded-lg bg-white/80 px-3 py-2 border border-red-100">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <AlertCircle className="size-3.5 text-red-600 shrink-0" />
+                                                                            <span className="text-[10px] font-black uppercase tracking-wider text-red-700">
+                                                                                Rejected by {payment.rejected_by?.name || 'System'}
+                                                                            </span>
+                                                                            <span className="ml-auto flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+                                                                                <Clock3 className="size-3" /> {payment.rejected_at_human || payment.rejected_at || payment.updated_at}
+                                                                            </span>
+                                                                        </div>
+                                                                        {payment.rejection_reason && (
+                                                                            <p className="mt-1.5 text-[10px] font-bold text-red-600 pl-5">
+                                                                                Reason: {payment.rejection_reason}
+                                                                            </p>
+                                                                        )}
                                                                     </div>
                                                                 )}
                                                                 {payment.status === 'Pending' && (
@@ -1155,6 +1200,92 @@ export default function BillingIndex({
                             </div>
                         )
                     )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={rejectPaymentId !== null} onOpenChange={(open) => { if (!open) { setRejectPaymentId(null); setRejectionReason(''); } }}>
+                <DialogContent className="sm:max-w-md">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-xl bg-red-100">
+                                <AlertCircle className="size-5 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-[14px] font-black text-neutral-800">Reject Payment Proof</h3>
+                                <p className="text-[11px] font-bold text-neutral-500">Please provide a reason for rejection</p>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Rejection Reason <span className="text-red-500">*</span></Label>
+                            <textarea
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                placeholder="e.g. Unclear proof of payment, incorrect amount, duplicate payment..."
+                                rows={3}
+                                className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                            />
+                        </div>
+                        <div className="flex items-center justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => { setRejectPaymentId(null); setRejectionReason(''); }}
+                                className="h-9 px-4 rounded-lg text-[12px] font-black text-neutral-500"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={confirmReject}
+                                className="h-9 px-4 rounded-lg bg-red-600 text-[12px] font-black text-white hover:bg-red-700"
+                            >
+                                Confirm Rejection
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={verifyPaymentId !== null} onOpenChange={(open) => { if (!open) { setVerifyPaymentId(null); setVerificationNotes(''); } }}>
+                <DialogContent className="sm:max-w-md">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-100">
+                                <CheckCircle2 className="size-5 text-emerald-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-[14px] font-black text-neutral-800">Verify Payment Proof</h3>
+                                <p className="text-[11px] font-bold text-neutral-500">You can optionally add a note for this verification</p>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[11px] font-black uppercase text-neutral-400 tracking-wider">Verification Note (Optional)</Label>
+                            <textarea
+                                value={verificationNotes}
+                                onChange={(e) => setVerificationNotes(e.target.value)}
+                                placeholder="e.g. Verified via bank statement..."
+                                rows={3}
+                                className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-[13px] font-bold dark:bg-neutral-900 dark:border-neutral-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            />
+                        </div>
+                        <div className="flex items-center justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => { setVerifyPaymentId(null); setVerificationNotes(''); }}
+                                className="h-9 px-4 rounded-lg text-[12px] font-black text-neutral-500"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={confirmVerify}
+                                className="h-9 px-4 rounded-lg bg-emerald-600 text-[12px] font-black text-white hover:bg-emerald-700"
+                            >
+                                Confirm Verification
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </>
